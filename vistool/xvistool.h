@@ -22,7 +22,7 @@ private:
   friend void dw_ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
   friend void mw_file_open(Widget, XtPointer, XtPointer);
   friend void mapStateChanged(Widget, XtPointer, XEvent *, Boolean *);
-  friend void dw_popup_animate(Widget, XtPointer, XtPointer);
+  friend void dw_animate(Widget, XtPointer, XtPointer);
   friend void handleAnimate(xvt_mainwin *, XtIntervalId *);
   // X/Motif data
   Display * display;
@@ -60,7 +60,7 @@ private:
   friend xvt_mainwin;
   friend void mapStateChanged(Widget, XtPointer, XEvent *, Boolean *);
   friend void dw_file_open(Widget, XtPointer, XtPointer);
-  friend void dw_popup_animate(Widget, XtPointer, XtPointer);
+  friend void dw_animate(Widget, XtPointer, XtPointer);
   xvt_mainwin & xmvt;
   Widget draw_shell;
   Widget main_w;

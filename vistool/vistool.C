@@ -16,6 +16,8 @@
 
 #include "GIO/GIOlib.h"
 
+#define LAST_LABEL 1.e30
+
 vt_mainwin::vt_mainwin()
   : Abscissa_Set(0), Abscissa_Filename(0), Abscissa_Data(0)
 {
@@ -353,19 +355,56 @@ void vt_drawwin::draw()
   
   typedef list<vt_data_series *>::iterator I_vd;
   I_vd p;
+  bool all_done = true;
+  glEnableClientState(GL_VERTEX_ARRAY);
   for(p = data_list.begin(); p != data_list.end(); p++) {
     vt_data_series & ds = **p;
-    ds.Current()->draw();
+    if(!ds.Done() && ds.current_l <= current_l) {
+      ds.Current()->draw();
+      all_done = false;
+    }
   }
+  glDisableClientState(GL_VERTEX_ARRAY);
+  if(all_done) reset_list();
+}
+
+double vt_drawwin::next_label()
+{ 
+  typedef list<vt_data_series *>::iterator I_vd;
+  double next_l = LAST_LABEL;
+  I_vd p;
+  for(p = data_list.begin(); p != data_list.end(); p++) {
+    const double n = (**p).Next();
+    if(n <= next_l) next_l = n;
+  }
+  return next_l;
 }
 
 void vt_drawwin::increment()
 {  
   typedef list<vt_data_series *>::iterator I_vd;
   I_vd p;
+  current_l = next_label();
   for(p = data_list.begin(); p != data_list.end(); p++) {
     vt_data_series & ds = **p;
-    ds.Increment();
+    const double n = ds.Next();
+    if(n <= current_l)
+      ds.Increment();
+    else if(n == LAST_LABEL)
+      ds.done = true;
+  }
+}
+
+void vt_drawwin::reset_list()
+{  
+  typedef list<vt_data_series *>::iterator I_vd;
+  I_vd p;
+  current_l = LAST_LABEL;
+  for(p = data_list.begin(); p != data_list.end(); p++) {
+    vt_data_series & ds = **p;
+    ds.Reset();
+    const double c = ds.current_l;
+    if(c < current_l) current_l = c;
   }
 }
 
@@ -402,6 +441,7 @@ void vt_drawwin::Add(vt_data_series * ds)
     if(uby > Ub_y) Ub_y = uby;
   }
   data_list.push_back(ds);
+  reset_list();
 }
 
 vt_data::~vt_data()
@@ -444,10 +484,8 @@ vt_data_1d::vt_data_1d(const vt_data_1d & src)
 
 void vt_data_1d::draw() {
   glColor3d(1.0,1.0,1.0);
-  glEnableClientState(GL_VERTEX_ARRAY);
   glVertexPointer(2,GL_DOUBLE,0,data);
   glDrawArrays(GL_LINE_STRIP,0,size);
-  glDisableClientState(GL_VERTEX_ARRAY);
 //    double * p = data;
 //    glBegin(GL_LINE_STRIP);
 //    for(int i=0; i<size; i++) {
@@ -459,7 +497,7 @@ void vt_data_1d::draw() {
 }
 
 vt_data_series::vt_data_series(const char * n)
-  : name(0), current_l(0), current(0)
+  : name(0), done(false), current_l(0), current(0)
 {
   name = new char[strlen(n)+1];
   strcpy(name,n);
@@ -499,9 +537,29 @@ void vt_data_series::Append(vt_data * d)
   if(first) current = data.begin();
 }
 
+double vt_data_series::Next()
+{
+  list<vt_data *>::iterator next = current;
+  next++;
+  if(next != data.end())
+    return (**next).Label();
+  else
+    return LAST_LABEL;
+}
+
 void vt_data_series::Increment()
 {
   ++current;
-  if(current == data.end()) current = data.begin();
+  if(current == data.end())
+    done = true;
+  else
+    current_l = (**current).Label();
+}
+
+void vt_data_series::Reset()
+{
+  current = data.begin();
+  done = false;
   current_l = (**current).Label();
 }
+

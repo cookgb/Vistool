@@ -274,7 +274,8 @@ void Button2DownAction(Widget, XEvent *, String *, Cardinal *);
 void Button2MotionAction(Widget, XEvent *, String *, Cardinal *);
 void Button2UpAction(Widget, XEvent *, String *, Cardinal *);
 void mapStateChanged(Widget, XtPointer, XEvent *, Boolean *);
-void dw_popup_animate(Widget, XtPointer, XtPointer);
+void dw_animate(Widget, XtPointer, XtPointer);
+void dw_reset_animate(Widget, XtPointer, XtPointer);
 void ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
 void dw_file_open(Widget, XtPointer, XtPointer);
 void dw_file_open_GIO(Widget, XtPointer, XtPointer);
@@ -468,7 +469,7 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
 #define POPUPMENU XmVaPUSHBUTTON,m_reset,NULL,NULL,NULL,\
                   XmVaCASCADEBUTTON,m_apply,NULL,\
                   XmVaSEPARATOR,\
-		  XmVaCHECKBUTTON,m_anim,NULL,NULL,NULL
+		  XmVaCASCADEBUTTON,m_anim,NULL
   //
   if(xmvt.overlayVisual) {
     popup =
@@ -487,16 +488,16 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
 				NULL);
   }
 #undef POPUPMENU
-  XmStringFree(m_reset);
+//    XmStringFree(m_reset);
   XmStringFree(m_apply);
-  XmStringFree(m_anim);
+//    XmStringFree(m_anim);
   // Set the callback routines for each menu button.
   if(Widget w = XtNameToWidget(popup,"button_0"))
     XtAddCallback(w, XmNactivateCallback, dw_popup_reset, this);
-  if(Widget w = XtNameToWidget(popup,"button_2")) {
-    XtAddCallback(w, XmNvalueChangedCallback, dw_popup_animate, this);
-    XmToggleButtonSetState(w, animate, False);
-  }
+//    if(Widget w = XtNameToWidget(popup,"button_2")) {
+//      XtAddCallback(w, XmNvalueChangedCallback, dw_popup_animate, this);
+//      XmToggleButtonSetState(w, animate, False);
+//    }
 
   XtAddEventHandler(frame, ButtonPressMask, False, activatePopup, popup);
 
@@ -533,6 +534,42 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
     XtAddCallback(w, XmNactivateCallback, apply_log, this);
   if(Widget w = XtNameToWidget(apply_popout,"button_1"))
     XtAddCallback(w, XmNactivateCallback, apply_log, this);
+
+  //--------------------------------------------------------------------------
+  // Animate submenu
+//    XmString m_anim = XmStringCreateLocalized("Animate");
+//    XmString m_reset = XmStringCreateLocalized("Reset");
+  //
+#define ANIMATEMENU XmVaCHECKBUTTON,m_anim,NULL,NULL,NULL,\
+                    XmVaPUSHBUTTON,m_reset,NULL,NULL,NULL
+  //
+  Widget animate_popout;
+  if(xmvt.overlayVisual) {
+    animate_popout =
+      XmVaCreateSimplePulldownMenu(popup, "animate", 2, NULL,
+				   ANIMATEMENU,
+				   XmNvisual, xmvt.overlayVisual,
+				   XmNdepth, xmvt.overlayDepth,
+				   XmNcolormap, xmvt.overlayColormap,
+				   NULL);
+    XtAddCallback(XtParent(open_popout), XmNpopupCallback,
+		  (XtCallbackProc) ensurePulldownColormapInstalled, &xmvt);
+  } else {
+    animate_popout =
+      XmVaCreateSimplePulldownMenu(popup, "apply", 2, NULL,
+				   ANIMATEMENU,
+				   NULL);
+  }
+#undef APPLYMENU
+  XmStringFree(m_anim);
+  XmStringFree(m_reset);
+  // Set the callback routines for each menu button.
+  if(Widget w = XtNameToWidget(animate_popout,"button_0")) {
+    XtAddCallback(w, XmNvalueChangedCallback, dw_animate, this);
+    XmToggleButtonSetState(w, animate, False);
+  }
+  if(Widget w = XtNameToWidget(animate_popout,"button_1"))
+    XtAddCallback(w, XmNactivateCallback, dw_reset_animate, this);
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------

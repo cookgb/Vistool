@@ -205,10 +205,19 @@ void mapStateChanged(Widget w, XtPointer client_data, XEvent *event,
 
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
-void handleAnimate(xvt_mainwin *, XtIntervalId *);
 //----------------------------------------------------------------------------
 // 
-void dw_popup_animate(Widget w, XtPointer client_data, XtPointer call_data)
+void handleAnimate(xvt_mainwin * xmvt, XtIntervalId * id)
+{
+  xmvt->incrementAnimation();
+  xmvt->animateID = XtAppAddTimeOut(xmvt->Xapp(), ANIMATETIME,
+				    (XtTimerCallbackProc) handleAnimate, xmvt);
+}
+
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+// 
+void dw_animate(Widget w, XtPointer client_data, XtPointer call_data)
 {
   xvt_drawwin * dw = (xvt_drawwin *) client_data;
 
@@ -226,15 +235,16 @@ void dw_popup_animate(Widget w, XtPointer client_data, XtPointer call_data)
   }
 }
 
-//----------------------------------------------------------------------------
+
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
 // 
-void handleAnimate(xvt_mainwin * xmvt, XtIntervalId * id)
+void dw_reset_animate(Widget w, XtPointer client_data, XtPointer call_data)
 {
-  xmvt->incrementAnimation();
-  xmvt->animateID = XtAppAddTimeOut(xmvt->Xapp(), ANIMATETIME,
-				    (XtTimerCallbackProc) handleAnimate, xmvt);
+  xvt_drawwin * dw = (xvt_drawwin *) client_data;
+
+  dw->reset_list();
+  dw->postRedisplay();
 }
 
 //----------------------------------------------------------------------------

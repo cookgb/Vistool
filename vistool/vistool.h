@@ -49,6 +49,7 @@ protected:
   vt_mainwin & mvt;
   bool animate;
   bool redraw;
+  double current_l;
 public:  // data for 1DDump Abscissa
   bool Abscissa_Set;
   char * Abscissa_Filename;
@@ -65,7 +66,9 @@ public:
   virtual void deleteme() { delete this;}
   virtual void init(int, int);
   virtual void draw();
+  double next_label();
   void increment();
+  void reset_list();
   virtual void resize(int, int);
   void windowReshape(int, int);
   void Add(vt_data_series * ds);
@@ -104,12 +107,15 @@ public:
 };
 
 class vt_data_series {
+private:
+  friend vt_drawwin;
 protected:
   char * name;
   double Lb_x;
   double Ub_x;
   double Lb_y;
   double Ub_y;
+  bool done;
   double current_l;
   list<vt_data *> data;
   list<vt_data *>::iterator current;
@@ -123,7 +129,10 @@ public:
   double UBy() {return Ub_y;}
   void Append(vt_data * d);
   vt_data * Current() {return *current;}
+  bool Done() const {return done;}
+  double Next();
   void Increment();
+  void Reset();
 };
 
 #endif // VISTOOL_H
