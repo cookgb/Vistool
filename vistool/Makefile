@@ -1,16 +1,20 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.9 1999-12-29 13:43:50 cookgb Exp $
+# $Id: Makefile,v 1.10 1999-12-29 15:05:08 cookgb Exp $
 #
 ###############################################################################
 # linux
+#CC=gcc
+#CFLAGS= -O2
 #CXX=g++
 #CXXFLAGS= -O2
 #LIBDIRS = -L/usr/X11R6/lib
 
 # SGI
-CXX=CC
+CC=cc -mips4
+CFLAGS = -O2
+CXX=CC -mips4
 CXXFLAGS= -O2
 
 all: xvistool
@@ -19,9 +23,10 @@ xvistool.o: xvistool.h vistool.h sovLayerUtil.h
 xvistool.h: vistool.h
 vistool.o: vistool.h
 xobjectinterface.o: vistool.h
+xfuncinterface.o: vistool.h
 sovlayerutil.o: sovLayerUtil.h
 
-FILES= xvistool.o vistool.o xobjectinterface.o sovlayerutil.o
+FILES= xvistool.o vistool.o xobjectinterface.o xfuncinterface.o sovlayerutil.o
 
 X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11
 

@@ -125,20 +125,18 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
   // main window contains MenuBar
   main_w = XtVaCreateManagedWidget("main",xmMainWindowWidgetClass,
 				   top_shell,
-				   XmNuserData,this,
 				   NULL);
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
   // Create the MenuBar
-  XmString file = XmStringCreateLocalized("File");
-  XmString help = XmStringCreateLocalized("Help");
+  XmString m_file = XmStringCreateLocalized("File");
+  XmString m_help = XmStringCreateLocalized("Help");
   menu_bar = XmVaCreateSimpleMenuBar(main_w,"menubar",
-				     XmVaCASCADEBUTTON, file, 'F',
-				     XmVaCASCADEBUTTON, help, 'H',
-				     XmNuserData, this,
+				     XmVaCASCADEBUTTON, m_file, 'F',
+				     XmVaCASCADEBUTTON, m_help, 'H',
 				     NULL);
-  XmStringFree(file);
+  XmStringFree(m_file);
 
   // Tell the MenuBar which button is th help menu
   if(Widget w = XtNameToWidget(menu_bar,"button_1"))
@@ -147,12 +145,12 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
   // First menu is the File menu
-  XmString open = XmStringCreateLocalized("Open...");
-  XmString quit = XmStringCreateLocalized("Quit");
+  XmString m_open = XmStringCreateLocalized("Open...");
+  XmString m_quit = XmStringCreateLocalized("Quit");
   //
-#define FILEMENU XmVaCASCADEBUTTON,open,'n',\
+#define FILEMENU XmVaCASCADEBUTTON,m_open,'n',\
                  XmVaSEPARATOR,\
-	         XmVaPUSHBUTTON,quit,'Q',NULL,NULL
+	         XmVaPUSHBUTTON,m_quit,'Q',NULL,NULL
   //
   Widget menu_pane;
   if(overlayVisual) {
@@ -172,19 +170,19 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
 				   NULL);
   }
 #undef FILEMENU
+  XmStringFree(m_open);
+  XmStringFree(m_quit);
   // Set the callback routines for each menu button.
   if(Widget w = XtNameToWidget(menu_pane,"button_1"))
     XtAddCallback(w, XmNactivateCallback, mw_file_quit, this);
-  XmStringFree(open);
-  XmStringFree(quit);
 
   //--------------------------------------------------------------------------
   // Open submenu
-  XmString default_format = XmStringCreateLocalized("Default Format");
-  XmString other_format = XmStringCreateLocalized("another format");
+  XmString m_default_format = XmStringCreateLocalized("Default Format");
+  XmString m_other_format = XmStringCreateLocalized("another format");
   //
-#define OPENMENU XmVaPUSHBUTTON,default_format,'D',NULL,NULL,\
-	         XmVaPUSHBUTTON,other_format,'a',NULL,NULL
+#define OPENMENU XmVaPUSHBUTTON,m_default_format,'D',NULL,NULL,\
+	         XmVaPUSHBUTTON,m_other_format,'a',NULL,NULL
   //
   Widget open_popout;
   if(overlayVisual) {
@@ -204,18 +202,18 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
 				   NULL);
   }
 #undef OPENMENU
+  XmStringFree(m_default_format);
+  XmStringFree(m_other_format);
   // Set the callback routines for each menu button.
   if(Widget w = XtNameToWidget(open_popout,"button_0"))
     XtAddCallback(w, XmNactivateCallback, mw_file_open, this);
   if(Widget w = XtNameToWidget(open_popout,"button_1"))
     XtAddCallback(w, XmNactivateCallback, mw_file_open, this);
-  XmStringFree(default_format);
-  XmStringFree(other_format);
 
   //--------------------------------------------------------------------------
   // Last menu is the Help menu
   //
-#define HELPMENU XmVaPUSHBUTTON,help,'H',NULL,NULL
+#define HELPMENU XmVaPUSHBUTTON,m_help,'H',NULL,NULL
   //
   if(overlayVisual) {
     menu_pane =
@@ -234,10 +232,10 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
 				   NULL);
   }
 #undef HELPMENU
+  XmStringFree(m_help);
   // Set the callback routines for each menu button.
   if(Widget w = XtNameToWidget(menu_pane,"button_0"))
     XtAddCallback(w, XmNactivateCallback, mw_help, this);
-  XmStringFree(help);
 
   XtManageChild(menu_bar);
 
@@ -273,10 +271,12 @@ void dw_file_close(Widget, XtPointer, XtPointer);
 void dw_help(Widget, XtPointer, XtPointer);
 void activatePopup(Widget, XtPointer, XEvent *, Boolean *);
 void dw_popup_reset(Widget, XtPointer, XtPointer);
-
-void dw_draw(Widget w, XtPointer data, XtPointer callData);
-void dw_resize(Widget w, XtPointer data, XtPointer callData);
-void dw_init(Widget w, XtPointer data, XtPointer callData);
+void dw_draw(Widget, XtPointer, XtPointer);
+void dw_resize(Widget, XtPointer, XtPointer);
+void dw_init(Widget, XtPointer, XtPointer);
+//----------------------------------------------------------------------------
+void apply_log(Widget, XtPointer, XtPointer);
+void apply_ln(Widget, XtPointer, XtPointer);
 //----------------------------------------------------------------------------
 // Creator for X11 version of drawing window.
 xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
@@ -322,13 +322,13 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
 
   //--------------------------------------------------------------------------
   // Create the MenuBar
-  XmString file = XmStringCreateLocalized("File");
-  XmString help = XmStringCreateLocalized("Help");
+  XmString m_file = XmStringCreateLocalized("File");
+  XmString m_help = XmStringCreateLocalized("Help");
   menu_bar = XmVaCreateSimpleMenuBar(main_w,"menubar",
-				     XmVaCASCADEBUTTON, file, 'F',
-				     XmVaCASCADEBUTTON, help, 'H',
+				     XmVaCASCADEBUTTON, m_file, 'F',
+				     XmVaCASCADEBUTTON, m_help, 'H',
 				     NULL);
-  XmStringFree(file);
+  XmStringFree(m_file);
 
   // Tell the MenuBar which button is th help menu
   if(Widget w = XtNameToWidget(menu_bar,"button_1"))
@@ -336,12 +336,12 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
 
   //--------------------------------------------------------------------------
   // First menu is the File menu
-  XmString open  = XmStringCreateLocalized("Open...");
-  XmString close = XmStringCreateLocalized("Close");
+  XmString m_open  = XmStringCreateLocalized("Open...");
+  XmString m_close = XmStringCreateLocalized("Close");
   //
-#define FILEMENU XmVaCASCADEBUTTON,open,\
+#define FILEMENU XmVaCASCADEBUTTON,m_open,'n',\
                  XmVaSEPARATOR,\
-	         XmVaPUSHBUTTON,close,'C',NULL,NULL
+	         XmVaPUSHBUTTON,m_close,'C',NULL,NULL
   //
   Widget menu_pane;
   if(xmvt.overlayVisual) {
@@ -361,19 +361,19 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
 				   NULL);
   }
 #undef FILEMENU
+  XmStringFree(m_open);
+  XmStringFree(m_close);
   // Set the callback routines for each menu button.
   if(Widget w = XtNameToWidget(menu_pane,"button_1"))
     XtAddCallback(w, XmNactivateCallback, dw_file_close, this);
-  XmStringFree(open);
-  XmStringFree(close);
 
   //--------------------------------------------------------------------------
   // Open submenu
-  XmString default_format = XmStringCreateLocalized("Default Format");
-  XmString other_format = XmStringCreateLocalized("another format");
+  XmString m_default_format = XmStringCreateLocalized("Default Format");
+  XmString m_other_format = XmStringCreateLocalized("another format");
   //
-#define OPENMENU XmVaPUSHBUTTON,default_format,'D',NULL,NULL,\
-	         XmVaPUSHBUTTON,other_format,'a',NULL,NULL
+#define OPENMENU XmVaPUSHBUTTON,m_default_format,'D',NULL,NULL,\
+	         XmVaPUSHBUTTON,m_other_format,'a',NULL,NULL
   //
   Widget open_popout;
   if(xmvt.overlayVisual) {
@@ -393,18 +393,18 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
 				   NULL);
   }
 #undef OPENMENU
+  XmStringFree(m_default_format);
+  XmStringFree(m_other_format);
   // Set the callback routines for each menu button.
   if(Widget w = XtNameToWidget(open_popout,"button_0"))
     XtAddCallback(w, XmNactivateCallback, dw_file_open, this);
   if(Widget w = XtNameToWidget(open_popout,"button_1"))
     XtAddCallback(w, XmNactivateCallback, dw_file_open, this);
-  XmStringFree(default_format);
-  XmStringFree(other_format);
 
   //--------------------------------------------------------------------------
   // Last menu is the Help menu
   //
-#define HELPMENU XmVaPUSHBUTTON,help,'H',NULL,NULL
+#define HELPMENU XmVaPUSHBUTTON,m_help,'H',NULL,NULL
   //
   if(xmvt.overlayVisual) {
     menu_pane =
@@ -423,10 +423,10 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
 				   NULL);
   }
 #undef HELPMENU
+  XmStringFree(m_help);
   // Set the callback routines for each menu button.
   if(Widget w = XtNameToWidget(menu_pane,"button_0"))
     XtAddCallback(w, XmNactivateCallback, dw_help, this);
-  XmStringFree(help);
 
   XtManageChild(menu_bar);
 
@@ -435,20 +435,19 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
   // Frame area to contain OpenGL drawing area
   frame = XtVaCreateManagedWidget("frame",xmFrameWidgetClass,
 				  main_w,
-				  XmNuserData, this,
 				  NULL);
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
   // Create Popup menu for frame area of drawing window
-  XmString reset = XmStringCreateLocalized("Reset");
-  XmString apply = XmStringCreateLocalized("Apply");
-  XmString anim = XmStringCreateLocalized("Animate");
+  XmString m_reset = XmStringCreateLocalized("Reset");
+  XmString m_apply = XmStringCreateLocalized("Apply");
+  XmString m_anim = XmStringCreateLocalized("Animate");
   //
-#define POPUPMENU XmVaPUSHBUTTON,reset,NULL,NULL,NULL,\
-                  XmVaCASCADEBUTTON,apply,\
+#define POPUPMENU XmVaPUSHBUTTON,m_reset,NULL,NULL,NULL,\
+                  XmVaCASCADEBUTTON,m_apply,NULL,\
                   XmVaSEPARATOR,\
-		  XmVaCHECKBUTTON,anim,NULL,NULL,NULL
+		  XmVaCHECKBUTTON,m_anim,NULL,NULL,NULL
   //
   if(xmvt.overlayVisual) {
     popup =
@@ -467,6 +466,9 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
 				NULL);
   }
 #undef POPUPMENU
+  XmStringFree(m_reset);
+  XmStringFree(m_apply);
+  XmStringFree(m_anim);
   // Set the callback routines for each menu button.
   if(Widget w = XtNameToWidget(popup,"button_0"))
     XtAddCallback(w, XmNactivateCallback, dw_popup_reset, this);
@@ -474,19 +476,16 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
     XtAddCallback(w, XmNvalueChangedCallback, dw_popup_animate, this);
     XmToggleButtonSetState(w, animate, False);
   }
-  XmStringFree(reset);
-  XmStringFree(apply);
-  XmStringFree(anim);
 
   XtAddEventHandler(frame, ButtonPressMask, False, activatePopup, popup);
 
   //--------------------------------------------------------------------------
   // Apply submenu
-  XmString f_log = XmStringCreateLocalized("log");
-  XmString f_ln = XmStringCreateLocalized("ln");
+  XmString m_f_log = XmStringCreateLocalized("log");
+  XmString m_f_ln = XmStringCreateLocalized("ln");
   //
-#define APPLYMENU XmVaPUSHBUTTON,f_log,NULL,NULL,NULL,\
-	          XmVaPUSHBUTTON,f_ln,NULL,NULL,NULL
+#define APPLYMENU XmVaPUSHBUTTON,m_f_log,NULL,NULL,NULL,\
+	          XmVaPUSHBUTTON,m_f_ln,NULL,NULL,NULL
   //
   Widget apply_popout;
   if(xmvt.overlayVisual) {
@@ -506,13 +505,13 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
 				   NULL);
   }
 #undef APPLYMENU
+  XmStringFree(m_f_log);
+  XmStringFree(m_f_ln);
   // Set the callback routines for each menu button.
-//    if(Widget w = XtNameToWidget(apply_popout,"button_0"))
-//      XtAddCallback(w, XmNactivateCallback, NULL, this);
-//    if(Widget w = XtNameToWidget(apply_popout,"button_1"))
-//      XtAddCallback(w, XmNactivateCallback, NULL, this);
-  XmStringFree(f_log);
-  XmStringFree(f_ln);
+  if(Widget w = XtNameToWidget(apply_popout,"button_0"))
+    XtAddCallback(w, XmNactivateCallback, apply_log, this);
+  if(Widget w = XtNameToWidget(apply_popout,"button_1"))
+    XtAddCallback(w, XmNactivateCallback, apply_log, this);
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
@@ -520,7 +519,7 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
   glx_area = XtVaCreateManagedWidget("glxarea",glwMDrawingAreaWidgetClass,
 				     frame,
 				     GLwNvisualInfo,xmvt.vi,
-				     XmNuserData,this,
+				     XmNuserData,this, // For Button actions
 				     NULL);
   XtVaGetValues(glx_area, XtNwidth, &viewWidth, XtNheight, &viewHeight, NULL);
 
