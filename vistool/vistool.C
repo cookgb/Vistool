@@ -165,9 +165,48 @@ bool vt_drawwin::ImportFile_GIO(char * file)
     return false;
   }
   switch(GIOq.Key()) {
-  case GIO_DOUBLE_SERIES:
+  case GIO_DOUBLE_SERIES: {
+    int status;
+    GIO_double1D GIO(file, status);
+    if(!status) return false;
+    const int Ns = GIO.NSeries();
+    vt_data_series ** vsa = new vt_data_series * [Ns];
+    const int Nd = GIO.NDataSets();
+    const bool firstiscoord = (Nd < 2) ? false : true;
+    int datastart=1;
+    for(int i=0; i<Nd; i++) vsa[i] = new vt_data_series(GIO.Name(i), file);
+    for(int N=0; N<Ns; N++) {
+      if(GIO.Read()) {
+	const double l = GIO.Label();
+	const int ext = GIO.Ext(0);
+	const double * x;
+	double * xc;
+	if(firstiscoord) {
+	  x = GIO.Data(0);
+	} else {
+	  datastart = 0;
+	  xc = new double[ext];
+	  for(int ix=1; ix<=ext; ix++) xc[ix] = ix;
+	  x = xc;
+	}
+	for(int i=datastart; i<Nd; i++) {
+	  vt_data_1d * vtd = new vt_data_1d(l,ext,x,GIO.Data(i));
+	  vsa[i]->Append(vtd);
+	}
+	if(!firstiscoord) {
+	  delete [] xc;
+	}
+      } else {
+	for(int i=0; i<Nd; i++) delete [] vsa[i];
+	delete [] vsa;
+	return false;
+      }
+    }
+    for(int j=datastart; j<Nd; j++) Add(vsa[j]);
+    delete [] vsa;
     break;
-  case GIO_DOUBLE_CSERIES:
+  }
+  case GIO_DOUBLE_CSERIES: {
     int status;
     GIO_double1DC GIO(file, status);
     if(!status) return false;
@@ -197,6 +236,7 @@ bool vt_drawwin::ImportFile_GIO(char * file)
     for(int j=0; j<Nd; j++) Add(vsa[j]);
     delete [] vsa;
     break;
+  }
   }
   return true;
 }
