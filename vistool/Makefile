@@ -1,30 +1,30 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.13 2000-01-04 13:17:31 cookgb Exp $
+# $Id: Makefile,v 1.14 2000-03-21 16:04:26 cookgb Exp $
 #
 ###############################################################################
 # linux
-CC=gcc
-CFLAGS= -O2
-CXX=g++
-CXXFLAGS= -O2
-LIBDIRS = -L/usr/X11R6/lib GIO/libGIO.a
+#CC=gcc
+#CFLAGS= -O2
+#CXX=g++
+#CXXFLAGS= -O2
+#LIBDIRS = -L/usr/X11R6/lib GIO/libGIO.a
 
 # SGI
-#CC=cc -mips4
-#CFLAGS = -O2
-#CXX=CC -mips4
-#CXXFLAGS= -O2
-#LIBDIRS = GIO/libGIO.a
+CC=cc -mips4
+CFLAGS = -O2
+CXX=CC -mips4
+CXXFLAGS= -O2
+LIBDIRS = GIO/libGIO.a
 
 all: xvistool
 
 xvistool.o: xvistool.h vistool.h sovLayerUtil.h
 xvistool.h: vistool.h
 vistool.o: vistool.h
-xobjectinterface.o: vistool.h
-xfuncinterface.o: vistool.h
+xobjectinterface.o: xvistool.h
+xfuncinterface.o: xvistool.h
 sovlayerutil.o: sovLayerUtil.h
 
 FILES= xvistool.o vistool.o xobjectinterface.o xfuncinterface.o sovlayerutil.o
