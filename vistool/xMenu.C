@@ -14,13 +14,15 @@ Widget BuildMenu(const Widget parent, const int menu_type,
 		 const Boolean tear_off, const MenuItem *const items)
 {
   Widget menu, cascade, widget;
-  Arg args[3];
+  Arg args[4];
   int n = 0;
 
   if(overlay) {
     XtSetArg(args[n], XmNvisual,   overlay->overlayVisual);   n++;
     XtSetArg(args[n], XmNdepth,    overlay->overlayDepth);    n++;
     XtSetArg(args[n], XmNcolormap, overlay->overlayColormap); n++;
+    // Hack to prevent transparent menu text when overlays are supported
+    XtSetArg(args[n], XmNforeground, 1); n++;
   }
 
   if(menu_type == XmMENU_PULLDOWN)
