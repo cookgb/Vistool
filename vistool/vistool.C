@@ -394,6 +394,7 @@ void vt_drawwin::increment()
   typedef list<vt_data_series *>::iterator I_vd;
   I_vd p;
   current_l = next_label();
+  Label_Text(true);
   for(p = data_list.begin(); p != data_list.end(); p++) {
     vt_data_series & ds = **p;
     const double n = ds.Next();
@@ -415,6 +416,7 @@ void vt_drawwin::reset_list()
     const double c = ds.current_l;
     if(c < current_l) current_l = c;
   }
+  Label_Text(true);
 }
 
 void vt_drawwin::resize(int new_width, int new_height)
@@ -429,8 +431,14 @@ void vt_drawwin::windowReshape(int width, int height)
   glViewport(0, 0, width, height);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  const double xb = 0.025*(Ub_x - Lb_x);
-  const double yb = 0.025*(Ub_y - Lb_y);
+  double xb = 0.025*(Ub_x - Lb_x);
+  if(xb == 0)
+    if(Ub_x != 0) xb = 0.025*Ub_x;
+    else xb = 1.e-2;
+  double yb = 0.025*(Ub_y - Lb_y);
+  if(yb == 0)
+    if(Ub_y != 0) yb = 0.025*Ub_y;
+    else yb = 1.e-2;
   gluOrtho2D(Lb_x-xb,Ub_x+xb,Lb_y-yb,Ub_y+yb);
 }
 
@@ -454,6 +462,24 @@ void vt_drawwin::Add(vt_data_series * ds)
   data_list.push_back(ds);
   reset_list();
   Coords_Text(true);
+}
+
+void vt_drawwin::Label_Text(bool add)
+{
+  label->seekp(0);
+  label->width(15);
+  (*label) << current_l;
+  if(!add) (*label) << ends;
+}
+
+void vt_drawwin::Coords_Text(bool add)
+{
+  if(add) label->seekp(15);
+  int p = label->precision();
+  label->precision(4);
+  (*label) <<   " (" << Lb_x << ", " << Lb_y
+	   << " -> " << Ub_x << ", " << Ub_y << ")" << ends;
+  label->precision(p);
 }
 
 vt_data::~vt_data()

@@ -77,25 +77,8 @@ public:
   void Add(vt_data_series * ds);
   int Width() {return cur_width;}
   int Height() {return cur_height;}
-  char * Label_Text(bool add)
-  {
-    label->seekp(0);
-    label->width(15);
-    (*label) << current_l;
-    if(!add) (*label) << ends;
-    return labelbuf;
-  }
-  char * Coords_Text(bool add)
-  {
-    if(add) label->seekp(15);
-    int p = label->precision();
-    label->precision(4);
-    (*label) <<   " (" << Lb_x << ", " << Lb_y
-	     << " -> " << Ub_x << ", " << Ub_y << ")" << ends;
-    label->precision(p);
-    return labelbuf;
-  }
-  
+  void Label_Text(bool add);
+  void Coords_Text(bool add);
 };
 
 class vt_data {

@@ -624,6 +624,8 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw,
 				      XmNcursorPositionVisible, FALSE,
 				      XmNtraversalOn, FALSE,
 				      XmNcolumns, 15,
+				      XmNscrollHorizontal, FALSE,
+				      XmNscrollVertical, FALSE,
 				      NULL);
   XtManageChild(text_area);
 
@@ -694,7 +696,7 @@ void xvt_drawwin::draw()
   glXMakeCurrent(xmvt.Xdisplay(),glx_win,cx);
   vt_drawwin::draw();
   glXSwapBuffers(xmvt.Xdisplay(),glx_win);
-  XmTextSetString(text_area,Label_Text(true));
+  XmTextSetString(text_area,labelbuf);
 }
 
 void xvt_drawwin::resize(int new_width, int new_height)
