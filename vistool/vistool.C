@@ -526,24 +526,42 @@ void vt_drawwin::draw()
 
 double vt_drawwin::next_label()
 { 
+#define ROUNDUP 1.000001
   typedef std::list<vt_data_series *>::iterator I_vd;
   double next_l = LAST_LABEL;
   I_vd ds;
   for(ds = data_list.begin(); ds != data_list.end(); ds++) {
     const double n = (**ds).Next();
-    if(n <= next_l) next_l = n;
+    if(n <= next_l) next_l = n; // Strict ordering
+  }
+  { // allow for roundoff error
+    double allow_round = next_l;
+    for(ds = data_list.begin(); ds != data_list.end(); ds++) {
+      const double n = (**ds).Next();
+      if(n > allow_round && n < next_l*ROUNDUP) allow_round = n;
+    }
+    next_l = allow_round;
   }
   return next_l;
 }
 
 double vt_drawwin::previous_label()
-{ 
+{  
+#define ROUNDDOWN 0.999999
   typedef std::list<vt_data_series *>::iterator I_vd;
   double prev_l = -LAST_LABEL;
   I_vd ds;
   for(ds = data_list.begin(); ds != data_list.end(); ds++) {
     const double n = (**ds).Previous();
-    if(n >= prev_l) prev_l = n;
+    if(n >= prev_l) prev_l = n; // Strict ordering
+  }
+  { // allow for roundoff error
+    double allow_round = prev_l;
+    for(ds = data_list.begin(); ds != data_list.end(); ds++) {
+      const double n = (**ds).Next();
+      if(n < allow_round && n > prev_l*ROUNDDOWN) allow_round = n;
+    }
+    prev_l = allow_round;
   }
   return prev_l;
 }
