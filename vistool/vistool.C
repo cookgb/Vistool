@@ -291,6 +291,13 @@ bool vt_drawwin::ImportFile_1DDump(const char *const filename)
     file.read((char *) &time,sizeof(double)); 
     if(!file.good() || (file.gcount() != sizeof(double))) break;
 
+    // Dimension (must be one for now)
+    int testdim;
+    file.read((char *) &testdim,sizeof(int));
+    if(!file.good() || (file.gcount() != sizeof(int)) || testdim != dim) {
+      break;
+    }
+
     // Shape
     int *shape = new int[dim];
     file.read((char *) shape,dim*sizeof(int)); 
@@ -399,6 +406,13 @@ bool vt_drawwin::ImportFile_1DAbs(const char *const filename)
   file.read((char *) &time,sizeof(double)); 
   if(!file.good() || (file.gcount() != sizeof(double))) {
     file.close();
+    return false;
+  }
+
+  // Dimension (must be one for now)
+  int testdim;
+  file.read((char *) &testdim,sizeof(int));
+  if(!file.good() || (file.gcount() != sizeof(int)) || testdim != dim) {
     return false;
   }
   
