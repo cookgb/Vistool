@@ -294,6 +294,8 @@ void mapStateChanged(Widget, XtPointer, XEvent *, Boolean *);
 void dw_ZoomReset(Widget, XtPointer, XtPointer);
 void dw_UnZoom(Widget, XtPointer, XtPointer);
 void dw_animate(Widget, XtPointer, XtPointer);
+void dw_stepforward(Widget, XtPointer, XtPointer);
+void dw_stepbackward(Widget, XtPointer, XtPointer);
 void dw_reset_animate(Widget, XtPointer, XtPointer);
 void ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
 void dw_file_open(Widget, XtPointer, XtPointer);
@@ -446,13 +448,19 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw,
   MenuItem Animate_menu[] = {
     { "Animate", &xmToggleButtonGadgetClass, '\0', "Ctrl<Key>A", "Ctrl+A",
       animate, dw_animate, this, NULL},
+    { "_sep3", &xmSeparatorGadgetClass, '\0', NULL, NULL, 0, NULL, NULL, NULL},
+    { "Step Forward", &xmPushButtonGadgetClass, '\0', "Shift<Key>>", "   >",
+//      { "Step Forward", &xmPushButtonGadgetClass, '\0', "<Key>F", "F",
+      0, dw_stepforward, this, NULL},
+    { "Step Back", &xmPushButtonGadgetClass, '\0', "Shift<Key><", "   <",
+//      { "Step Back", &xmPushButtonGadgetClass, '\0', "<Key>B", "B",
+      0, dw_stepbackward, this, NULL},
+    { "_sep3", &xmSeparatorGadgetClass, '\0', NULL, NULL, 0, NULL, NULL, NULL},
     { "Reset", &xmPushButtonGadgetClass, '\0', "Ctrl<Key>R", "Ctrl+R", 0,
       dw_reset_animate, this, NULL},
     NULL,
   };
   MenuItem Popup_menu[] = {
-//      { "Reset", &xmPushButtonGadgetClass, '\0', NULL, NULL, 0,
-//        dw_popup_reset, this, NULL},
     { "Zoom", &xmCascadeButtonGadgetClass, '\0', NULL, NULL, 0,
       NULL, this, Zoom_menu},
     { "_sep3", &xmSeparatorGadgetClass, '\0', NULL, NULL, 0, NULL, NULL, NULL},

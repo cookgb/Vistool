@@ -320,6 +320,40 @@ void dw_animate(Widget w, XtPointer client_data, XtPointer call_data)
   }
 }
 
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+// 
+void dw_stepforward(Widget w, XtPointer client_data, XtPointer call_data)
+{
+  xvt_drawwin * dw = (xvt_drawwin *) client_data;
+
+  if(dw->animate) {
+    dw->xmvt.animateCount--;
+    if(dw->xmvt.animateCount == dw->xmvt.animateHiddenCount)
+      XtRemoveTimeOut(dw->xmvt.animateID);
+    dw->animate = false;
+  }
+  dw->increment();
+  dw->postRedisplay();
+}
+
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+// 
+void dw_stepbackward(Widget w, XtPointer client_data, XtPointer call_data)
+{
+  xvt_drawwin * dw = (xvt_drawwin *) client_data;
+
+  if(dw->animate) {
+    dw->xmvt.animateCount--;
+    if(dw->xmvt.animateCount == dw->xmvt.animateHiddenCount)
+      XtRemoveTimeOut(dw->xmvt.animateID);
+    dw->animate = false;
+  }
+  dw->decrement();
+  dw->postRedisplay();
+}
+
 
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------

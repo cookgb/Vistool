@@ -65,8 +65,9 @@ protected:
   stack <bounds_2D *> bounds_stack;
 protected:
   vt_mainwin & mvt;
-  bool animate;
   bool redraw;
+  bool animate;
+  bool forward_animation;
   double current_l;
   ostrstream * label;
   char * labelbuf;
@@ -88,7 +89,9 @@ public:
   virtual void init(int, int);
   virtual void draw();
   double next_label();
+  double previous_label();
   void increment();
+  void decrement();
   void reset_list();
   void reset_CurrentBounds();
   void push_CurrentBounds(bounds_2D * new_bounds);
@@ -157,8 +160,10 @@ public:
   vt_data * Current() const {return *current;}
   bool Done() const {return done;}
   double Next();
+  double Previous();
   void Increment();
-  void Reset();
+  void Decrement();
+  void Reset(bool forward_iteration);
 };
 
 #endif // VISTOOL_H

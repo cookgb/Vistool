@@ -46,7 +46,8 @@ void vt_mainwin::incrementAnimation()
   for(p = draw_list.begin(); p != draw_list.end(); p++) {
     vt_drawwin & dw = **p;
     if(dw.animate) {
-      dw.increment();
+      if(dw.forward_animation) dw.increment();
+      else dw.decrement();
       dw.draw();
       dw.redraw = false;
     }
@@ -64,8 +65,7 @@ char * vt_mainwin::NewDrawWindow()
 
 
 vt_drawwin::vt_drawwin(const char * n, vt_mainwin & mw)
-  : // Lb_x(0.), Ub_x(1.), Lb_y(0.), Ub_y(1.),
-    mvt(mw), animate(false), redraw(false),
+  : mvt(mw), redraw(false), animate(false), forward_animation(true),
     Abscissa_Set(mw.Abscissa_Set)
 {
 //    name = new char[strlen(n)+1];
@@ -378,13 +378,22 @@ void vt_drawwin::draw()
   I_vd p;
   bool all_done = true;
   glEnableClientState(GL_VERTEX_ARRAY);
-  for(p = data_list.begin(); p != data_list.end(); p++) {
-    vt_data_series & ds = **p;
-    if(!ds.Done() && ds.current_l <= current_l) {
-      ds.Current()->draw();
-      all_done = false;
+  if(forward_animation)
+    for(p = data_list.begin(); p != data_list.end(); p++) {
+      vt_data_series & ds = **p;
+      if(!ds.Done() && ds.current_l <= current_l) {
+	ds.Current()->draw();
+	all_done = false;
+      }
     }
-  }
+  else
+    for(p = data_list.begin(); p != data_list.end(); p++) {
+      vt_data_series & ds = **p;
+      if(!ds.Done() && ds.current_l >= current_l) {
+	ds.Current()->draw();
+	all_done = false;
+      }
+    }
   glDisableClientState(GL_VERTEX_ARRAY);
   if(all_done) reset_list();
 }
@@ -393,16 +402,29 @@ double vt_drawwin::next_label()
 { 
   typedef list<vt_data_series *>::iterator I_vd;
   double next_l = LAST_LABEL;
-  I_vd p;
-  for(p = data_list.begin(); p != data_list.end(); p++) {
-    const double n = (**p).Next();
+  I_vd ds;
+  for(ds = data_list.begin(); ds != data_list.end(); ds++) {
+    const double n = (**ds).Next();
     if(n <= next_l) next_l = n;
   }
   return next_l;
 }
 
+double vt_drawwin::previous_label()
+{ 
+  typedef list<vt_data_series *>::iterator I_vd;
+  double prev_l = -LAST_LABEL;
+  I_vd ds;
+  for(ds = data_list.begin(); ds != data_list.end(); ds++) {
+    const double n = (**ds).Previous();
+    if(n >= prev_l) prev_l = n;
+  }
+  return prev_l;
+}
+
 void vt_drawwin::increment()
-{  
+{
+  forward_animation = true;
   typedef list<vt_data_series *>::iterator I_vd;
   I_vd p;
   current_l = next_label();
@@ -417,16 +439,43 @@ void vt_drawwin::increment()
   }
 }
 
+void vt_drawwin::decrement()
+{  
+  forward_animation = false;
+  typedef list<vt_data_series *>::iterator I_vd;
+  I_vd p;
+  current_l = previous_label();
+  Label_Text(true);
+  for(p = data_list.begin(); p != data_list.end(); p++) {
+    vt_data_series & ds = **p;
+    const double p = ds.Previous();
+    if(p <= current_l)
+      ds.Decrement();
+    else if(p == -LAST_LABEL)
+      ds.done = true;
+  }
+}
+
 void vt_drawwin::reset_list()
 {  
   typedef list<vt_data_series *>::iterator I_vd;
   I_vd p;
-  current_l = LAST_LABEL;
-  for(p = data_list.begin(); p != data_list.end(); p++) {
-    vt_data_series & ds = **p;
-    ds.Reset();
-    const double c = ds.current_l;
-    if(c < current_l) current_l = c;
+  if(forward_animation) {
+    current_l = LAST_LABEL;
+    for(p = data_list.begin(); p != data_list.end(); p++) {
+      vt_data_series & ds = **p;
+      ds.Reset(forward_animation);
+      const double c = ds.current_l;
+      if(c < current_l) current_l = c;
+    }
+  } else {
+    current_l = -LAST_LABEL;
+    for(p = data_list.begin(); p != data_list.end(); p++) {
+      vt_data_series & ds = **p;
+      ds.Reset(forward_animation);
+      const double c = ds.current_l;
+      if(c > current_l) current_l = c;
+    }
   }
   Label_Text(true);
   draw();
@@ -633,6 +682,17 @@ double vt_data_series::Next()
     return LAST_LABEL;
 }
 
+double vt_data_series::Previous()
+{
+  typedef list<vt_data *>::reverse_iterator RI_d;
+  RI_d next = RI_d(current);
+  next++;
+  if(next != data.rend())
+    return (**next).Label();
+  else
+    return -LAST_LABEL;
+}
+
 void vt_data_series::Increment()
 {
   ++current;
@@ -642,10 +702,24 @@ void vt_data_series::Increment()
     current_l = (**current).Label();
 }
 
-void vt_data_series::Reset()
+void vt_data_series::Decrement()
 {
-  current = data.begin();
-  done = false;
+  if(current != data.begin()) {
+    --current;
+    current_l = (**current).Label();
+  } else
+    done = true;
+}
+
+void vt_data_series::Reset(bool forward_animation)
+{
+  if(forward_animation) {
+    current = data.begin();
+    done = false;
+  } else {
+    current = --data.end();
+    done = false;
+  }
   current_l = (**current).Label();
 }
 

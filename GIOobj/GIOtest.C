@@ -15,21 +15,29 @@
 
 double wave(double t, double x)
 {
-  return 1.5*sin(t - x);
+//    return 1.5*sin(t - x);
+  return 0.05*sin(t - x);
 }
 double wave2(double t, double x)
 {
-  return sin(t + x);
+//    return sin(t + x);
+  return 0.01*sin(t + x);
 }
 
 main()
 {
   const char * filename = "Wave.data";
   const char * names[] = {"y","z"};
-  const double t0 =  0.0;
-  const double t1 = 10.0;
-  const int    nt =  201;
+  double t0 =  0.0;
+//    const double t1 =  0.0;
+  double t1 = 10.0;
+  int    nt =  201;
+//    const int    nt =  1;
+//    const double dt = 0.0;
   const double dt = (t1 - t0)/(nt - 1);
+
+  t0 += dt; t1 -= dt; nt = nt - 2;
+
   const double x0 = -5.0;
   const double x1 =  5.0;
   const int    nx =  101;

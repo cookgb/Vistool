@@ -24,6 +24,8 @@ private:
   friend void mw_file_open(Widget, XtPointer, XtPointer);
   friend void mapStateChanged(Widget, XtPointer, XEvent *, Boolean *);
   friend void dw_animate(Widget, XtPointer, XtPointer);
+  friend void dw_stepforward(Widget, XtPointer, XtPointer);
+  friend void dw_stepbackward(Widget, XtPointer, XtPointer);
   friend void mw_windowlist(Widget, XtPointer, XtPointer);
   friend void handleAnimate(xvt_mainwin *, XtIntervalId *);
   // X/Motif data
@@ -66,6 +68,8 @@ private:
   friend void mapStateChanged(Widget, XtPointer, XEvent *, Boolean *);
   friend void dw_file_open(Widget, XtPointer, XtPointer);
   friend void dw_animate(Widget, XtPointer, XtPointer);
+  friend void dw_stepforward(Widget, XtPointer, XtPointer);
+  friend void dw_stepbackward(Widget, XtPointer, XtPointer);
   friend void Button1DownAction(Widget, XEvent *, String *, Cardinal *);
   friend void Button1MotionAction(Widget, XEvent *, String *, Cardinal *);
   friend void Button1UpAction(Widget, XEvent *, String *, Cardinal *);
