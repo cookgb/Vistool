@@ -30,6 +30,8 @@ private:
   Widget top_shell;
   Widget main_w;
   Widget menu_bar;
+  Widget window_list;
+  Widget dataset_list;
   Widget Open_Dialog;
   XVisualInfo *vi;
   Visual * overlayVisual;

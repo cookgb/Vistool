@@ -8,6 +8,9 @@
 #include <Xm/Protocols.h>
 #include <Xm/MainW.h>
 #include <Xm/RowColumn.h>
+#include <Xm/Form.h>
+#include <Xm/LabelG.h>
+#include <Xm/List.h>
 #include <Xm/ToggleB.h>
 #include <Xm/Frame.h>
 #include <Xm/FileSB.h>
@@ -61,7 +64,7 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
     "*useSchemes: all",         // and SGI schemes.
     "xvistool.title: Visualization Tool",
     "*main.width: 350",
-    "*main.height: 75",
+//      "*main.height: 75",
     "*glxarea*width: 300",
     "*glxarea*height: 300",
     NULL
@@ -250,6 +253,55 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
     XtAddCallback(w, XmNactivateCallback, mw_help, this);
 
   XtManageChild(menu_bar);
+
+  //--------------------------------------------------------------------------
+  //--------------------------------------------------------------------------
+  Widget mw_form = XtVaCreateManagedWidget("form", xmFormWidgetClass,
+					   main_w, NULL);
+  Widget winlab = XtVaCreateManagedWidget("Windows:",xmLabelGadgetClass,
+					  mw_form,
+					  XmNtopAttachment, XmATTACH_FORM,
+					  XmNleftAttachment, XmATTACH_FORM,
+					  XmNtopOffset, 4,
+					  XmNleftOffset, 4,
+					  NULL);
+  Arg args[9];
+  int nl = 0;
+  XtSetArg(args[nl],XmNvisibleItemCount,8); nl++;
+  XtSetArg(args[nl],XmNtopAttachment,XmATTACH_WIDGET); nl++;
+  XtSetArg(args[nl],XmNtopWidget,winlab); nl++;
+  XtSetArg(args[nl],XmNleftAttachment,XmATTACH_OPPOSITE_WIDGET); nl++;
+  XtSetArg(args[nl],XmNleftWidget,winlab); nl++;
+  XtSetArg(args[nl],XmNbottomAttachment,XmATTACH_FORM); nl++;
+  XtSetArg(args[nl],XmNbottomOffset,4); nl++;
+  XtSetArg(args[nl],XmNtopOffset,2); nl++;
+  window_list = XmCreateScrolledList(mw_form,"window_list",args,nl);
+  XtManageChild(window_list);
+  Widget dslab = XtVaCreateManagedWidget("Data sets:",xmLabelGadgetClass,
+					 mw_form,
+					 XmNleftAttachment, XmATTACH_WIDGET,
+					 XmNleftWidget, window_list,
+					 XmNleftOffset,8,
+					 XmNtopAttachment,
+					 XmATTACH_OPPOSITE_WIDGET,
+					 XmNtopWidget, winlab,
+					 NULL);
+  nl = 0;
+  XtSetArg(args[nl],XmNvisibleItemCount,8); nl++;
+  XtSetArg(args[nl],XmNtopAttachment,XmATTACH_OPPOSITE_WIDGET); nl++;
+  XtSetArg(args[nl],XmNtopWidget,window_list); nl++;
+  XtSetArg(args[nl],XmNleftAttachment,XmATTACH_OPPOSITE_WIDGET); nl++;
+  XtSetArg(args[nl],XmNleftWidget,dslab); nl++;
+  XtSetArg(args[nl],XmNbottomAttachment,XmATTACH_FORM); nl++;
+  XtSetArg(args[nl],XmNrightAttachment,XmATTACH_FORM); nl++;
+  XtSetArg(args[nl],XmNrightOffset,4); nl++;
+  XtSetArg(args[nl],XmNbottomOffset,4); nl++;
+  dataset_list = XmCreateScrolledList(mw_form,"dataset_list",args,nl);
+  XtManageChild(dataset_list);
+
+  //--------------------------------------------------------------------------
+  //--------------------------------------------------------------------------
+  XmMainWindowSetAreas(main_w,menu_bar,NULL,NULL,NULL,mw_form);
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
