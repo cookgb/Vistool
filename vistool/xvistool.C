@@ -8,14 +8,7 @@
 #include <Xm/Protocols.h>
 #include <Xm/MainW.h>
 #include <Xm/RowColumn.h>
-#include <Xm/PushBG.h>
-#include <Xm/PushB.h>
-#include <Xm/ToggleBG.h>
 #include <Xm/ToggleB.h>
-#include <Xm/SeparatoG.h>
-#include <Xm/Separator.h>
-#include <Xm/ToggleB.h>
-#include <Xm/CascadeB.h>
 #include <Xm/Frame.h>
 #include <Xm/FileSB.h>
 #include <X11/GLw/GLwMDrawA.h>
@@ -42,7 +35,7 @@ void main(int argc, char * argv[])
 
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
-void mw_ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
+void ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
 void mw_file_open(Widget, XtPointer, XtPointer);
 void mw_file_quit(Widget, XtPointer, XtPointer);
 void mw_help(Widget, XtPointer, XtPointer);
@@ -70,15 +63,16 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
     NULL
   };
   
+  //--------------------------------------------------------------------------
   // Initialize toolkit and parse command line options.
   top_shell = XtVaAppInitialize(&app,"xvistool",NULL,0,&argc,argv,
 				fallbackResources,NULL,NULL);
 
   //--------------------------------------------------------------------------
-  //--------------------------------------------------------------------------
   // Get the X11 display
   display = XtDisplay(top_shell);
 
+  //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
   // OpenGL configuration string.
   int config[] = { GLX_DOUBLEBUFFER, GLX_RGBA,
@@ -135,6 +129,7 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
 				   NULL);
 
   //--------------------------------------------------------------------------
+  //--------------------------------------------------------------------------
   // Create the MenuBar
   XmString file = XmStringCreateLocalized("File");
   XmString help = XmStringCreateLocalized("Help");
@@ -150,17 +145,15 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
     XtVaSetValues(menu_bar,XmNmenuHelpWidget,w,NULL);
 
   //--------------------------------------------------------------------------
+  //--------------------------------------------------------------------------
   // First menu is the File menu
-
   XmString open = XmStringCreateLocalized("Open...");
-  XmString test = XmStringCreateLocalized("Test...");
   XmString quit = XmStringCreateLocalized("Quit");
-
-#define FILEMENU XmVaPUSHBUTTON,open,'N',NULL,NULL,\
-                 XmVaCASCADEBUTTON,test,'T',\
+  //
+#define FILEMENU XmVaCASCADEBUTTON,open,'n',\
                  XmVaSEPARATOR,\
 	         XmVaPUSHBUTTON,quit,'Q',NULL,NULL
-
+  //
   Widget menu_pane;
   if(overlayVisual) {
     menu_pane =
@@ -171,7 +164,7 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
 				   XmNcolormap, overlayColormap,
 				   NULL);
     XtAddCallback(XtParent(menu_pane), XmNpopupCallback,
-		  (XtCallbackProc) mw_ensurePulldownColormapInstalled, this);
+		  (XtCallbackProc) ensurePulldownColormapInstalled, this);
   } else {
     menu_pane =
       XmVaCreateSimplePulldownMenu(menu_bar,"filemenu",0,NULL,
@@ -179,31 +172,51 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
 				   NULL);
   }
 #undef FILEMENU
-  if(Widget w = XtNameToWidget(menu_pane,"button_0"))
-    XtAddCallback(w, XmNactivateCallback, mw_file_open, this);
-  if(Widget w = XtNameToWidget(menu_pane,"button_2"))
+  // Set the callback routines for each menu button.
+  if(Widget w = XtNameToWidget(menu_pane,"button_1"))
     XtAddCallback(w, XmNactivateCallback, mw_file_quit, this);
   XmStringFree(open);
-  XmStringFree(test);
   XmStringFree(quit);
 
-  XmString test1 = XmStringCreateLocalized("test1");
-  XmString test2 = XmStringCreateLocalized("test2");
-  XmString test3 = XmStringCreateLocalized("test3");
-  XmVaCreateSimplePulldownMenu(menu_pane, "pullright", 1, NULL,
-			       XmVaPUSHBUTTON, test1, '1', NULL, NULL,
-			       XmVaPUSHBUTTON, test2, '2', NULL, NULL,
-			       XmVaPUSHBUTTON, test3, '3', NULL, NULL,
-			       NULL);
-  XmStringFree(test1);
-  XmStringFree(test2);
-  XmStringFree(test3);
+  //--------------------------------------------------------------------------
+  // Open submenu
+  XmString default_format = XmStringCreateLocalized("Default Format");
+  XmString other_format = XmStringCreateLocalized("another format");
+  //
+#define OPENMENU XmVaPUSHBUTTON,default_format,'D',NULL,NULL,\
+	         XmVaPUSHBUTTON,other_format,'a',NULL,NULL
+  //
+  Widget open_popout;
+  if(overlayVisual) {
+    open_popout =
+      XmVaCreateSimplePulldownMenu(menu_pane, "options", 0, NULL,
+				   OPENMENU,
+				   XmNvisual, overlayVisual,
+				   XmNdepth, overlayDepth,
+				   XmNcolormap, overlayColormap,
+				   NULL);
+    XtAddCallback(XtParent(open_popout), XmNpopupCallback,
+		  (XtCallbackProc) ensurePulldownColormapInstalled, this);
+  } else {
+    open_popout =
+      XmVaCreateSimplePulldownMenu(menu_pane, "options", 0, NULL,
+				   OPENMENU,
+				   NULL);
+  }
+#undef OPENMENU
+  // Set the callback routines for each menu button.
+  if(Widget w = XtNameToWidget(open_popout,"button_0"))
+    XtAddCallback(w, XmNactivateCallback, mw_file_open, this);
+  if(Widget w = XtNameToWidget(open_popout,"button_1"))
+    XtAddCallback(w, XmNactivateCallback, mw_file_open, this);
+  XmStringFree(default_format);
+  XmStringFree(other_format);
 
   //--------------------------------------------------------------------------
   // Last menu is the Help menu
-
+  //
 #define HELPMENU XmVaPUSHBUTTON,help,'H',NULL,NULL
-
+  //
   if(overlayVisual) {
     menu_pane =
       XmVaCreateSimplePulldownMenu(menu_bar,"helpmenu",1,NULL,
@@ -213,7 +226,7 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
 				   XmNcolormap, overlayColormap,
 				   NULL);
     XtAddCallback(XtParent(menu_pane), XmNpopupCallback,
-		  (XtCallbackProc) mw_ensurePulldownColormapInstalled, this);
+		  (XtCallbackProc) ensurePulldownColormapInstalled, this);
   } else {
     menu_pane =
       XmVaCreateSimplePulldownMenu(menu_bar,"helpmenu",1,NULL,
@@ -221,6 +234,7 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
 				   NULL);
   }
 #undef HELPMENU
+  // Set the callback routines for each menu button.
   if(Widget w = XtNameToWidget(menu_pane,"button_0"))
     XtAddCallback(w, XmNactivateCallback, mw_help, this);
   XmStringFree(help);
@@ -243,14 +257,6 @@ xvt_mainwin::~xvt_mainwin()
 
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
-void mapStateChanged(Widget, XtPointer, XEvent *, Boolean *);
-void dw_ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
-void dw_file_open(Widget, XtPointer, XtPointer);
-void dw_file_close(Widget, XtPointer, XtPointer);
-void dw_help(Widget, XtPointer, XtPointer);
-void activatePopup(Widget, XtPointer, XEvent *, Boolean *);
-void dw_popup_reset(Widget, XtPointer, XtPointer);
-void dw_popup_animate(Widget, XtPointer, XtPointer);
 void Button1DownUpAction(Widget, XEvent *, String *, Cardinal *);
 void Button1DownAction(Widget, XEvent *, String *, Cardinal *);
 void Button1MotionAction(Widget, XEvent *, String *, Cardinal *);
@@ -259,6 +265,15 @@ void Button2DownUpAction(Widget, XEvent *, String *, Cardinal *);
 void Button2DownAction(Widget, XEvent *, String *, Cardinal *);
 void Button2MotionAction(Widget, XEvent *, String *, Cardinal *);
 void Button2UpAction(Widget, XEvent *, String *, Cardinal *);
+void mapStateChanged(Widget, XtPointer, XEvent *, Boolean *);
+void dw_popup_animate(Widget, XtPointer, XtPointer);
+void ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
+void dw_file_open(Widget, XtPointer, XtPointer);
+void dw_file_close(Widget, XtPointer, XtPointer);
+void dw_help(Widget, XtPointer, XtPointer);
+void activatePopup(Widget, XtPointer, XEvent *, Boolean *);
+void dw_popup_reset(Widget, XtPointer, XtPointer);
+
 void dw_draw(Widget w, XtPointer data, XtPointer callData);
 void dw_resize(Widget w, XtPointer data, XtPointer callData);
 void dw_init(Widget w, XtPointer data, XtPointer callData);
@@ -300,11 +315,10 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
   // main window contains MenuBar
   main_w = XtVaCreateManagedWidget("drawwin",xmMainWindowWidgetClass,
 				   draw_shell,
-				   XmNuserData,this,
 				   NULL);
 
-  XtAddEventHandler(draw_shell, StructureNotifyMask, False,
-		    mapStateChanged, this);
+  XtAddEventHandler(draw_shell, StructureNotifyMask, False, mapStateChanged,
+		    this);
 
   //--------------------------------------------------------------------------
   // Create the MenuBar
@@ -313,7 +327,6 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
   menu_bar = XmVaCreateSimpleMenuBar(main_w,"menubar",
 				     XmVaCASCADEBUTTON, file, 'F',
 				     XmVaCASCADEBUTTON, help, 'H',
-				     XmNuserData, this,
 				     NULL);
   XmStringFree(file);
 
@@ -323,14 +336,13 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
 
   //--------------------------------------------------------------------------
   // First menu is the File menu
-
   XmString open  = XmStringCreateLocalized("Open...");
-  XmString close = XmStringCreateLocalized("close");
-
-#define FILEMENU XmVaPUSHBUTTON,open,'N',NULL,NULL,\
+  XmString close = XmStringCreateLocalized("Close");
+  //
+#define FILEMENU XmVaCASCADEBUTTON,open,\
                  XmVaSEPARATOR,\
 	         XmVaPUSHBUTTON,close,'C',NULL,NULL
-
+  //
   Widget menu_pane;
   if(xmvt.overlayVisual) {
     menu_pane =
@@ -341,7 +353,7 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
 				   XmNcolormap, xmvt.overlayColormap,
 				   NULL);
     XtAddCallback(XtParent(menu_pane), XmNpopupCallback,
-		  (XtCallbackProc) dw_ensurePulldownColormapInstalled, this);
+		  (XtCallbackProc) ensurePulldownColormapInstalled, &xmvt);
   } else {
     menu_pane =
       XmVaCreateSimplePulldownMenu(menu_bar,"filemenu",0,NULL,
@@ -349,18 +361,51 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
 				   NULL);
   }
 #undef FILEMENU
-  if(Widget w = XtNameToWidget(menu_pane,"button_0"))
-    XtAddCallback(w, XmNactivateCallback, dw_file_open, this);
+  // Set the callback routines for each menu button.
   if(Widget w = XtNameToWidget(menu_pane,"button_1"))
     XtAddCallback(w, XmNactivateCallback, dw_file_close, this);
   XmStringFree(open);
   XmStringFree(close);
 
   //--------------------------------------------------------------------------
+  // Open submenu
+  XmString default_format = XmStringCreateLocalized("Default Format");
+  XmString other_format = XmStringCreateLocalized("another format");
+  //
+#define OPENMENU XmVaPUSHBUTTON,default_format,'D',NULL,NULL,\
+	         XmVaPUSHBUTTON,other_format,'a',NULL,NULL
+  //
+  Widget open_popout;
+  if(xmvt.overlayVisual) {
+    open_popout =
+      XmVaCreateSimplePulldownMenu(menu_pane, "options", 0, NULL,
+				   OPENMENU,
+				   XmNvisual, xmvt.overlayVisual,
+				   XmNdepth, xmvt.overlayDepth,
+				   XmNcolormap, xmvt.overlayColormap,
+				   NULL);
+    XtAddCallback(XtParent(open_popout), XmNpopupCallback,
+		  (XtCallbackProc) ensurePulldownColormapInstalled, &xmvt);
+  } else {
+    open_popout =
+      XmVaCreateSimplePulldownMenu(menu_pane, "options", 0, NULL,
+				   OPENMENU,
+				   NULL);
+  }
+#undef OPENMENU
+  // Set the callback routines for each menu button.
+  if(Widget w = XtNameToWidget(open_popout,"button_0"))
+    XtAddCallback(w, XmNactivateCallback, dw_file_open, this);
+  if(Widget w = XtNameToWidget(open_popout,"button_1"))
+    XtAddCallback(w, XmNactivateCallback, dw_file_open, this);
+  XmStringFree(default_format);
+  XmStringFree(other_format);
+
+  //--------------------------------------------------------------------------
   // Last menu is the Help menu
-
+  //
 #define HELPMENU XmVaPUSHBUTTON,help,'H',NULL,NULL
-
+  //
   if(xmvt.overlayVisual) {
     menu_pane =
       XmVaCreateSimplePulldownMenu(menu_bar,"helpmenu",1,NULL,
@@ -370,7 +415,7 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
 				   XmNcolormap,  xmvt.overlayColormap,
 				   NULL);
     XtAddCallback(XtParent(menu_pane), XmNpopupCallback,
-		  (XtCallbackProc) dw_ensurePulldownColormapInstalled, this);
+		  (XtCallbackProc) ensurePulldownColormapInstalled, &xmvt);
   } else {
     menu_pane =
       XmVaCreateSimplePulldownMenu(menu_bar,"helpmenu",1,NULL,
@@ -378,6 +423,7 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
 				   NULL);
   }
 #undef HELPMENU
+  // Set the callback routines for each menu button.
   if(Widget w = XtNameToWidget(menu_pane,"button_0"))
     XtAddCallback(w, XmNactivateCallback, dw_help, this);
   XmStringFree(help);
@@ -389,30 +435,31 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
   // Frame area to contain OpenGL drawing area
   frame = XtVaCreateManagedWidget("frame",xmFrameWidgetClass,
 				  main_w,
-				  XmNuserData,this,
+				  XmNuserData, this,
 				  NULL);
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
   // Create Popup menu for frame area of drawing window
-
   XmString reset = XmStringCreateLocalized("Reset");
+  XmString apply = XmStringCreateLocalized("Apply");
   XmString anim = XmStringCreateLocalized("Animate");
-
+  //
 #define POPUPMENU XmVaPUSHBUTTON,reset,NULL,NULL,NULL,\
+                  XmVaCASCADEBUTTON,apply,\
                   XmVaSEPARATOR,\
 		  XmVaCHECKBUTTON,anim,NULL,NULL,NULL
-
+  //
   if(xmvt.overlayVisual) {
     popup =
       XmVaCreateSimplePopupMenu(frame,"popupmenu",NULL,
 				POPUPMENU,
-				XmNvisual,  xmvt.overlayVisual,
-				XmNdepth,  xmvt.overlayDepth,
-				XmNcolormap,  xmvt.overlayColormap,
+				XmNvisual, xmvt.overlayVisual,
+				XmNdepth, xmvt.overlayDepth,
+				XmNcolormap, xmvt.overlayColormap,
 				NULL);
     XtAddCallback(XtParent(popup), XmNpopupCallback,
-		  (XtCallbackProc) dw_ensurePulldownColormapInstalled, this);
+		  (XtCallbackProc) ensurePulldownColormapInstalled, &xmvt);
   } else {
     popup =
       XmVaCreateSimplePopupMenu(frame,"popupmenu",NULL,
@@ -420,15 +467,52 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
 				NULL);
   }
 #undef POPUPMENU
-  WidgetList popupWidgets;
-  XtVaGetValues(popup, XmNchildren, &popupWidgets, NULL);
-  XtAddCallback(popupWidgets[0], XmNactivateCallback,
-		dw_popup_reset, this);
-  XtAddCallback(popupWidgets[2], XmNvalueChangedCallback,
-		dw_popup_animate, this);
-  XmToggleButtonSetState(popupWidgets[2], animate, False);
+  // Set the callback routines for each menu button.
+  if(Widget w = XtNameToWidget(popup,"button_0"))
+    XtAddCallback(w, XmNactivateCallback, dw_popup_reset, this);
+  if(Widget w = XtNameToWidget(popup,"button_2")) {
+    XtAddCallback(w, XmNvalueChangedCallback, dw_popup_animate, this);
+    XmToggleButtonSetState(w, animate, False);
+  }
+  XmStringFree(reset);
+  XmStringFree(apply);
+  XmStringFree(anim);
 
   XtAddEventHandler(frame, ButtonPressMask, False, activatePopup, popup);
+
+  //--------------------------------------------------------------------------
+  // Apply submenu
+  XmString f_log = XmStringCreateLocalized("log");
+  XmString f_ln = XmStringCreateLocalized("ln");
+  //
+#define APPLYMENU XmVaPUSHBUTTON,f_log,NULL,NULL,NULL,\
+	          XmVaPUSHBUTTON,f_ln,NULL,NULL,NULL
+  //
+  Widget apply_popout;
+  if(xmvt.overlayVisual) {
+    apply_popout =
+      XmVaCreateSimplePulldownMenu(popup, "apply", 1, NULL,
+				   APPLYMENU,
+				   XmNvisual, xmvt.overlayVisual,
+				   XmNdepth, xmvt.overlayDepth,
+				   XmNcolormap, xmvt.overlayColormap,
+				   NULL);
+    XtAddCallback(XtParent(open_popout), XmNpopupCallback,
+		  (XtCallbackProc) ensurePulldownColormapInstalled, &xmvt);
+  } else {
+    apply_popout =
+      XmVaCreateSimplePulldownMenu(popup, "apply", 1, NULL,
+				   APPLYMENU,
+				   NULL);
+  }
+#undef APPLYMENU
+  // Set the callback routines for each menu button.
+//    if(Widget w = XtNameToWidget(apply_popout,"button_0"))
+//      XtAddCallback(w, XmNactivateCallback, NULL, this);
+//    if(Widget w = XtNameToWidget(apply_popout,"button_1"))
+//      XtAddCallback(w, XmNactivateCallback, NULL, this);
+  XmStringFree(f_log);
+  XmStringFree(f_ln);
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
@@ -442,9 +526,9 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
-  XtAddCallback(glx_area, XmNexposeCallback, dw_draw, NULL);
-  XtAddCallback(glx_area, XmNresizeCallback, dw_resize, NULL);
-  XtAddCallback(glx_area, GLwNginitCallback, dw_init, NULL);
+  XtAddCallback(glx_area, XmNexposeCallback, dw_draw, this);
+  XtAddCallback(glx_area, XmNresizeCallback, dw_resize, this);
+  XtAddCallback(glx_area, GLwNginitCallback, dw_init, this);
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
@@ -523,14 +607,14 @@ void xvt_drawwin::init(int width, int height)
 void xvt_drawwin::draw()
 {
   if(!visible) return;
-  glXMakeCurrent(xmvt.display,glx_win,cx);
+  glXMakeCurrent(xmvt.Xdisplay(),glx_win,cx);
   vt_drawwin::draw();
-  glXSwapBuffers(xmvt.display,glx_win);
+  glXSwapBuffers(xmvt.Xdisplay(),glx_win);
 }
 
 void xvt_drawwin::resize(int new_width, int new_height)
 {
-  glXMakeCurrent(xmvt.display,glx_win,cx);
+  glXMakeCurrent(xmvt.Xdisplay(),glx_win,cx);
   vt_drawwin::resize(new_width, new_height);
 }
 
@@ -542,7 +626,7 @@ void xvt_drawwin::postRedisplay()
 {
   redisplay = true;
   if(!xmvt.redisplayPending) {
-    xmvt.redisplayID = XtAppAddWorkProc(xmvt.app,
+    xmvt.redisplayID = XtAppAddWorkProc(xmvt.Xapp(),
 					(XtWorkProc) handleRedisplay, &xmvt);
     xmvt.redisplayPending = true;
   }

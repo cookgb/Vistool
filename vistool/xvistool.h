@@ -19,12 +19,9 @@ class xvt_drawwin;
 class xvt_mainwin : public vt_mainwin {
 private:
   friend xvt_drawwin;
-  friend void mapStateChanged(Widget, XtPointer, XEvent *, Boolean *);
   friend void dw_ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
-  friend void mw_ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
   friend void mw_file_open(Widget, XtPointer, XtPointer);
-  friend void mw_openfs_cb(Widget, XtPointer, XtPointer);
-  friend void dw_InstallPDColormap(Widget, XtPointer, XtPointer);
+  friend void mapStateChanged(Widget, XtPointer, XEvent *, Boolean *);
   friend void dw_popup_animate(Widget, XtPointer, XtPointer);
   friend void handleAnimate(xvt_mainwin *, XtIntervalId *);
   // X/Motif data
@@ -49,15 +46,18 @@ public:
   ~xvt_mainwin();
   void Loop() { XtAppMainLoop(app);}
   void redisplay();
+public: // utility routines
+  XtAppContext Xapp() {return app;}
+  Display * Xdisplay() {return display;}
+  Colormap XoverlayCM() {return overlayColormap;}
+  Widget OpenDialog() {return Open_Dialog;}
 };
 
 class xvt_drawwin : public vt_drawwin {
 private:
   friend xvt_mainwin;
   friend void mapStateChanged(Widget, XtPointer, XEvent *, Boolean *);
-  friend void dw_ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
   friend void dw_popup_animate(Widget, XtPointer, XtPointer);
-  friend void dw_init(Widget, XtPointer, XtPointer);
   xvt_mainwin & xmvt;
   Widget draw_shell;
   Widget main_w;
@@ -81,6 +81,9 @@ public:
   virtual void draw();
   virtual void resize(int, int);
   void postRedisplay();
+public:
+  Dimension wWidth() {return viewWidth;}
+  Dimension wHeight() {return viewHeight;}
 };
 
 #endif // XVISTOOL_H
