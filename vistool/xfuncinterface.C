@@ -39,3 +39,21 @@ void apply_ln(Widget w, XtPointer client_data, XtPointer call_data)
   vt_drawwin * ndw = new xvt_drawwin(*dw);
   ndw->Apply(Ln);
 }
+
+void norm_Linf(Widget w, XtPointer client_data, XtPointer call_data)
+{
+  xvt_drawwin * dw = (xvt_drawwin *) client_data;
+  dw->Norm(Linfinity);
+}
+
+void norm_L1(Widget w, XtPointer client_data, XtPointer call_data)
+{
+  xvt_drawwin * dw = (xvt_drawwin *) client_data;
+  dw->Norm(L1);
+}
+
+void norm_L2(Widget w, XtPointer client_data, XtPointer call_data)
+{
+  xvt_drawwin * dw = (xvt_drawwin *) client_data;
+  dw->Norm(L2);
+}

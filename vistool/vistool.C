@@ -831,6 +831,44 @@ void vt_data_1d::Apply(TransformationFunction T)
   }
 }
 
+double vt_data_1d::Norm(NormType T)
+{
+  if(size == 1) return data[1];
+  
+  int i;
+  double xl,dat, norm = 0.0;
+  switch(T) {
+  case Linfinity :
+    for(i=1; i<2*size; i+=2) {
+      dat = fabs(data[i]);
+      if(dat > norm) norm = dat;
+    }
+    break;
+  case L1 :
+    xl = data[0];
+    for(i=1; i<2*size-1; i+=2) {
+      norm += 0.5*fabs(data[i])*(data[i+1] - xl);
+      xl = data[i-1];
+    }
+    norm += 0.5*fabs(data[2*size-1])*(data[2*size-2] - xl);
+    break;
+  case L2 :
+    xl = data[0];
+    for(i=1; i<2*size-1; i+=2) {
+      dat = data[i];
+      norm += 0.5*dat*dat*(data[i+1] - xl);
+      xl = data[i-1];
+    }
+    dat = data[2*size-1];
+    norm += 0.5*dat*dat*(data[2*size-2] - xl);
+    norm = sqrt(norm);
+    break;
+  default :
+    cerr << "Unknown TransformationFunction in vt_data_1d::Apply" << endl;
+  }
+  return norm;
+}
+
 vt_data_series::vt_data_series(const char * n, const char * o)
   : name(0), origin(0), done(false), current_l(0), current(0), selected(false)
 {
@@ -978,4 +1016,34 @@ void vt_data_series::FunctionName(const char * func)
   n << func << "(" << name << ")" << ends;
   delete [] name;
   name = buf;
+}
+
+vt_data_series * vt_data_series::Norm(NormType T)
+{
+  vt_data_series * ds = new vt_data_series(Name(),Origin());
+  int i;
+  int ext = {data.size()};
+  double * x = new double[ext];
+  double * norm = new double[ext];
+  list<vt_data *>::iterator p;
+  for(p = data.begin(), i=0; p != data.end(); p++, i++) {
+    x[i] = (*p)->Label();
+    norm[i] = (*p)->Norm(T);
+  }
+  vt_data_1d * vtd = new vt_data_1d(0.0,ext,x,norm);
+  ds->Append(vtd);
+  switch(T) {
+  case Abs :
+    ds->FunctionName("Linf-norm");
+    break;
+  case Log :
+    ds->FunctionName("L1-norm");
+    break;
+  case Ln :
+    ds->FunctionName("L2-norm");
+    break;
+  default :
+    cerr << "Unknown Norm in vt_data_series::Norm" << endl;
+  }
+  return ds;
 }

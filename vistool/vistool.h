@@ -25,6 +25,12 @@ enum TransformationFunction {
   Ln
 };
 
+enum NormType {
+  Linfinity,
+  L1,
+  L2
+};
+
 class vt_drawwin;
 class vt_data_series;
 class vt_data_1d;
@@ -151,6 +157,7 @@ public:
   const double *Data() const {return data;};
   int Size() const {return size;};
   virtual void Apply(TransformationFunction T) = 0;
+  virtual double Norm(NormType T) = 0;
 };
 
 class vt_data_1d : public vt_data {
@@ -161,6 +168,7 @@ public:
   void draw();
   vt_data * Copy();
   void Apply(TransformationFunction T);
+  double Norm(NormType T);
 };
 
 class vt_data_series {
@@ -199,6 +207,7 @@ public:
   void Reset(bool forward_iteration);
   void Apply(TransformationFunction T);
   void FunctionName(const char * func);
+  vt_data_series * Norm(NormType T);
 };
 
 #endif // VISTOOL_H

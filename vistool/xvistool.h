@@ -121,6 +121,7 @@ public:
   void DrawRubberBand();
   void SetAnimateToggle(bool on);
   void SetFullZoomToggle(bool on);
+  void Norm(NormType T);
 public:
   Dimension wWidth() {return viewWidth;}
   Dimension wHeight() {return viewHeight;}

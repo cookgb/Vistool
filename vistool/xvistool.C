@@ -412,6 +412,10 @@ void apply_abs(Widget, XtPointer, XtPointer);
 void apply_log(Widget, XtPointer, XtPointer);
 void apply_ln(Widget, XtPointer, XtPointer);
 //----------------------------------------------------------------------------
+void norm_Linf(Widget, XtPointer, XtPointer);
+void norm_L1(Widget, XtPointer, XtPointer);
+void norm_L2(Widget, XtPointer, XtPointer);
+//----------------------------------------------------------------------------
 // Code to create X window
 void xvt_drawwin::CreateWindow()
 {
@@ -547,8 +551,17 @@ void xvt_drawwin::CreateWindow()
       apply_ln, this, NULL},
     NULL,
   };
+  MenuItem Norms_menu[] = {
+    { "Linf", &xmPushButtonGadgetClass, '\0', NULL, NULL,0,
+      norm_Linf, this, NULL},
+    { "L1", &xmPushButtonGadgetClass, '\0', NULL, NULL,0,
+      norm_L1, this, NULL},
+    { "L2", &xmPushButtonGadgetClass, '\0', NULL, NULL,0,
+      norm_L2, this, NULL},
+    NULL,
+  };
   MenuItem Animate_menu[] = { // If you change this, be sure to check
-                              // dw_animate
+                              // SetAnimateToggle
     { "Animate", &xmToggleButtonGadgetClass, '\0', "Ctrl<Key>A", "Ctrl+A",
       animate, dw_animate, this, NULL},
     { "_sep3", &xmSeparatorGadgetClass, '\0', NULL, NULL, 0, NULL, NULL, NULL},
@@ -564,12 +577,15 @@ void xvt_drawwin::CreateWindow()
     NULL,
   };
   MenuItem Popup_menu[] = { // If you change this, be sure to check
-                            // dw_animate
+                            // SetAnimateToggle and SetFullZoomToggle
     { "Zoom", &xmCascadeButtonGadgetClass, '\0', NULL, NULL, 0,
       NULL, this, Zoom_menu},
     { "_sep3", &xmSeparatorGadgetClass, '\0', NULL, NULL, 0, NULL, NULL, NULL},
     { "Apply", &xmCascadeButtonGadgetClass, '\0', NULL, NULL, 0,
       NULL, this, Apply_menu},
+    { "_sep3", &xmSeparatorGadgetClass, '\0', NULL, NULL, 0, NULL, NULL, NULL},
+    { "Norms", &xmCascadeButtonGadgetClass, '\0', NULL, NULL, 0,
+      NULL, this, Norms_menu},
     { "_sep3", &xmSeparatorGadgetClass, '\0', NULL, NULL, 0, NULL, NULL, NULL},
     { "Animate", &xmCascadeButtonGadgetClass, '\0', NULL, NULL, 0,
       NULL, this, Animate_menu},
@@ -757,7 +773,7 @@ void xvt_drawwin::SetAnimateToggle(bool on)
   WidgetList popup_elem, anim_elem;
   Widget anim_menu;
   XtVaGetValues(popup, XmNchildren, &popup_elem, NULL);
-  XtVaGetValues(popup_elem[4], XmNsubMenuId, &anim_menu, NULL);
+  XtVaGetValues(popup_elem[6], XmNsubMenuId, &anim_menu, NULL);
   XtVaGetValues(anim_menu, XmNchildren, &anim_elem, NULL);
   XmToggleButtonSetState(anim_elem[0], on, False);
 
@@ -773,4 +789,25 @@ void xvt_drawwin::SetFullZoomToggle(bool on)
   XmToggleButtonSetState(zoom_elem[0], on, False);
   fullframe = on;
 
+}
+
+void xvt_drawwin::Norm(NormType T)
+{
+  // Save the directory so that the new Open will start searching here.
+  XmString dir, pattern;
+  if(!OpenDialog()) {
+    dir = XmStringCopy(search_dir);
+    pattern = XmStringCopy(search_pattern);
+  } else {
+    XtVaGetValues(OpenDialog(),XmNdirectory,&dir,XmNpattern,&pattern,NULL);
+  }
+
+  xvt_drawwin * dw = new xvt_drawwin(name , xmvt, dir, pattern);
+
+  XmStringFree(dir);
+  XmStringFree(pattern);
+  
+  list<vt_data_series *>::iterator p;
+  for(p = data_list.begin(); p != data_list.end(); p++)
+    dw->Add((*p)->Norm(T));
 }
