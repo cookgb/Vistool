@@ -518,7 +518,7 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
 				   XmNdepth, xmvt.overlayDepth,
 				   XmNcolormap, xmvt.overlayColormap,
 				   NULL);
-    XtAddCallback(XtParent(open_popout), XmNpopupCallback,
+    XtAddCallback(XtParent(apply_popout), XmNpopupCallback,
 		  (XtCallbackProc) ensurePulldownColormapInstalled, &xmvt);
   } else {
     apply_popout =
@@ -546,17 +546,17 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
   Widget animate_popout;
   if(xmvt.overlayVisual) {
     animate_popout =
-      XmVaCreateSimplePulldownMenu(popup, "animate", 2, NULL,
+      XmVaCreateSimplePulldownMenu(popup, "animate", 3, NULL,
 				   ANIMATEMENU,
 				   XmNvisual, xmvt.overlayVisual,
 				   XmNdepth, xmvt.overlayDepth,
 				   XmNcolormap, xmvt.overlayColormap,
 				   NULL);
-    XtAddCallback(XtParent(open_popout), XmNpopupCallback,
+    XtAddCallback(XtParent(animate_popout), XmNpopupCallback,
 		  (XtCallbackProc) ensurePulldownColormapInstalled, &xmvt);
   } else {
     animate_popout =
-      XmVaCreateSimplePulldownMenu(popup, "apply", 2, NULL,
+      XmVaCreateSimplePulldownMenu(popup, "animate", 3, NULL,
 				   ANIMATEMENU,
 				   NULL);
   }
