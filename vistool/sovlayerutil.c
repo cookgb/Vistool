@@ -52,7 +52,7 @@ sovGetVisualInfo(Display *display, long lvinfo_mask,
             0L, (long) 10000, False, overlayVisualsAtom,
 	    &actualType, &actualFormat,
             &sizeData, &bytesLeft,
-	    (char **) &overlayInfoPerScreen[i]);
+	    (unsigned char **) &overlayInfoPerScreen[i]);
           if (status != Success ||
 	    actualType != overlayVisualsAtom ||
             actualFormat != 32 || sizeData < 4)
@@ -135,8 +135,13 @@ sovGetVisualInfo(Display *display, long lvinfo_mask,
 }
 
 Status
-sovMatchVisualInfo(Display *display, int screen,
-  int depth, int class, int layer, sovVisualInfo *lvinfo_return)
+sovMatchVisualInfo(Display *display, int screen, int depth,
+#if defined(__cplusplus) || defined(c_plusplus)
+		   int c_class,
+#else
+		   int class,
+#endif
+		   int layer, sovVisualInfo *lvinfo_return)
 {
   sovVisualInfo *lvinfo;
   sovVisualInfo lvinfoTemplate;
@@ -144,7 +149,11 @@ sovMatchVisualInfo(Display *display, int screen,
 
   lvinfoTemplate.vinfo.screen = screen;
   lvinfoTemplate.vinfo.depth = depth;
+#if defined(__cplusplus) || defined(c_plusplus)
+  lvinfoTemplate.vinfo.c_class = c_class;
+#else
   lvinfoTemplate.vinfo.class = class;
+#endif
   lvinfoTemplate.layer = layer;
   lvinfo = sovGetVisualInfo(display,
     VisualScreenMask|VisualDepthMask|VisualClassMask|VisualLayerMask,

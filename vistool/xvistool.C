@@ -6,7 +6,9 @@
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
 #include <Xm/MainW.h>
+#include <Xm/Frame.h>
 #include <Xm/FileSB.h>
+#include <X11/GLw/GLwMDrawA.h>
 
 #include <iostream.h>
 #include <unistd.h>
@@ -15,8 +17,13 @@
 
 #include "xvistool.h"
 
+#define DWFILEMENU  XmVaPUSHBUTTON,open,'N',NULL,NULL,\
+		    XmVaSEPARATOR,\
+		    XmVaPUSHBUTTON,close,'C',NULL,NULL
+
+#define DWHELPMENU  XmVaPUSHBUTTON,help,'H',NULL,NULL
+
 xvt_mainwin * xvt;
-map<Widget,xvt_drawwin *> widgetmap;
 
 void main(int argc, char * argv[])
 {
@@ -28,16 +35,73 @@ void mw_file_cb(Widget, XtPointer, XtPointer);
 void mw_help_cb(Widget, XtPointer, XtPointer);
 
 xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
-  : vt_mainwin(), Open_Dialog(0)
+  : vt_mainwin(), Open_Dialog(0), vi(0), overlayDepth(0),
+    doubleBuffer(true)
 {
   XtSetLanguageProc(NULL,NULL,NULL);
+
+  String fallbackResources[] = {
+    "*sgiMode: true",     /* Try to enable Indigo Magic look & feel */
+    "*useSchemes: all",   /* and SGI schemes. */
+    "xvistool.title: Visualization Tool",
+    "*main.width: 350",
+    "*main.height: 75",
+    "*glxarea*width: 300",
+    "*glxarea*height: 300",
+    NULL
+  };
+
+  int config[] = { GLX_DOUBLEBUFFER, GLX_RGBA,
+		   GLX_RED_SIZE, 1, GLX_GREEN_SIZE, 1, GLX_BLUE_SIZE, 1,
+		   None };
+  int * dblBuf = config  ;
+  int *snglBuf = config+1;
   
   // Initialize toolkit and parse command line options.
-  top_shell = XtVaAppInitialize(&app,"xvistool",NULL,0,&argc,argv,NULL,NULL);
+  top_shell = XtVaAppInitialize(&app,"xvistool",NULL,0,&argc,argv,
+				fallbackResources,NULL,NULL);
+
+  display = XtDisplay(top_shell);
+
+  if(!vi) {
+    // Find an OpenGL-capable RGB visual
+    vi = glXChooseVisual(display,DefaultScreen(display),dblBuf);
+    if(!vi) {
+      vi = glXChooseVisual(display,DefaultScreen(display),snglBuf);
+      if(!vi) XtAppError(app,"no RGB visual");
+      doubleBuffer = false;
+    }
+  }
 
   // main window contains MenuBar
   main_w = XtVaCreateManagedWidget("main",xmMainWindowWidgetClass,
 				    top_shell, NULL);
+
+  // Detect overlay support
+  int entries = 2; // need more than 2 colormap entries for reasonable menus.
+  for(int layer = 1; layer <=3; layer++) {
+    sovVisualInfo templ;
+    int nVisuals=0;
+    templ.layer = layer; templ.vinfo.screen = DefaultScreen(display);
+    sovVisualInfo * overlayVisuals =
+      sovGetVisualInfo(display,
+		       VisualScreenMask | VisualLayerMask,
+		       &templ, &nVisuals);
+    if(overlayVisuals) {
+      for(int i = 0; i < nVisuals; i++) {
+	if(overlayVisuals[i].vinfo.visual->map_entries > entries) {
+	  overlayVisual = overlayVisuals[i].vinfo.visual;
+	  overlayDepth  = overlayVisuals[i].vinfo.depth;
+	  entries = overlayVisual->map_entries;
+	}
+      }
+      XFree(overlayVisuals);
+    }
+  }
+  if(overlayVisual) 
+    overlayColormap = XCreateColormap(display,DefaultRootWindow(display),
+				      overlayVisual, AllocNone);
+						      
 
   // Create a simple MenuBar that contains two menus
   XmString file = XmStringCreateLocalized("File");
@@ -70,8 +134,6 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
 			       XmVaPUSHBUTTON,help,'H',NULL,NULL,
 			       NULL);
   XmStringFree(help);
-
-  display = XtDisplay(top_shell);
 
   XtManageChild(menu_bar);
 
@@ -143,17 +205,33 @@ void mw_openfs_cb(Widget w, XtPointer client_data, XtPointer call_data)
 
 void dw_file_cb(Widget, XtPointer, XtPointer);
 void dw_help_cb(Widget, XtPointer, XtPointer);
+void dw_InstallPDColormap(Widget, XtPointer, XtPointer);
 
 xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
   : vt_drawwin(filename,mw), xvt(mw)
 {
-  draw_shell = XtVaAppCreateShell(filename,"drawshell",
+  draw_shell = XtVaAppCreateShell("xvistool","drawshell",
 				  topLevelShellWidgetClass,
-				  xvt.display,NULL, NULL);
+				  xvt.display,
+				  XmNtitle,filename,
+				  NULL);
 
   // main window contains MenuBar
   main_w = XtVaCreateManagedWidget("drawwin",xmMainWindowWidgetClass,
-				    draw_shell, NULL);
+				   draw_shell,
+				   XmNuserData,this,
+				   NULL);
+
+  frame = XtVaCreateManagedWidget("frame",xmFrameWidgetClass,
+				  main_w,
+				  XmNuserData,this,
+				  NULL);
+
+  glx_area = XtVaCreateManagedWidget("glxarea",glwMDrawingAreaWidgetClass,
+				     frame,
+				     GLwNvisualInfo,xvt.vi,
+				     XmNuserData,this,
+				     NULL);
 
   // Create a simple MenuBar that contains two menus
   XmString file = XmStringCreateLocalized("File");
@@ -161,6 +239,7 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
   menu_bar = XmVaCreateSimpleMenuBar(main_w,"menubar",
 				     XmVaCASCADEBUTTON, file, 'F',
 				     XmVaCASCADEBUTTON, help, 'H',
+				     XmNuserData,this,
 				     NULL);
   XmStringFree(file);
 
@@ -168,31 +247,59 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
   if(Widget w = XtNameToWidget(menu_bar,"button_1"))
     XtVaSetValues(menu_bar,XmNmenuHelpWidget,w,NULL);
 
+  if(xvt.overlayVisual) {
+  }
+
   // First menu is the File menu -- callback is file_cb()
   XmString open = XmStringCreateLocalized("Open...");
   XmString close = XmStringCreateLocalized("Close");
-  XmVaCreateSimplePulldownMenu(menu_bar,"filemenu",0,
-			       (XtCallbackProc) dw_file_cb,
-			       XmVaPUSHBUTTON,open,'N',NULL,NULL,
-			       XmVaSEPARATOR,
-			       XmVaPUSHBUTTON,close,'C',NULL,NULL,
-			       NULL);
+  if(xvt.overlayVisual) {
+    Widget menupane =
+      XmVaCreateSimplePulldownMenu(menu_bar,"filemenu",0,
+				   (XtCallbackProc) dw_file_cb,
+				   DWFILEMENU,
+				   XmNvisual, xvt.overlayVisual,
+				   XmNdepth, xvt.overlayDepth,
+				   XmNcolormap, xvt.overlayColormap,
+				   XmNuserData,this,
+				   NULL);
+    XtAddCallback(XtParent(menupane),XmNpopupCallback,
+		  (XtCallbackProc) dw_InstallPDColormap,NULL);
+  } else {
+    XmVaCreateSimplePulldownMenu(menu_bar,"filemenu",0,
+				 (XtCallbackProc) dw_file_cb,
+				 DWFILEMENU,
+				 XmNuserData,this,
+				 NULL);
+  }
   XmStringFree(open);
   XmStringFree(close);
 
   // Second menu is the Help menu -- callback is help_cb()
-  XmVaCreateSimplePulldownMenu(menu_bar,"helpmenu",1,
-			       (XtCallbackProc) dw_help_cb,
-			       XmVaPUSHBUTTON,help,'H',NULL,NULL,
-			       NULL);
+  if(xvt.overlayVisual) {
+    Widget menupane =
+      XmVaCreateSimplePulldownMenu(menu_bar,"helpmenu",1,
+				   (XtCallbackProc) dw_help_cb,
+				   DWHELPMENU,
+				   XmNvisual, xvt.overlayVisual,
+				   XmNdepth, xvt.overlayDepth,
+				   XmNcolormap, xvt.overlayColormap,
+				   XmNuserData,this,
+				   NULL);
+  } else {
+    XmVaCreateSimplePulldownMenu(menu_bar,"helpmenu",1,
+				 (XtCallbackProc) dw_help_cb,
+				 DWHELPMENU,
+				 XmNuserData,this,
+				 NULL);
+  }
   XmStringFree(help);
 
   XtManageChild(menu_bar);
 
-  XtRealizeWidget(draw_shell);
+  XmMainWindowSetAreas(main_w,menu_bar,NULL,NULL,NULL,frame);
 
-  // register this Widget/xvt_drawwin pair in the widgetmap
-  widgetmap[draw_shell] = this;
+  XtRealizeWidget(draw_shell);
 }
 
 
@@ -206,11 +313,10 @@ xvt_drawwin::~xvt_drawwin()
 
 void dw_file_cb(Widget w, XtPointer client_data, XtPointer call_data)
 {
+  // Get the xvt_drawwin.
+  xvt_drawwin * dw;
+  XtVaGetValues(XtParent(w),XmNuserData,&dw,NULL);
 
-  // Get top level shell widget associated with event and look up
-  // the xvt_drawwin.
-  Widget shell = XtParent(XtParent(XtParent(XtParent(XtParent(w)))));
-  xvt_drawwin * dw = widgetmap[shell]; 
   switch((int) client_data)
     {
     case(0) :
@@ -228,12 +334,9 @@ void dw_file_cb(Widget w, XtPointer client_data, XtPointer call_data)
       break;
     case(1) :
       if(dw) {
-	if(!widgetmap.erase(shell)) 
-	  cerr << "Couldn't remove window from lookup table in drawwin close."
-	       << endl;
 	dw->close();
       } else {
-	cerr << "No widgetmap match in drawwin close." << endl;
+	cerr << "Widge has no xvt_drawwin resource in drawwin close." << endl;
       }
       break;
     default :
@@ -253,6 +356,13 @@ void dw_help_cb(Widget w, XtPointer client_data, XtPointer call_data)
       cerr << "Unsupported menu selection in File menu" << endl;
     }
 }
+
+void dw_InstallPDColormap(Widget w, XtPointer clientData, XtPointer callData)
+{
+  // Ensure that overlay pulldown menu's colormap is installed.
+  XInstallColormap(xvt->display, xvt->overlayColormap);
+}
+
 
 
 //  void dw_openfs_cb(Widget w, XtPointer client_data, XtPointer call_data)

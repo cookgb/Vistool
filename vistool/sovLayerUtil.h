@@ -45,6 +45,10 @@ typedef struct _sovOverlayInfo {
    long  layer;
 } sovOverlayInfo;
 
+#if defined(__cplusplus) || defined(c_plusplus)
+extern "C" {
+#endif
+
 extern sovVisualInfo *sovGetVisualInfo(
   Display *display,
   long lvinfo_mask,
@@ -54,8 +58,17 @@ extern Status sovMatchVisualInfo(
   Display *display,
   int screen,
   int depth,
+#if defined(__cplusplus) || defined(c_plusplus)
+  int c_class,
+#else
   int class,
+#endif
   int layer,
   sovVisualInfo *lvinfo_return);
+
+#if defined(__cplusplus) || defined(c_plusplus)
+}
+#endif
+
 
 #endif /* __sovLayerUtil_h__ */

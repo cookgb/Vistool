@@ -9,8 +9,10 @@
 #define XVISTOOL_H
 
 #include <Xm/MainW.h>
+#include <GL/glx.h>
 
 #include "vistool.h"
+#include "sovLayerUtil.h"
 
 class xvt_drawwin;
 
@@ -18,13 +20,22 @@ class xvt_mainwin : public vt_mainwin {
 private:
   friend void mw_file_cb(Widget, XtPointer, XtPointer);
   friend void mw_openfs_cb(Widget, XtPointer, XtPointer);
+  friend void dw_InstallPDColormap(Widget, XtPointer, XtPointer);
   friend class xvt_drawwin;
+  // X/Motif data
   Display * display;
   XtAppContext app;
   Widget top_shell;
   Widget main_w;
   Widget menu_bar;
   Widget Open_Dialog;
+  XVisualInfo *vi;
+  Visual * overlayVisual;
+  int      overlayDepth;
+  Colormap overlayColormap;
+  bool doubleBuffer;
+  // OpenGL data
+  GLXContext cx;
 public:
   xvt_mainwin(int & argc, char ** argv);
   ~xvt_mainwin();
@@ -36,6 +47,8 @@ private:
   xvt_mainwin & xvt;
   Widget draw_shell;
   Widget main_w;
+  Widget frame;
+  Widget glx_area;
   Widget menu_bar;
   Widget Open_Dialog;
 public:
