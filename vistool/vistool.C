@@ -73,7 +73,15 @@ vt_drawwin::vt_drawwin(const char * n, vt_mainwin & mw)
 
 vt_drawwin::~vt_drawwin()
 {
+  // Delete data list
+  list<vt_data_series *>::iterator p;
+  while((p = data_list.begin()) != data_list.end()) {
+    data_list.erase(p);
+    delete *p;
+  }
+  // Delete name of window
   delete [] name;
+  // Delete Abscissa data
   if(Abscissa_Set) {
     delete [] Abscissa_Filename;
     delete Abscissa_Data;
@@ -467,8 +475,9 @@ vt_data_series::~vt_data_series()
   I_vd p;
   while((p = data.begin()) != data.end()) {
     data.erase(p);
-    delete [] *p;
+    delete *p;
   }
+  if(name) delete[] name;
 }
 
 void vt_data_series::Append(vt_data * d)
