@@ -161,7 +161,8 @@ bool vt_drawwin::ImportFile_1DDump(char * filename)
     
     // Data
     int datasize = 1;
-    for(int i=0;i<dim;i++) datasize *= shape[i];
+    int i;
+    for(i=0;i<dim;i++) datasize *= shape[i];
     double *data = new double[datasize];
     file.read((char *) data,datasize*sizeof(double));
     if(!file) {
