@@ -1,7 +1,7 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.4 1999-12-23 18:20:17 cookgb Exp $
+# $Id: Makefile,v 1.5 1999-12-27 22:42:32 cookgb Exp $
 #
 ###############################################################################
 # linux
@@ -26,4 +26,7 @@ X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11
 
 xvistool: $(FILES)
 	$(CXX) -o xvistool $(FILES) $(X11LIBS)
+
+xvistool_sgi: $(FILES)
+	$(CXX) -o xvistool $(FILES) -lSgm $(X11LIBS)
 

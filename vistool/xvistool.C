@@ -27,6 +27,12 @@
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
+// X11 Globals
+
+
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
 // Create main window and start event loop;
 void main(int argc, char * argv[])
 {
@@ -44,7 +50,7 @@ void mw_help(Widget, XtPointer, XtPointer);
 // Creator for X11 version of main window.
 xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
   : vt_mainwin(), Open_Dialog(0), vi(0), overlayDepth(0),
-    doubleBuffer(true)
+    doubleBuffer(true), animateCount(0), animateID(0)
 {
 
   //--------------------------------------------------------------------------
@@ -309,14 +315,14 @@ void dw_init(Widget w, XtPointer data, XtPointer callData);
 //----------------------------------------------------------------------------
 // Creator for X11 version of drawing window.
 xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
-  : vt_drawwin(filename,mw), xvt(mw)
+  : vt_drawwin(filename,mw), xmvt(mw)
 {
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
   // Create an application shell for the draw window
   draw_shell = XtVaAppCreateShell("xvistool","drawshell",
 				  topLevelShellWidgetClass,
-				  xvt.display,
+				  xmvt.display,
 				  XmNtitle,filename,
 				  NULL);
 
@@ -328,7 +334,7 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
     {"Button2MotionAction",Button2MotionAction},
     {"Button2UpAction",Button2UpAction}
   };
-  XtAppAddActions(xvt.app, dw_actionsTable, XtNumber(dw_actionsTable));
+  XtAppAddActions(xmvt.app, dw_actionsTable, XtNumber(dw_actionsTable));
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
@@ -347,16 +353,16 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
   int OLn=0;
   Arg OLargs[10];
   XtSetArg(OLargs[0], XmNuserData, this); OLn++;
-  if(xvt.overlayVisual) {
-    XtSetArg(OLargs[OLn], XmNvisual, xvt.overlayVisual); OLn++;
-    XtSetArg(OLargs[OLn], XmNdepth, xvt.overlayDepth); OLn++;
-    XtSetArg(OLargs[OLn], XmNcolormap, xvt.overlayColormap); OLn++;
+  if(xmvt.overlayVisual) {
+    XtSetArg(OLargs[OLn], XmNvisual, xmvt.overlayVisual); OLn++;
+    XtSetArg(OLargs[OLn], XmNdepth, xmvt.overlayDepth); OLn++;
+    XtSetArg(OLargs[OLn], XmNcolormap, xmvt.overlayColormap); OLn++;
   }
 
   //--------------------------------------------------------------------------
   // First menu is the File menu
   Widget menu_pane = XmCreatePulldownMenu(menu_bar, "menupane", OLargs, OLn);
-  if(xvt.overlayVisual)
+  if(xmvt.overlayVisual)
     XtAddCallback(XtParent(menu_pane), XmNpopupCallback,
 		  (XtCallbackProc) dw_ensurePulldownColormapInstalled, NULL);
   Widget btn;
@@ -375,7 +381,7 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
   //--------------------------------------------------------------------------
   // Last menu is the Help menu
   menu_pane = XmCreatePulldownMenu(menu_bar, "menupane", OLargs, OLn);
-  if(xvt.overlayVisual)
+  if(xmvt.overlayVisual)
     XtAddCallback(XtParent(menu_pane), XmNpopupCallback,
 		  (XtCallbackProc) dw_ensurePulldownColormapInstalled, NULL);
   btn = XmCreatePushButton(menu_pane, "Help", args, 1);
@@ -413,23 +419,23 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
   XtSetArg(pargs[pn], XmNbuttonSet, 2); pn++;
   XtSetArg(pargs[pn], XmNsimpleCallback, dw_pulldownMenuUse); pn++;
   XtSetArg(pargs[pn], XmNuserData, this); pn++;
-  if(xvt.overlayVisual) {
-    XtSetArg(pargs[pn], XmNvisual, xvt.overlayVisual); pn++;
-    XtSetArg(pargs[pn], XmNdepth, xvt.overlayDepth); pn++;
-    XtSetArg(pargs[pn], XmNcolormap, xvt.overlayColormap); pn++;
+  if(xmvt.overlayVisual) {
+    XtSetArg(pargs[pn], XmNvisual, xmvt.overlayVisual); pn++;
+    XtSetArg(pargs[pn], XmNdepth, xmvt.overlayDepth); pn++;
+    XtSetArg(pargs[pn], XmNcolormap, xmvt.overlayColormap); pn++;
   }
   popup = XmCreateSimplePopupMenu(frame, "popup", pargs, pn);
   XtAddEventHandler(frame, ButtonPressMask, False, activateMenu, &popup);
   for(int ifree=0; ifree<3; ifree++) XmStringFree(buttonLabels[ifree]);
   XtVaGetValues(popup, XmNchildren, &popuplist, NULL);
-  XmToggleButtonSetState(popuplist[2], True, False);
+  XmToggleButtonSetState(popuplist[2], animate, False);
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
   // OpenGL drawing area
   glx_area = XtVaCreateManagedWidget("glxarea",glwMDrawingAreaWidgetClass,
 				     frame,
-				     GLwNvisualInfo,xvt.vi,
+				     GLwNvisualInfo,xmvt.vi,
 				     XmNuserData,this,
 				     NULL);
   XtVaGetValues(glx_area, XtNwidth, &viewWidth, XtNheight, &viewHeight, NULL);
@@ -457,8 +463,8 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
   //--------------------------------------------------------------------------
   // Create OpenGL rendering context with no display list shareing and
   // with direct rendering favored
-  cx = glXCreateContext(xvt.display,xvt.vi,None,TRUE);
-  if(!cx) XtAppError(xvt.app,"could not create rendering context");
+  cx = glXCreateContext(xmvt.display,xmvt.vi,None,TRUE);
+  if(!cx) XtAppError(xmvt.app,"could not create rendering context");
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
@@ -496,7 +502,7 @@ void dw_ensurePulldownColormapInstalled(Widget w, XtPointer client_data,
   if(!dw) XtVaGetValues(XtParent(w),XmNuserData,&dw,NULL);
   //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
 
-  XInstallColormap(dw->xvt.display, dw->xvt.overlayColormap);
+  XInstallColormap(dw->xmvt.display, dw->xmvt.overlayColormap);
 }
 
 //----------------------------------------------------------------------------
@@ -511,16 +517,16 @@ void dw_file_open(Widget w, XtPointer client_data, XtPointer call_data)
   XtVaGetValues(w,XmNuserData,&dw,NULL);
   //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
 
-//        if(!xvt->Open_Dialog) {
-//  	xvt->Open_Dialog = XmCreateFileSelectionDialog(xvt->top_shell,
+//        if(!xmvt->Open_Dialog) {
+//  	xmvt->Open_Dialog = XmCreateFileSelectionDialog(xmvt->top_shell,
 //  						       "opendialog",
 //  						       NULL,0);
-//  	XtAddCallback(xvt->Open_Dialog,XmNokCallback,openfs_cb,NULL);
-//  	XtAddCallback(xvt->Open_Dialog,XmNcancelCallback,
+//  	XtAddCallback(xmvt->Open_Dialog,XmNokCallback,openfs_cb,NULL);
+//  	XtAddCallback(xmvt->Open_Dialog,XmNcancelCallback,
 //  		      (XtCallbackProc) XtUnmanageChild,NULL);
 //        }
-//        XtManageChild(xvt->Open_Dialog);
-//        XtPopup(XtParent(xvt->Open_Dialog),XtGrabNone);
+//        XtManageChild(xmvt->Open_Dialog);
+//        XtPopup(XtParent(xmvt->Open_Dialog),XtGrabNone);
   cout << "Selected Open... in a draw window" << endl;
 }
 
@@ -568,7 +574,7 @@ void dw_help(Widget w, XtPointer client_data, XtPointer call_data)
 //      cout << "Opening " << file << endl;
 //      XtFree(file);
 //    }
-//    XtUnmanageChild(xvt->Open_Dialog);
+//    XtUnmanageChild(xmvt->Open_Dialog);
 //  }
 
 //----------------------------------------------------------------------------
@@ -583,14 +589,15 @@ void activateMenu(Widget w, XtPointer client_data, XEvent *event,
   XtVaGetValues(w,XmNuserData,&dw,NULL);
   //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
 
-  if(dw->xvt.overlayVisual)
-    XInstallColormap(dw->xvt.display, dw->xvt.overlayColormap);
+  if(dw->xmvt.overlayVisual)
+    XInstallColormap(dw->xmvt.display, dw->xmvt.overlayColormap);
   XmMenuPosition(dw->popup, &event->xbutton);
   XtManageChild(dw->popup);
 }
 
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
+void animate(xvt_mainwin *, XtIntervalId *);
 //----------------------------------------------------------------------------
 // 
 void dw_pulldownMenuUse(Widget w, XtPointer client_data, XtPointer call_data)
@@ -608,8 +615,39 @@ void dw_pulldownMenuUse(Widget w, XtPointer client_data, XtPointer call_data)
     break;
   case 1:
     cout << "Animate popup button selected." << endl;
+    dw->animate = !dw->animate;
+    if(dw->animate) {
+      dw->xmvt.animateCount++;
+      if(dw->xmvt.animateCount == 1)
+	dw->xmvt.animateID =
+	  XtAppAddTimeOut(dw->xmvt.app,1, (XtTimerCallbackProc) handleAnimate,
+			  &dw->xmvt);
+    } else {
+      dw->xmvt.animateCount--;
+      if(!dw->xmvt.animateCount) XtRemoveTimeOut(dw->xmvt.animateID);
+    }
     break;
   }
+}
+
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+// 
+void handleAnimate(xvt_mainwin * xmvt, XtIntervalId * id)
+{
+  xmvt->incrementAnimation();
+  xmvt->animateID = XtAppAddTimeOut(xmvt->app, 1,
+				    (XtTimerCallbackProc) handleAnimate, xmvt);
+}
+
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+// 
+void handleRedisplay(xvt_mainwin * xmvt)
+{
+  xmvt->redisplay();
 }
 
 //----------------------------------------------------------------------------
@@ -624,8 +662,8 @@ void Button1DownAction(Widget w, XEvent * event, String * params,
   XtVaGetValues(w,XmNuserData,&dw,NULL);
   //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
 
-  const int x = event->xbutton.x;
-  const int y = event->xbutton.y;
+//    const int x = event->xbutton.x;
+//    const int y = event->xbutton.y;
 
 //    cout << "Button 1 Down: \n"
 //         << "Mouse at (" << x << "," << y << ")\n"
@@ -645,8 +683,8 @@ void Button1MotionAction(Widget w, XEvent * event, String * params,
   XtVaGetValues(w,XmNuserData,&dw,NULL);
   //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
 
-  const int x = event->xbutton.x;
-  const int y = event->xbutton.y;
+//    const int x = event->xbutton.x;
+//    const int y = event->xbutton.y;
 
 //    cout << "Button 1 Motion: \n"
 //         << "Mouse at (" << x << "," << y << ")\n"
@@ -666,8 +704,8 @@ void Button1UpAction(Widget w, XEvent * event, String * params,
   XtVaGetValues(w,XmNuserData,&dw,NULL);
   //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
 
-  const int x = event->xbutton.x;
-  const int y = event->xbutton.y;
+//    const int x = event->xbutton.x;
+//    const int y = event->xbutton.y;
 
 //    cout << "Button 1 Up: \n"
 //         << "Mouse at (" << x << "," << y << ")\n"
@@ -687,8 +725,8 @@ void Button2DownAction(Widget w, XEvent * event, String * params,
   XtVaGetValues(w,XmNuserData,&dw,NULL);
   //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
 
-  const int x = event->xbutton.x;
-  const int y = event->xbutton.y;
+//    const int x = event->xbutton.x;
+//    const int y = event->xbutton.y;
 
 //    cout << "Button 2 Down: \n"
 //         << "Mouse at (" << x << "," << y << ")\n"
@@ -708,8 +746,8 @@ void Button2MotionAction(Widget w, XEvent * event, String * params,
   XtVaGetValues(w,XmNuserData,&dw,NULL);
   //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
 
-  const int x = event->xbutton.x;
-  const int y = event->xbutton.y;
+//    const int x = event->xbutton.x;
+//    const int y = event->xbutton.y;
 
 //    cout << "Button 2 Motion: \n"
 //         << "Mouse at (" << x << "," << y << ")\n"
@@ -729,8 +767,8 @@ void Button2UpAction(Widget w, XEvent * event, String * params,
   XtVaGetValues(w,XmNuserData,&dw,NULL);
   //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
 
-  const int x = event->xbutton.x;
-  const int y = event->xbutton.y;
+//    const int x = event->xbutton.x;
+//    const int y = event->xbutton.y;
 
 //    cout << "Button 2 Up: \n"
 //         << "Mouse at (" << x << "," << y << ")\n"
@@ -745,7 +783,7 @@ void dw_draw(Widget w, XtPointer data, XtPointer callData)
   XtVaGetValues(w,XmNuserData,&dw,NULL);
   //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
   
-  dw->draw();
+  dw->postRedisplay();
 }
 
 void dw_resize(Widget w, XtPointer data, XtPointer callData)
@@ -772,22 +810,46 @@ void dw_init(Widget w, XtPointer data, XtPointer callData)
   dw->init(dw->viewWidth, dw->viewHeight);
 }
 
+void xvt_mainwin::redisplay()
+{
+  typedef list<vt_drawwin *>::iterator I_dw;
+  I_dw p;
+  for(p = draw_list.begin(); p != draw_list.end(); p++) {
+    xvt_drawwin & dw = *((xvt_drawwin *) *p);
+    if(dw.redisplay) {
+      dw.draw();
+      dw.redisplay = false;
+    }
+  }
+  redisplayPending = false;
+}
+
 void xvt_drawwin::init(int width, int height)
 {
   glx_win = (GLXDrawable) XtWindow(glx_area);
-  glXMakeCurrent(xvt.display,glx_win,cx);
+  glXMakeCurrent(xmvt.display,glx_win,cx);
   vt_drawwin::init(width, height);
 }
 
 void xvt_drawwin::draw()
 {
-  glXMakeCurrent(xvt.display,glx_win,cx);
+  glXMakeCurrent(xmvt.display,glx_win,cx);
   vt_drawwin::draw();
-  glXSwapBuffers(xvt.display,glx_win);
+  glXSwapBuffers(xmvt.display,glx_win);
 }
 
 void xvt_drawwin::resize(int new_width, int new_height)
 {
-  glXMakeCurrent(xvt.display,glx_win,cx);
+  glXMakeCurrent(xmvt.display,glx_win,cx);
   vt_drawwin::resize(new_width, new_height);
+}
+
+void xvt_drawwin::postRedisplay()
+{
+  redisplay = true;
+  if(!xmvt.redisplayPending) {
+    xmvt.redisplayID = XtAppAddWorkProc(xmvt.app,
+					(XtWorkProc) handleRedisplay, &xmvt);
+    xmvt.redisplayPending = true;
+  }
 }

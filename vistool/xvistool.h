@@ -18,13 +18,15 @@ class xvt_drawwin;
 
 class xvt_mainwin : public vt_mainwin {
 private:
-public:
+  friend xvt_drawwin;
   friend void dw_ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
   friend void mw_ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
   friend void mw_file_open(Widget, XtPointer, XtPointer);
   friend void mw_openfs_cb(Widget, XtPointer, XtPointer);
   friend void dw_InstallPDColormap(Widget, XtPointer, XtPointer);
   friend void activateMenu(Widget, XtPointer, XEvent *, Boolean *);
+  friend void dw_pulldownMenuUse(Widget, XtPointer, XtPointer);
+  friend void handleAnimate(xvt_mainwin *, XtIntervalId *);
   // X/Motif data
   Display * display;
   XtAppContext app;
@@ -37,18 +39,25 @@ public:
   int      overlayDepth;
   Colormap overlayColormap;
   bool doubleBuffer;
+  int animateCount;
+  XtWorkProcId animateID;
+  bool redisplayPending;
+  XtWorkProcId redisplayID;
 public:
   xvt_mainwin(int & argc, char ** argv);
   ~xvt_mainwin();
   void Loop() { XtAppMainLoop(app);}
+  void redisplay();
 };
 
 class xvt_drawwin : public vt_drawwin {
 private:
+  friend xvt_mainwin;
   friend void dw_ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
   friend void activateMenu(Widget, XtPointer, XEvent *, Boolean *);
+  friend void dw_pulldownMenuUse(Widget, XtPointer, XtPointer);
   friend void dw_init(Widget, XtPointer, XtPointer);
-  xvt_mainwin & xvt;
+  xvt_mainwin & xmvt;
   Widget draw_shell;
   Widget main_w;
   Widget frame;
@@ -57,6 +66,7 @@ private:
   Widget popup;
   WidgetList popuplist;
   Widget Open_Dialog;
+  bool  redisplay;
   // OpenGL data
   GLXDrawable glx_win;
   GLXContext cx;
@@ -68,6 +78,7 @@ public:
   virtual void init(int, int);
   virtual void draw();
   virtual void resize(int, int);
+  void postRedisplay();
 };
 
 #endif // XVISTOOL_H

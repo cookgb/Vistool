@@ -18,11 +18,15 @@ public:
   list<vt_drawwin *> draw_list;
   vt_mainwin();
   ~vt_mainwin();
+  void incrementAnimation();
 };
 
 class vt_drawwin {
-private:
-  vt_mainwin & xvt;
+protected:
+  friend vt_mainwin;
+  vt_mainwin & mvt;
+  bool animate;
+  bool redraw;
 public:
   char * name;
   vt_drawwin(const char * n, vt_mainwin & mw);
