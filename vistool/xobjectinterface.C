@@ -738,7 +738,8 @@ void Button1DownAction(Widget w, XEvent * event, String * params,
 		       Cardinal * num_params)
 {
   xvt_drawwin * dw = NULL;
-  XtVaGetValues(w,XmNuserData,&dw,NULL); // Get the xvt_drawwin.
+  XtVaGetValues(XtParent(w),XmNuserData,&dw,NULL); // Get the xvt_drawwin.
+//-:  XtVaGetValues(w,XmNuserData,&dw,NULL); // Get the xvt_drawwin.
   XButtonEvent * bevent = (XButtonEvent *) event;
   dw->xpin_RB = dw->xorg_RB = bevent->x;
   dw->ypin_RB = dw->yorg_RB = bevent->y;
@@ -756,7 +757,8 @@ void Button1MotionAction(Widget w, XEvent * event, String * params,
 			 Cardinal * num_params)
 {
   xvt_drawwin * dw = NULL;
-  XtVaGetValues(w,XmNuserData,&dw,NULL); // Get the xvt_drawwin.
+  XtVaGetValues(XtParent(w),XmNuserData,&dw,NULL); // Get the xvt_drawwin.
+//-:  XtVaGetValues(w,XmNuserData,&dw,NULL); // Get the xvt_drawwin.
   XButtonEvent * bevent = (XButtonEvent *) event;
   glXWaitGL();
   dw->DrawRubberBand();
@@ -775,7 +777,8 @@ void Button1UpAction(Widget w, XEvent * event, String * params,
 		     Cardinal * num_params)
 {
   xvt_drawwin * dw = NULL;
-  XtVaGetValues(w,XmNuserData,&dw,NULL); // Get the xvt_drawwin.
+  XtVaGetValues(XtParent(w),XmNuserData,&dw,NULL); // Get the xvt_drawwin.
+//-:  XtVaGetValues(w,XmNuserData,&dw,NULL); // Get the xvt_drawwin.
   glXWaitGL();
   //dw->DrawRubberBand(); // Don't need on Indigo???
   double xl;
@@ -819,7 +822,8 @@ void Button2DownAction(Widget w, XEvent * event, String * params,
 {
   // Get the xvt_drawwin.
   xvt_drawwin * dw = NULL;
-  XtVaGetValues(w,XmNuserData,&dw,NULL);
+  XtVaGetValues(XtParent(w),XmNuserData,&dw,NULL); // Get the xvt_drawwin.
+//-:  XtVaGetValues(w,XmNuserData,&dw,NULL);
   //if(!dw){std::cerr<<"Error getting xvt_drawwin pointer"<<std::endl;abort();}
 
 //    const int x = event->xbutton.x;
@@ -840,7 +844,8 @@ void Button2MotionAction(Widget w, XEvent * event, String * params,
 {
   // Get the xvt_drawwin.
   xvt_drawwin * dw = NULL;
-  XtVaGetValues(w,XmNuserData,&dw,NULL);
+  XtVaGetValues(XtParent(w),XmNuserData,&dw,NULL); // Get the xvt_drawwin.
+//-:  XtVaGetValues(w,XmNuserData,&dw,NULL);
   //if(!dw){std::cerr<<"Error getting xvt_drawwin pointer"<<std::endl;abort();}
 
 //    const int x = event->xbutton.x;
@@ -861,7 +866,8 @@ void Button2UpAction(Widget w, XEvent * event, String * params,
 {
   // Get the xvt_drawwin.
   xvt_drawwin * dw = NULL;
-  XtVaGetValues(w,XmNuserData,&dw,NULL);
+  XtVaGetValues(XtParent(w),XmNuserData,&dw,NULL); // Get the xvt_drawwin.
+//-:  XtVaGetValues(w,XmNuserData,&dw,NULL);
   //if(!dw){std::cerr<<"Error getting xvt_drawwin pointer"<<std::endl;abort();}
 
 //    const int x = event->xbutton.x;

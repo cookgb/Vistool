@@ -16,7 +16,8 @@
 #include <Xm/FileSB.h>
 #include <Xm/Text.h>
 
-#include <GL/GLwMDrawA.h>
+//-:#include <GL/GLwMDrawA.h>
+#include <GL/GLwDrawA.h>
 #include <GL/glx.h>
 
 #include <iostream>
@@ -436,11 +437,15 @@ void xvt_drawwin::CreateWindow()
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
   // Create an application shell for the draw window
-  draw_shell = XtVaAppCreateShell("xvistool","drawshell",
- 				  topLevelShellWidgetClass,
- 				  xmvt.display,
- 				  XmNtitle,name,
- 				  NULL);
+//-:  draw_shell = XtVaAppCreateShell("xvistool","drawshell",
+//-: 				  topLevelShellWidgetClass,
+//-: 				  xmvt.display,
+//-: 				  XmNtitle,name,
+//-: 				  NULL);
+  draw_shell = XtVaCreatePopupShell(name,
+				    topLevelShellWidgetClass,
+				    xmvt.top_shell,
+				    NULL);
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
@@ -537,6 +542,7 @@ void xvt_drawwin::CreateWindow()
   // Frame area to contain OpenGL drawing area
   frame = XtVaCreateManagedWidget("GLframe",xmFrameWidgetClass,
 				  main_w,
+				  XmNuserData,this, // For Button actions
 				  NULL);
 
   //--------------------------------------------------------------------------
@@ -615,10 +621,12 @@ void xvt_drawwin::CreateWindow()
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
   // OpenGL drawing area
-  glx_area = XtVaCreateManagedWidget("glxarea",glwMDrawingAreaWidgetClass,
+  glx_area = XtVaCreateManagedWidget("glxarea",
+//-:				     glwMDrawingAreaWidgetClass,
+				     glwDrawingAreaWidgetClass,
 				     frame,
 				     GLwNvisualInfo,xmvt.vi,
-				     XmNuserData,this, // For Button actions
+//-:				     XmNuserData,this, // For Button actions
 				     NULL);
   XtVaGetValues(glx_area, XtNwidth, &viewWidth, XtNheight, &viewHeight, NULL);
 //    gcv.foreground = BlackPixelOfScreen(XtScreen(glx_area));
@@ -673,7 +681,8 @@ void xvt_drawwin::CreateWindow()
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
-  XtRealizeWidget(draw_shell);
+//-:  XtRealizeWidget(draw_shell);
+  XtPopup(draw_shell,XtGrabNone);
 }
 
 //----------------------------------------------------------------------------
@@ -712,7 +721,14 @@ xvt_drawwin::~xvt_drawwin()
   //     "Warning: XtRemoveGrab asked to remove a widget not on the list"
   // cout << "in xvt_drawwin destructor" << endl;
   if(Open_Dialog) XtDestroyWidget(Open_Dialog);
-  //XtUnrealizeWidget(draw_shell);
+  glXMakeCurrent(xmvt.display,0,NULL);
+  XtRemoveAllCallbacks(glx_area,XmNexposeCallback);
+  XtRemoveAllCallbacks(glx_area,XmNresizeCallback);
+  XtRemoveAllCallbacks(glx_area,GLwNginitCallback);
+  XtRemoveEventHandler(draw_shell,StructureNotifyMask,False,
+		       mapStateChanged,this);
+  XtRemoveEventHandler(frame,ButtonPressMask,False,activatePopup,popup);
+  XtPopdown(draw_shell);
   XtDestroyWidget(draw_shell);
 }
 
