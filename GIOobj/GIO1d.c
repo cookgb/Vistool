@@ -7,7 +7,6 @@
 //-------------------------------------------------------------------------
 
 #ifdef __GNUC__
-#pragma implementation
 #include <string.h>
 #else
 #include <strings.h>
@@ -15,10 +14,6 @@
 #include <fstream.h>
 
 #include "GIO1d.h"
-
-#ifdef __GNUC__
-template class GIO1dseries<double,double>;
-#endif
 
 #define GIOTESTTAG "#GIO UNIQUE TAG\0"
 #define TESTTAGLEN 16

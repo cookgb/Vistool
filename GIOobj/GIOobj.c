@@ -6,18 +6,10 @@
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
 
-#ifdef __GNUC__
-#pragma implementation
-#endif
 #include <stdlib.h>
 #include <fstream.h>
 
 #include "GIOobj.h"
-
-#ifdef __GNUC__
-template class GIOdata<double,double>;
-#endif
-
 
 template< class D, class L> GIOdata<D,L>::~GIOdata()
 {

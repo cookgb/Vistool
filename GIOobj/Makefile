@@ -1,14 +1,14 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.5 1999-12-30 17:12:15 cookgb Exp $
+# $Id: Makefile,v 1.6 1999-12-30 17:26:59 cookgb Exp $
 #
 ###############################################################################
 # linux
 #CC=gcc
 #CFLAGS= -O2
 #CXX=g++
-#CXXFLAGS= -O2 -fexternal-templates
+#CXXFLAGS= -O2 -frepo
 #LIBDIRS = -L/usr/X11R6/lib
 
 # SGI

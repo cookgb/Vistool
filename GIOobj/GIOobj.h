@@ -8,10 +8,6 @@
 #ifndef GIOOBJ_H
 #define GIOOBJ_H
 
-#ifdef __GNUC__
-#pragma interface
-#endif
-
 #include <fstream.h>
 
 class GIObase {
@@ -55,7 +51,7 @@ public:
   const D * Data(int i) {return data[i];}
 };
 
-#if defined(Want_c_files)
+#ifdef __GNUC__
 #include "GIOobj.c"
 #endif
 

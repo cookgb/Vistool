@@ -8,10 +8,6 @@
 #ifndef GIO1D_H
 #define GIO1D_H
 
-#ifdef __GNUC__
-#pragma interface
-#endif
-
 #include <fstream.h>
 
 #include "GIOobj.h"
@@ -33,7 +29,7 @@ public:
   int NSeries() {return Nseries;}
 };
 
-#if defined(Want_c_files)
+#ifdef __GNUC__
 #include "GIO1d.c"
 #endif
 
