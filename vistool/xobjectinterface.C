@@ -49,6 +49,20 @@ void mw_file_open(Widget w, XtPointer client_data, XtPointer call_data)
   XtManageChild(mw->OpenDialog());
   XtPopup(XtParent(mw->OpenDialog()),XtGrabNone);
 }
+// Callback routine for main window File->Open->GIO menu selection
+void mw_file_open_GIO(Widget w, XtPointer client_data, XtPointer call_data)
+{
+  xvt_mainwin * mw = (xvt_mainwin *) client_data;
+  mw->importtype = TYPE_GIO;
+  mw_file_open(w, client_data, call_data);
+}
+// Callback routine for main window File->Open->GIO menu selection
+void mw_file_open_1DDump(Widget w, XtPointer client_data, XtPointer call_data)
+{
+  xvt_mainwin * mw = (xvt_mainwin *) client_data;
+  mw->importtype = TYPE_1DDump;
+  mw_file_open(w, client_data, call_data);
+}
 
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
@@ -68,7 +82,14 @@ void mw_openfs_cb(Widget w, XtPointer client_data, XtPointer call_data)
       return; // internal error
     // Create and register the new drawwin
     xvt_drawwin * dw = new xvt_drawwin(file,*mw);
-    if(!(mw->ImportFile(file,*dw))) dw->close();
+    switch(mw->importtype) {
+    case TYPE_GIO:
+      if(!(dw->ImportFile_GIO(file))) dw->close();
+      break;
+    case TYPE_1DDump:
+      if(!(dw->ImportFile_1DDump(file))) dw->close();
+      break;
+    }
     XtFree(file);
   }
   XtUnmanageChild(mw->OpenDialog());
@@ -178,7 +199,7 @@ void dw_file_close(Widget w, XtPointer client_data, XtPointer call_data)
 
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
-//  void dw_openfs_cb(Widget, XtPointer, XtPointer);
+//  void dw_openfs_cb_gio(Widget, XtPointer, XtPointer);
 //----------------------------------------------------------------------------
 // Callback routine for drawing window File->Open menu selection
 void dw_file_open(Widget w, XtPointer client_data, XtPointer call_data)

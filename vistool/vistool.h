@@ -11,14 +11,19 @@
 #include <list.h>
 #include <string.h>
 
+enum FileType {
+  TYPE_GIO,
+  TYPE_1DDump
+};
+
 class vt_drawwin;
 
 class vt_mainwin {
 public:
+  FileType importtype;
   list<vt_drawwin *> draw_list;
   vt_mainwin();
   ~vt_mainwin();
-  bool ImportFile(char * file, vt_drawwin & dw);
   void incrementAnimation();
 };
 
@@ -39,10 +44,13 @@ protected:
   bool animate;
   bool redraw;
 public:
+  FileType importtype;
   char * name;
   vt_drawwin(const char * n, vt_mainwin & mw);
   ~vt_drawwin();
   void close();
+  bool ImportFile_GIO(char * file);
+  bool ImportFile_1DDump(char * file);
   virtual void deleteme() { delete this;}
   virtual void init(int, int);
   virtual void draw();

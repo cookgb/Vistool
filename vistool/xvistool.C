@@ -36,7 +36,8 @@ void main(int argc, char * argv[])
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
 void ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
-void mw_file_open(Widget, XtPointer, XtPointer);
+void mw_file_open_GIO(Widget, XtPointer, XtPointer);
+void mw_file_open_1DDump(Widget, XtPointer, XtPointer);
 void mw_file_quit(Widget, XtPointer, XtPointer);
 void mw_help(Widget, XtPointer, XtPointer);
 //----------------------------------------------------------------------------
@@ -178,11 +179,11 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
 
   //--------------------------------------------------------------------------
   // Open submenu
-  XmString m_default_format = XmStringCreateLocalized("Default Format");
-  XmString m_other_format = XmStringCreateLocalized("another format");
+  XmString m_gio_format = XmStringCreateLocalized("GIO Format");
+  XmString m_1ddump_format = XmStringCreateLocalized("1DDump Format");
   //
-#define OPENMENU XmVaPUSHBUTTON,m_default_format,'D',NULL,NULL,\
-	         XmVaPUSHBUTTON,m_other_format,'a',NULL,NULL
+#define OPENMENU XmVaPUSHBUTTON,m_gio_format,'G',NULL,NULL,\
+	         XmVaPUSHBUTTON,m_1ddump_format,'1',NULL,NULL
   //
   Widget open_popout;
   if(overlayVisual) {
@@ -202,13 +203,13 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
 				   NULL);
   }
 #undef OPENMENU
-  XmStringFree(m_default_format);
-  XmStringFree(m_other_format);
+  XmStringFree(m_gio_format);
+  XmStringFree(m_1ddump_format);
   // Set the callback routines for each menu button.
   if(Widget w = XtNameToWidget(open_popout,"button_0"))
-    XtAddCallback(w, XmNactivateCallback, mw_file_open, this);
+    XtAddCallback(w, XmNactivateCallback, mw_file_open_GIO, this);
   if(Widget w = XtNameToWidget(open_popout,"button_1"))
-    XtAddCallback(w, XmNactivateCallback, mw_file_open, this);
+    XtAddCallback(w, XmNactivateCallback, mw_file_open_1DDump, this);
 
   //--------------------------------------------------------------------------
   // Last menu is the Help menu
@@ -369,11 +370,11 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
 
   //--------------------------------------------------------------------------
   // Open submenu
-  XmString m_default_format = XmStringCreateLocalized("Default Format");
-  XmString m_other_format = XmStringCreateLocalized("another format");
+  XmString m_gio_format = XmStringCreateLocalized("GIO Format");
+  XmString m_1ddump_format = XmStringCreateLocalized("1DDump format");
   //
-#define OPENMENU XmVaPUSHBUTTON,m_default_format,'D',NULL,NULL,\
-	         XmVaPUSHBUTTON,m_other_format,'a',NULL,NULL
+#define OPENMENU XmVaPUSHBUTTON,m_gio_format,'G',NULL,NULL,\
+	         XmVaPUSHBUTTON,m_1ddump_format,'1',NULL,NULL
   //
   Widget open_popout;
   if(xmvt.overlayVisual) {
@@ -393,8 +394,8 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
 				   NULL);
   }
 #undef OPENMENU
-  XmStringFree(m_default_format);
-  XmStringFree(m_other_format);
+  XmStringFree(m_gio_format);
+  XmStringFree(m_1ddump_format);
   // Set the callback routines for each menu button.
   if(Widget w = XtNameToWidget(open_popout,"button_0"))
     XtAddCallback(w, XmNactivateCallback, dw_file_open, this);

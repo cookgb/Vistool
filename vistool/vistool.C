@@ -30,7 +30,49 @@ vt_mainwin::~vt_mainwin()
   }
 }
 
-bool vt_mainwin::ImportFile(char * file, vt_drawwin & dw)
+void vt_mainwin::incrementAnimation()
+{
+  typedef list<vt_drawwin *>::iterator I_dw;
+  I_dw p;
+  for(p = draw_list.begin(); p != draw_list.end(); p++) {
+    vt_drawwin & dw = **p;
+    if(dw.animate) {
+      dw.increment();
+      dw.draw();
+      dw.redraw = false;
+    }
+  }
+}
+
+
+
+vt_drawwin::vt_drawwin(const char * n, vt_mainwin & mw)
+  : Lb_x(0.), Ub_x(1.), Lb_y(0.), Ub_y(1.),
+    mvt(mw), animate(false), redraw(false)
+{
+  name = new char[strlen(n)+1];
+  strcpy(name,n);
+  mw.draw_list.push_back(this);
+}
+
+vt_drawwin::~vt_drawwin()
+{
+  delete name;
+}
+void vt_drawwin::close()
+{
+  // remove me from the draw_list;
+  typedef list<vt_drawwin *>::iterator I_dw;
+  const vt_drawwin * me = this;
+  I_dw d = std::find(mvt.draw_list.begin(),mvt.draw_list.end(),me);
+  if(!(*d)) cerr << "Couldn't remove drawwin from list" << endl;
+  mvt.draw_list.erase(d);
+
+  // delete memory
+  (*d)->deleteme();
+}
+
+bool vt_drawwin::ImportFile_GIO(char * file)
 {
   GIOquery GIOq;
   if(!GIOq.Read(file)) {
@@ -72,54 +114,90 @@ bool vt_mainwin::ImportFile(char * file, vt_drawwin & dw)
 	return false;
       }
     }
-    for(int j=0; j<Nd; j++) dw.Add(vsa[j]);
+    for(int j=0; j<Nd; j++) Add(vsa[j]);
     delete [] vsa;
-    dw.windowReshape(dw.Width(),dw.Height());
+    windowReshape(cur_width,cur_height);
     break;
   }
   return true;
 }
 
-void vt_mainwin::incrementAnimation()
+bool vt_drawwin::ImportFile_1DDump(char * filename)
 {
-  typedef list<vt_drawwin *>::iterator I_dw;
-  I_dw p;
-  for(p = draw_list.begin(); p != draw_list.end(); p++) {
-    vt_drawwin & dw = **p;
-    if(dw.animate) {
-      dw.increment();
-      dw.draw();
-      dw.redraw = false;
+  // Open file
+  ifstream file;
+  file.open(filename,ios::in);
+  if(!file) return false;
+
+  // Create new vt_data_series
+  vt_data_series *series = new vt_data_series(filename);
+
+  // Read timesteps from file until eof or other error
+  int Retrieved_Valid_Timestep = 0;
+  while(1) {
+    const int dim=1;
+
+    // Time
+    double time;
+    file.read((char *) &time,sizeof(double)); 
+    if(!file) break;
+
+    // Shape
+    int *shape = new int[dim];
+    file.read((char *) shape,dim*sizeof(int)); 
+    if(!file) {
+      delete[] shape;
+      break;
     }
+    
+    // Wbox
+    double *wbox = new double[2*dim];
+    file.read(((char *) wbox),2*dim*sizeof(double));
+    if(!file) {
+      delete[] shape;
+      delete[] wbox;
+      break;
+    }
+    
+    // Data
+    int datasize = 1;
+    for(int i=0;i<dim;i++) datasize *= shape[i];
+    double *data = new double[datasize];
+    file.read((char *) data,datasize*sizeof(double));
+    if(!file) {
+      delete[] shape;
+      delete[] wbox;
+      delete[] data;
+      break;
+    }
+    
+    // Compute coordinates
+    double *x        = new double[shape[0]];
+    const double dx  = (wbox[1]-wbox[0])/(shape[0]-1);
+    for(i=0;i<shape[0];i++) x[i] = wbox[0] + dx*i;
+
+    // Create a new vt_data_1d and append to series
+    series->Append(new vt_data_1d(time,shape[0],x,data));
+    Retrieved_Valid_Timestep++;
+
+    // Clean up
+    delete[] x;
+    delete[] data;
+    delete[] wbox;
+    delete[] shape;
   }
-}
 
+  // Close file
+  file.close();
 
+  // If nothing has been added to the series, exit
+  if(!Retrieved_Valid_Timestep) return false;
 
-vt_drawwin::vt_drawwin(const char * n, vt_mainwin & mw)
-  : Lb_x(0.), Ub_x(1.), Lb_y(0.), Ub_y(1.),
-    mvt(mw), animate(false), redraw(false)
-{
-  name = new char[strlen(n)+1];
-  strcpy(name,n);
-  mw.draw_list.push_back(this);
-}
+  // Add series to list
+  Add(series);
+  windowReshape(cur_width,cur_height);
 
-vt_drawwin::~vt_drawwin()
-{
-  delete name;
-}
-void vt_drawwin::close()
-{
-  // remove me from the draw_list;
-  typedef list<vt_drawwin *>::iterator I_dw;
-  const vt_drawwin * me = this;
-  I_dw d = std::find(mvt.draw_list.begin(),mvt.draw_list.end(),me);
-  if(!(*d)) cerr << "Couldn't remove drawwin from list" << endl;
-  mvt.draw_list.erase(d);
-
-  // delete memory
-  (*d)->deleteme();
+  return true;
 }
 
 void vt_drawwin::init(int width, int height)
