@@ -1,7 +1,7 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.25 2002-07-10 20:47:51 cookgb Exp $
+# $Id: Makefile,v 1.26 2002-07-10 21:18:53 cookgb Exp $
 #
 ###############################################################################
 # linux
@@ -16,7 +16,7 @@ CC=cc -mips4
 CFLAGS = -O2
 CXX=CC -mips4
 CXXFLAGS= -O2 -LANG:std
-LIBRARYFLAG= -ar
+LIBRARYFLAG= -ar -ptall
 CXXINCLUDES = /usr/include/CC
 TEMPLATE_DIR = ii_files
 DEPFLAGS = -D_STANDARD_C_PLUS_PLUS
