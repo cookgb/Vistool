@@ -10,8 +10,6 @@
 
 #ifdef __GNUC__
 #include <string.h>
-#elif WIN32
-#include <string.h>
 #else
 #include <strings.h>
 #endif
