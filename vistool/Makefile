@@ -1,15 +1,15 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.22 2002-07-12 21:28:46 cookgb Exp $
+# $Id: Makefile,v 1.23 2002-07-12 23:58:40 cookgb Exp $
 #
 ###############################################################################
 # linux
 #CC=gcc3
 #CFLAGS= -O2
 #CXX=g++3
-#CXXFLAGS= -O2 -I/usr/X11R6/include
-#LIBDIRS = -L/usr/X11R6/lib GIO/libGIO.a
+#CXXFLAGS= -O2 -I/usr/X11R6/LessTif/Motif1.2/include -I/usr/X11R6/include
+#LIBDIRS = -L/usr/X11R6/LessTif/Motif1.2/lib -L/usr/X11R6/lib GIO/libGIO.a
 #X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11
 
 # SGI
