@@ -11,11 +11,13 @@
 #include <Xm/ToggleB.h>
 #include <Xm/Frame.h>
 #include <Xm/FileSB.h>
+#include <Xm/Text.h>
 #include <X11/GLw/GLwMDrawA.h>
 
 #include <GL/glx.h>
 
 #include <iostream.h>
+#include <strstream.h>
 #include <unistd.h>
 
 #include <map.h>
@@ -334,6 +336,8 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw,
   // main window contains MenuBar
   main_w = XtVaCreateManagedWidget("drawwin",xmMainWindowWidgetClass,
 				   draw_shell,
+				   XmNcommandWindowLocation,
+				   XmCOMMAND_BELOW_WORKSPACE,
 				   NULL);
 
   XtAddEventHandler(draw_shell, StructureNotifyMask, False, mapStateChanged,
@@ -500,16 +504,10 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw,
 				NULL);
   }
 #undef POPUPMENU
-//    XmStringFree(m_reset);
   XmStringFree(m_apply);
-//    XmStringFree(m_anim);
   // Set the callback routines for each menu button.
   if(Widget w = XtNameToWidget(popup,"button_0"))
     XtAddCallback(w, XmNactivateCallback, dw_popup_reset, this);
-//    if(Widget w = XtNameToWidget(popup,"button_2")) {
-//      XtAddCallback(w, XmNvalueChangedCallback, dw_popup_animate, this);
-//      XmToggleButtonSetState(w, animate, False);
-//    }
 
   XtAddEventHandler(frame, ButtonPressMask, False, activatePopup, popup);
 
@@ -614,6 +612,20 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw,
   XtOverrideTranslations(glx_area, trans);
 
   //--------------------------------------------------------------------------
+  //--------------------------------------------------------------------------
+  // Create a Text Widget
+  text_area = XtVaCreateManagedWidget("draw_text", xmTextWidgetClass,
+				      main_w,
+				      XmNmarginHeight, 1,
+				      XmNmarginWidth, 1,
+				      XmNeditable, FALSE,
+				      XmNcursorPositionVisible, FALSE,
+				      XmNtraversalOn, FALSE,
+				      XmNcolumns, 15,
+				      NULL);
+  XtManageChild(text_area);
+
+  //--------------------------------------------------------------------------
   // Create OpenGL rendering context with no display list shareing and
   // with direct rendering favored
   cx = glXCreateContext(xmvt.display,xmvt.vi,None,TRUE);
@@ -621,7 +633,7 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw,
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
-  XmMainWindowSetAreas(main_w,menu_bar,NULL,NULL,NULL,frame);
+  XmMainWindowSetAreas(main_w,menu_bar,text_area,NULL,NULL,frame);
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
@@ -679,6 +691,9 @@ void xvt_drawwin::draw()
   glXMakeCurrent(xmvt.Xdisplay(),glx_win,cx);
   vt_drawwin::draw();
   glXSwapBuffers(xmvt.Xdisplay(),glx_win);
+  ostrstream label(labelbuf,64);
+  label << current_l << '\0';
+  XmTextSetString(text_area,labelbuf);
 }
 
 void xvt_drawwin::resize(int new_width, int new_height)
