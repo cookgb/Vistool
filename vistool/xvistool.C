@@ -263,6 +263,8 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
 xvt_mainwin::~xvt_mainwin()
 {
   // kill all of the X stuff
+  if(Open_Dialog) XtDestroyWidget(Open_Dialog);
+  XtDestroyWidget(top_shell);
 }
 
 //----------------------------------------------------------------------------
@@ -661,6 +663,7 @@ xvt_drawwin::~xvt_drawwin()
   // *** Mesa error message ***
   //     "Warning: XtRemoveGrab asked to remove a widget not on the list"
   // cout << "in xvt_drawwin destructor" << endl;
+  if(Open_Dialog) XtDestroyWidget(Open_Dialog);
   XtDestroyWidget(draw_shell);
 }
 
@@ -691,9 +694,7 @@ void xvt_drawwin::draw()
   glXMakeCurrent(xmvt.Xdisplay(),glx_win,cx);
   vt_drawwin::draw();
   glXSwapBuffers(xmvt.Xdisplay(),glx_win);
-  ostrstream label(labelbuf,64);
-  label << current_l << '\0';
-  XmTextSetString(text_area,labelbuf);
+  XmTextSetString(text_area,Label_Text(true));
 }
 
 void xvt_drawwin::resize(int new_width, int new_height)

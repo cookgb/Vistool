@@ -8,6 +8,7 @@
 
 #include <list.h>
 #include <algorithm>
+#include <strstream.h>
 
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -60,6 +61,11 @@ vt_drawwin::vt_drawwin(const char * n, vt_mainwin & mw)
 {
   name = new char[strlen(n)+1];
   strcpy(name,n);
+  
+  labelbuf = new char[70];
+  label = new ostrstream(labelbuf,69);
+  label->precision(8);
+  label->setf(ios::left,ios::adjustfield);
 
   if(Abscissa_Set) {
     Abscissa_Filename = new char[strlen(mw.Abscissa_Filename)+1];
@@ -83,6 +89,9 @@ vt_drawwin::~vt_drawwin()
   }
   // Delete name of window
   delete [] name;
+  // Delete label text
+  if(label) delete label;
+  if(labelbuf) delete [] labelbuf;
   // Delete Abscissa data
   if(Abscissa_Set) {
     delete [] Abscissa_Filename;
@@ -444,6 +453,7 @@ void vt_drawwin::Add(vt_data_series * ds)
   }
   data_list.push_back(ds);
   reset_list();
+  Coords_Text(true);
 }
 
 vt_data::~vt_data()

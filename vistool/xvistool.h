@@ -68,7 +68,6 @@ private:
   Widget glx_area;
   Widget menu_bar;
   Widget text_area;
-  char labelbuf[64];
   Widget popup;
   WidgetList popuplist;
   Widget Open_Dialog;
