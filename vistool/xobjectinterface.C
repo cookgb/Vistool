@@ -120,6 +120,8 @@ void mw_openfs_cb(Widget w, XtPointer client_data, XtPointer call_data)
     XmString dirstr, patstr;
     XtVaGetValues(w,XmNdirectory,&dirstr,XmNpattern,&patstr,NULL);
     xvt_drawwin * dw = new xvt_drawwin(file,*mw,dirstr,patstr);
+    XmStringFree(dirstr);
+    XmStringFree(patstr);
     switch(mw->importtype) {
     case TYPE_GIO:
       if(!dw->ImportFile_GIO(file)) dw->close();
