@@ -86,7 +86,7 @@ void vt_mainwin::incrementAnimation()
   for(p = draw_list.begin(); p != draw_list.end(); p++) {
     vt_drawwin & dw = **p;
     if(dw.animate) {
-      cout << "Animate " << dw.name << endl;
+      dw.increment();
       dw.draw();
       dw.redraw = false;
     }
@@ -129,7 +129,23 @@ void vt_drawwin::init(int width, int height)
 void vt_drawwin::draw()
 {
   glClear(GL_COLOR_BUFFER_BIT);
-  cout << "Draw window contents of " << name << endl;
+  
+  typedef list<vt_data_series *>::iterator I_vd;
+  I_vd p;
+  for(p = data_list.begin(); p != data_list.end(); p++) {
+    vt_data_series & ds = **p;
+    ds.Current()->draw();
+  }
+}
+
+void vt_drawwin::increment()
+{  
+  typedef list<vt_data_series *>::iterator I_vd;
+  I_vd p;
+  for(p = data_list.begin(); p != data_list.end(); p++) {
+    vt_data_series & ds = **p;
+    ds.Increment();
+  }
 }
 
 void vt_drawwin::resize(int new_width, int new_height)
@@ -142,7 +158,7 @@ void vt_drawwin::windowReshape(int width, int height)
   glViewport(0, 0, width, height);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glMatrixMode(GL_MODELVIEW);
+  gluOrtho2D(-6.0,6.0,-2.0,2.0);
 }
 
 vt_data::~vt_data()
@@ -171,8 +187,20 @@ vt_data_1d::vt_data_1d(double l, int s, const double * x, const double * y)
   }
 }
 
+void vt_data_1d::draw() {
+  glColor3d(1.0,1.0,1.0);
+  double * p = data;
+  glBegin(GL_LINE_STRIP);
+  for(int i=0; i<size; i++) {
+    const double * x = p++;
+    const double * y = p++;
+    glVertex2d(*x,*y);
+  }
+  glEnd();
+}
+
 vt_data_series::vt_data_series(const char * n)
-  : name(0), current_i(0), current_l(0)
+  : name(0), current_l(0), current(0)
 {
   name = new char[strlen(n)+1];
   strcpy(name,n);
@@ -194,11 +222,13 @@ void vt_data_series::Append(vt_data * d)
   const double ubx = d->UBx();
   const double lby = d->LBy();
   const double uby = d->UBy();
+  bool first = false;
   if(!(data.size())) {
     Lb_x = lbx;
     Ub_x = ubx;
     Lb_y = lby;
     Ub_y = uby;
+    first = true;
   } else {
     if(lbx < Lb_x) Lb_x = lbx;
     if(ubx > Ub_x) Ub_x = ubx;
@@ -206,4 +236,12 @@ void vt_data_series::Append(vt_data * d)
     if(uby > Ub_y) Ub_y = uby;
   }
   data.push_back(d);
+  if(first) current = data.begin();
+}
+
+void vt_data_series::Increment()
+{
+  ++current;
+  if(current == data.end()) current = data.begin();
+  current_l = (**current).Label();
 }

@@ -40,6 +40,7 @@ public:
   virtual void deleteme() { delete this;}
   virtual void init(int, int);
   virtual void draw();
+  void increment();
   virtual void resize(int, int);
   void windowReshape(int, int);
   void Add(vt_data_series * ds) {data_list.push_back(ds);}
@@ -61,12 +62,15 @@ public:
   double UBx() {return Ub_x;}
   double LBy() {return Lb_y;}
   double UBy() {return Ub_y;}
+  virtual void draw() {}
+  double Label() {return label;}
 };
 
 class vt_data_1d : public vt_data {
 protected:
 public:
   vt_data_1d(double l, int n, const double * x, const double * y);
+  void draw();
 };
 
 class vt_data_series {
@@ -76,17 +80,20 @@ protected:
   double Ub_x;
   double Lb_y;
   double Ub_y;
-  int current_i;
   double current_l;
   list<vt_data *> data;
+  list<vt_data *>::iterator current;
 public:
   vt_data_series(const char * n);
   ~vt_data_series();
+  char * Name() {return name;}
   double LBx() {return Lb_x;}
   double UBx() {return Ub_x;}
   double LBy() {return Lb_y;}
   double UBy() {return Ub_y;}
   void Append(vt_data * d);
+  vt_data * Current() {return *current;}
+  void Increment();
 };
 
 #endif // VISTOOL_H
