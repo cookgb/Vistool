@@ -365,9 +365,7 @@ bool vt_drawwin::ImportFile_1DAbs(char * filename)
 void vt_drawwin::init(int width, int height)
 {
   glClearColor(0.4, 0.4, 0.4, 0.0);
-  cur_width = width;
-  cur_height = height;
-  windowReshape(width,height);
+  resize(width,height);
 }
 
 void vt_drawwin::draw()
@@ -509,14 +507,14 @@ void vt_drawwin::reset_CurrentBounds()
   Cur_Bounds->Lb_y = Default_Bounds.Lb_y-yb;
   Cur_Bounds->Ub_x = Default_Bounds.Ub_x+xb;
   Cur_Bounds->Ub_y = Default_Bounds.Ub_y+yb;
-  windowReshape(cur_width, cur_height);
+  resize(cur_width, cur_height);
 }
 
 void vt_drawwin::push_CurrentBounds(bounds_2D * new_bounds)
 {
   bounds_stack.push(Cur_Bounds);
   Cur_Bounds = new_bounds;
-  windowReshape(cur_width, cur_height);
+  resize(cur_width, cur_height);
 }
 
 void vt_drawwin::pop_CurrentBounds()
@@ -525,7 +523,7 @@ void vt_drawwin::pop_CurrentBounds()
     delete Cur_Bounds;
     Cur_Bounds = bounds_stack.top();
     bounds_stack.pop();
-    windowReshape(cur_width, cur_height);
+    resize(cur_width, cur_height);
   }
 }
 

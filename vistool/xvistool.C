@@ -590,7 +590,7 @@ void xvt_drawwin::init(int width, int height)
   glx_win = (GLXDrawable) XtWindow(glx_area);
   glXMakeCurrent(xmvt.display,glx_win,cx);
   vt_drawwin::init(width, height);
-
+  // Set X graphics context for drawing zoom rubber band.
   XGCValues gcv;
   gcv.function = GXinvert;
   gc_RB = XCreateGC(xmvt.display,  (Window) glx_win, GCFunction, &gcv);
