@@ -72,6 +72,7 @@ private:
   friend class xvt_mainwin;
   friend void mapStateChanged(Widget, XtPointer, XEvent *, Boolean *);
   friend void dw_file_open(Widget, XtPointer, XtPointer);
+  friend void dw_file_close(Widget, XtPointer, XtPointer);
   friend void dw_openfs_cb(Widget, XtPointer, XtPointer);
   friend void dw_animate(Widget, XtPointer, XtPointer);
   friend void dw_stepforward(Widget, XtPointer, XtPointer);

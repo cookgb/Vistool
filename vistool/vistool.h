@@ -59,6 +59,7 @@ public:
   vt_mainwin();
   ~vt_mainwin();
   void incrementAnimation();
+  void close_dw(vt_drawwin *);
   char * NewDrawWindow();
   char * Info_Name(const char *const n);
   char * Info_Time(const int t);
