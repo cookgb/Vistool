@@ -410,6 +410,8 @@ void vt_drawwin::reset_list()
 
 void vt_drawwin::resize(int new_width, int new_height)
 {
+  cur_width = new_width;
+  cur_height = new_height;
   windowReshape(new_width,new_height);
 }
 
