@@ -437,10 +437,10 @@ void xvt_drawwin::CreateWindow()
   //--------------------------------------------------------------------------
   // Create an application shell for the draw window
   draw_shell = XtVaAppCreateShell("xvistool","drawshell",
-				  topLevelShellWidgetClass,
-				  xmvt.display,
-				  XmNtitle,name,
-				  NULL);
+ 				  topLevelShellWidgetClass,
+ 				  xmvt.display,
+ 				  XmNtitle,name,
+ 				  NULL);
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
@@ -712,6 +712,7 @@ xvt_drawwin::~xvt_drawwin()
   //     "Warning: XtRemoveGrab asked to remove a widget not on the list"
   // cout << "in xvt_drawwin destructor" << endl;
   if(Open_Dialog) XtDestroyWidget(Open_Dialog);
+  //XtUnrealizeWidget(draw_shell);
   XtDestroyWidget(draw_shell);
 }
 

@@ -49,7 +49,7 @@ Widget BuildMenu(const Widget parent, const int menu_type,
   
   // Now add the menu items
   for(int i=0; items[i].label != NULL; i++) {
-    // If subitems ixist, create the pull-right menu by calling this
+    // If subitems exist, create the pull-right menu by calling this
     // function recursively.  Since the function returns a cascade
     // button, the widget returned is used.
     if(items[i].subitems)

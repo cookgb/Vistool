@@ -1,15 +1,15 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.27 2002-07-26 17:45:27 cookgb Exp $
+# $Id: Makefile,v 1.28 2002-07-26 17:58:10 cookgb Exp $
 #
 ###############################################################################
 # linux/gcc3
-#CC=gcc3
-#CFLAGS= -O2
-#CXX=g++3
-#CXXFLAGS= -O2
-#CXXINCLUDES = /usr/include/g++-3
+CC=gcc3
+CFLAGS= -O2
+CXX=g++3
+CXXFLAGS= -O2
+CXXINCLUDES = /usr/include/g++-3
 
 # Linux/Intel
 #CC=icc
@@ -19,14 +19,14 @@
 #CXXINCLUDES = /opt/intel//compiler60/ia32/include
 
 # SGI
-CC=cc -mips4
-CFLAGS = -O2
-CXX=CC -mips4
-CXXFLAGS= -O2 -LANG:std
-LIBRARYFLAG= -ar -ptall
-CXXINCLUDES = /usr/include/CC
-TEMPLATE_DIR = ii_files
-DEPFLAGS = -D_STANDARD_C_PLUS_PLUS
+#CC=cc -mips4
+#CFLAGS = -O2
+#CXX=CC -mips4
+#CXXFLAGS= -O2 -LANG:std
+#LIBRARYFLAG= -ar -ptall
+#CXXINCLUDES = /usr/include/CC
+#TEMPLATE_DIR = ii_files
+#DEPFLAGS = -D_STANDARD_C_PLUS_PLUS
 
 # SP2
 #%%%CC=xlc
@@ -67,10 +67,10 @@ GIOswap: $(SWAPOBJS) libGIO.a
 LIBFILES= GIOlib.C GIObase.C
 LIBOBJS= $(LIBFILES:.C=.o)
 # --- FOR GNU make
-#libGIO.a:libGIO.a($(LIBOBJS))
+libGIO.a:libGIO.a($(LIBOBJS))
 # --- FOR SGI and KCC
-libGIO.a: $(LIBOBJS)
-	$(CXX) $(CXXFLAGS) $(LIBRARYFLAG) -o $@ $(LIBOBJS)
+#libGIO.a: $(LIBOBJS)
+#	$(CXX) $(CXXFLAGS) $(LIBRARYFLAG) -o $@ $(LIBOBJS)
 
 clean:
 	$(RM) $(OBJS) $(LIBOBJS) $(SWAPOBJS)
