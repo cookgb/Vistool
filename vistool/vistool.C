@@ -536,9 +536,10 @@ double vt_drawwin::next_label()
   }
   { // allow for roundoff error
     double allow_round = next_l;
+    const double next_max = next_l*ROUNDUP;
     for(ds = data_list.begin(); ds != data_list.end(); ds++) {
       const double n = (**ds).Next();
-      if(n > allow_round && n < next_l*ROUNDUP) allow_round = n;
+      if(n < next_max && n > allow_round) allow_round = n;
     }
     next_l = allow_round;
   }
@@ -557,9 +558,10 @@ double vt_drawwin::previous_label()
   }
   { // allow for roundoff error
     double allow_round = prev_l;
+    const double prev_min = prev_l*ROUNDDOWN;
     for(ds = data_list.begin(); ds != data_list.end(); ds++) {
-      const double n = (**ds).Next();
-      if(n < allow_round && n > prev_l*ROUNDDOWN) allow_round = n;
+      const double n = (**ds).Previous();
+      if(n > prev_min && n < allow_round) allow_round = n;
     }
     prev_l = allow_round;
   }
