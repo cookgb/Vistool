@@ -43,7 +43,7 @@ void mw_help(Widget, XtPointer, XtPointer);
 // Creator for X11 version of main window.
 xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
   : vt_mainwin(), Open_Dialog(0), vi(0), overlayDepth(0), doubleBuffer(true),
-    animateCount(0), animateHiddenCount(0),animateID(0)
+    animateCount(0), animateHiddenCount(0),animateID(0),redisplayPending(0)
 {
 
   //--------------------------------------------------------------------------
