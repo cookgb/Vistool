@@ -27,6 +27,7 @@ private:
   friend void dw_animate(Widget, XtPointer, XtPointer);
   friend void dw_stepforward(Widget, XtPointer, XtPointer);
   friend void dw_stepbackward(Widget, XtPointer, XtPointer);
+  friend void mw_anim_sync(Widget, XtPointer, XtPointer);
   friend void mw_windowlist(Widget, XtPointer, XtPointer);
   friend void mw_datasetlist(Widget, XtPointer, XtPointer);
   friend void handleAnimate(xvt_mainwin *, XtIntervalId *);
@@ -75,6 +76,7 @@ private:
   friend void dw_animate(Widget, XtPointer, XtPointer);
   friend void dw_stepforward(Widget, XtPointer, XtPointer);
   friend void dw_stepbackward(Widget, XtPointer, XtPointer);
+  friend void mw_anim_sync(Widget, XtPointer, XtPointer);
   friend void Button1DownAction(Widget, XEvent *, String *, Cardinal *);
   friend void Button1MotionAction(Widget, XEvent *, String *, Cardinal *);
   friend void Button1UpAction(Widget, XEvent *, String *, Cardinal *);
@@ -90,7 +92,6 @@ private:
   Widget Open_Dialog;
   XmString search_dir;
   XmString search_pattern;
-  bool redisplay;
   bool visible;
   // OpenGL data
   GLXDrawable glx_win;

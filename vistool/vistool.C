@@ -21,7 +21,7 @@
 #define LAST_LABEL 1.e30
 
 vt_mainwin::vt_mainwin()
-  : drawwin_count(0), dw_listed(0), ds_listed(0),
+  : drawwin_count(0), dw_listed(0), ds_listed(0), sync_dup(false),
     Abscissa_Set(0), Abscissa_Filename(0), Abscissa_Data(0)
 {
 }
@@ -44,15 +44,16 @@ void vt_mainwin::incrementAnimation()
 {
   typedef list<vt_drawwin *>::iterator I_dw;
   I_dw p;
+  sync_dup = true; // don't let sync recall increment
   for(p = draw_list.begin(); p != draw_list.end(); p++) {
     vt_drawwin & dw = **p;
     if(dw.animate) {
       if(dw.forward_animation) dw.increment();
       else dw.decrement();
       dw.draw();
-      dw.redraw = false;
     }
   }
+  sync_dup = false;
 }
 
 char * vt_mainwin::NewDrawWindow()
@@ -95,7 +96,8 @@ char * vt_mainwin::Info_Range(const bounds_2D & b)
 
 
 vt_drawwin::vt_drawwin(const char * n, vt_mainwin & mw)
-  : mvt(mw), redraw(false), animate(false), forward_animation(true),
+  : mvt(mw), redisplay(false), animate(false), forward_animation(true),
+    sync_window(false),
     Abscissa_Set(mw.Abscissa_Set), selected(false)
 {
 //    name = new char[strlen(n)+1];
@@ -123,7 +125,8 @@ vt_drawwin::vt_drawwin(const char * n, vt_mainwin & mw)
 
 
 vt_drawwin::vt_drawwin(vt_drawwin & dw)
-  : mvt(dw.mvt), redraw(false), animate(false), forward_animation(true),
+  : mvt(dw.mvt), redisplay(false), animate(false), forward_animation(true),
+    sync_window(false),
     Abscissa_Set(dw.Abscissa_Set), selected(false)
 {
   name = mvt.NewDrawWindow();
@@ -535,6 +538,13 @@ void vt_drawwin::increment()
     else if(n == LAST_LABEL)
       ds.done = true;
   }
+  if(!mvt.sync_dup && sync_window) { // repeat on any synced windows
+    mvt.sync_dup = true;
+    list<vt_drawwin *>::iterator p;
+    for(p = mvt.sync_list.begin(); p != mvt.sync_list.end(); p++)
+      if((*p)->sync_window && (this != *p)) (*p)->increment();
+    mvt.sync_dup = false;
+  }
 }
 
 void vt_drawwin::decrement()
@@ -554,6 +564,13 @@ void vt_drawwin::decrement()
       ds.Decrement();
     else if(p == -LAST_LABEL)
       ds.done = true;
+  }
+  if(!mvt.sync_dup && sync_window) { // repeat on any synced windows
+    mvt.sync_dup = true;
+    list<vt_drawwin *>::iterator p;
+    for(p = mvt.sync_list.begin(); p != mvt.sync_list.end(); p++)
+      if((*p)->sync_window && (this != *p)) (*p)->decrement();
+    mvt.sync_dup = false;
   }
 }
 
@@ -580,6 +597,13 @@ void vt_drawwin::reset_list()
   }
   Label_Text(true);
   draw();
+  if(!mvt.sync_dup && sync_window) { // repeat on any synced windows
+    mvt.sync_dup = true;
+    list<vt_drawwin *>::iterator p;
+    for(p = mvt.sync_list.begin(); p != mvt.sync_list.end(); p++)
+      if((*p)->sync_window && (this != *p)) (*p)->reset_list();
+    mvt.sync_dup = false;
+  }
 }
 
 void vt_drawwin::reset_CurrentBounds()

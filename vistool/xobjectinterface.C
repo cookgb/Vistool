@@ -308,6 +308,55 @@ void mw_datasetlist(Widget w, XtPointer client_data, XtPointer call_data)
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
+// Callback routine for main window Animate->Syncronize menu slection
+void mw_anim_sync(Widget w, XtPointer client_data, XtPointer call_data)
+{
+  xvt_mainwin * mw = (xvt_mainwin *) client_data;
+  
+  mw->sync_list.clear();
+  list<vt_drawwin *>::iterator p;
+  for(p = mw->draw_list.begin(); p != mw->draw_list.end(); p++) {
+    xvt_drawwin * dwp = (xvt_drawwin *) *p;
+    dwp->sync_window = false;
+    if(dwp->selected) {
+      // Make sure animation gets turned off when a window is synced!
+      if(dwp->animate) {
+	mw->animateCount--;
+	if(mw->animateCount == mw->animateHiddenCount)
+	  XtRemoveTimeOut(mw->animateID);
+	dwp->animate = false;
+	WidgetList popup_elem, anim_elem;
+	Widget anim_menu;
+	XtVaGetValues(dwp->popup, XmNchildren, &popup_elem, NULL);
+	XtVaGetValues(popup_elem[4], XmNsubMenuId, &anim_menu, NULL);
+	XtVaGetValues(anim_menu, XmNchildren, &anim_elem, NULL);
+	XmToggleButtonSetState(anim_elem[0], False, False);
+      }
+      // And reset the lists.
+      dwp->reset_list();
+      // Finally, you can set the window to be synced.
+      dwp->sync_window = true;
+      mw->sync_list.push_back(dwp);
+    }
+  }
+}
+
+//----------------------------------------------------------------------------
+// Callback routine for main window Animate->Un-Sync menu slection
+void mw_anim_unsync(Widget w, XtPointer client_data, XtPointer call_data)
+{
+  xvt_mainwin * mw = (xvt_mainwin *) client_data;
+  
+  list<vt_drawwin *>::iterator p;
+  for(p = mw->sync_list.begin(); p != mw->sync_list.end(); p++) {
+    (*p)->sync_window = false;
+  }
+  mw->sync_list.clear();
+}
+
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
 // Callback routine for main window Help->Help menu slection
 void mw_help(Widget w, XtPointer client_data, XtPointer call_data)
 {
@@ -400,6 +449,25 @@ void dw_animate(Widget w, XtPointer client_data, XtPointer call_data)
     if(dw->xmvt.animateCount == dw->xmvt.animateHiddenCount)
       XtRemoveTimeOut(dw->xmvt.animateID);
   }
+  if(!dw->xmvt.sync_dup && dw->sync_window) { // repeat on any synced windows
+    dw->xmvt.sync_dup = true;
+    list<vt_drawwin *>::iterator p;
+    for(p = dw->xmvt.sync_list.begin(); p != dw->xmvt.sync_list.end(); p++) {
+      xvt_drawwin * dwp = (xvt_drawwin *) *p;
+      if(dw != dwp) {
+	dw_animate(w,dwp,call_data);
+	// Make sure that all of the toggles are set!
+	// Counting for the menues starts at 0 and includes separators.
+	WidgetList popup_elem, anim_elem;
+	Widget anim_menu;
+	XtVaGetValues(dwp->popup, XmNchildren, &popup_elem, NULL);
+	XtVaGetValues(popup_elem[4], XmNsubMenuId, &anim_menu, NULL);
+	XtVaGetValues(anim_menu, XmNchildren, &anim_elem, NULL);
+	XmToggleButtonSetState(anim_elem[0], dw->animate, False);
+      }
+    }
+    dw->xmvt.sync_dup = false;
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -414,9 +482,22 @@ void dw_stepforward(Widget w, XtPointer client_data, XtPointer call_data)
     if(dw->xmvt.animateCount == dw->xmvt.animateHiddenCount)
       XtRemoveTimeOut(dw->xmvt.animateID);
     dw->animate = false;
+    //
+    dw->xmvt.sync_dup = true;
+    if(dw->sync_window) {
+      list<vt_drawwin *>::iterator p;
+      for(p = dw->xmvt.sync_list.begin(); p != dw->xmvt.sync_list.end(); p++) {
+	xvt_drawwin * dwp = (xvt_drawwin *) *p;
+	if(dw != dwp)
+	  dw_stepforward(w,dwp,call_data);
+      }
+    }
+    dw->xmvt.sync_dup = false;
   }
-  dw->increment();
-  dw->postRedisplay();
+  if(!dw->xmvt.sync_dup) {
+    dw->increment();
+    dw->postRedisplay();
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -431,9 +512,22 @@ void dw_stepbackward(Widget w, XtPointer client_data, XtPointer call_data)
     if(dw->xmvt.animateCount == dw->xmvt.animateHiddenCount)
       XtRemoveTimeOut(dw->xmvt.animateID);
     dw->animate = false;
+    //
+    dw->xmvt.sync_dup = true;
+    if(dw->sync_window) {
+      list<vt_drawwin *>::iterator p;
+      for(p = dw->xmvt.sync_list.begin(); p != dw->xmvt.sync_list.end(); p++) {
+	xvt_drawwin * dwp = (xvt_drawwin *) *p;
+	if(dw != dwp)
+	  dw_stepbackward(w,dwp,call_data);
+      }
+    }
+    dw->xmvt.sync_dup = false;
   }
-  dw->decrement();
-  dw->postRedisplay();
+  if(!dw->xmvt.sync_dup) {
+    dw->decrement();
+    dw->postRedisplay();
+  }
 }
 
 

@@ -48,6 +48,8 @@ void mw_file_open_1DDAb(Widget, XtPointer, XtPointer);
 void mw_file_quit(Widget, XtPointer, XtPointer);
 void mw_windowlist(Widget, XtPointer, XtPointer);
 void mw_datasetlist(Widget, XtPointer, XtPointer);
+void mw_anim_sync(Widget, XtPointer, XtPointer);
+void mw_anim_unsync(Widget, XtPointer, XtPointer);
 void mw_help(Widget, XtPointer, XtPointer);
 //----------------------------------------------------------------------------
 // Creator for X11 version of main window.
@@ -192,6 +194,20 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
   };
   BuildMenu(menu_bar, XmMENU_PULLDOWN, "File", 'F', overlay_Visual,
 	    false, File_menu);
+
+  //--------------------------------------------------------------------------
+  // Next menu is the Animate menu
+  //
+  MenuItem Animate_menu[] = {
+    { "Synchronize", &xmPushButtonGadgetClass, 'S', NULL, NULL,0,
+      mw_anim_sync, this, NULL},
+    { "Un-Sync", &xmPushButtonGadgetClass, 'U', NULL, NULL,0,
+      mw_anim_unsync, this, NULL},
+    NULL,
+  };
+  Widget Animate_m =
+    BuildMenu(menu_bar, XmMENU_PULLDOWN, "Animate", 'A', overlay_Visual,
+	      false, Animate_menu);
 
   //--------------------------------------------------------------------------
   // Last menu is the Help menu
@@ -524,7 +540,8 @@ void xvt_drawwin::CreateWindow()
       apply_ln, this, NULL},
     NULL,
   };
-  MenuItem Animate_menu[] = {
+  MenuItem Animate_menu[] = { // If you change this, be sure to check
+                              // dw_animate
     { "Animate", &xmToggleButtonGadgetClass, '\0', "Ctrl<Key>A", "Ctrl+A",
       animate, dw_animate, this, NULL},
     { "_sep3", &xmSeparatorGadgetClass, '\0', NULL, NULL, 0, NULL, NULL, NULL},
@@ -539,7 +556,8 @@ void xvt_drawwin::CreateWindow()
       dw_reset_animate, this, NULL},
     NULL,
   };
-  MenuItem Popup_menu[] = {
+  MenuItem Popup_menu[] = { // If you change this, be sure to check
+                            // dw_animate
     { "Zoom", &xmCascadeButtonGadgetClass, '\0', NULL, NULL, 0,
       NULL, this, Zoom_menu},
     { "_sep3", &xmSeparatorGadgetClass, '\0', NULL, NULL, 0, NULL, NULL, NULL},
@@ -709,6 +727,11 @@ void handleRedisplay(xvt_mainwin * xmvt);
 void xvt_drawwin::postRedisplay()
 {
   redisplay = true;
+  if(sync_window) {
+    list<vt_drawwin *>::iterator p;
+    for(p = xmvt.sync_list.begin(); p != xmvt.sync_list.end(); p++)
+      if((*p)->sync_window) (*p)->redisplay = true;
+  }
   if(!xmvt.redisplayPending) {
     xmvt.redisplayID = XtAppAddWorkProc(xmvt.Xapp(),
 					(XtWorkProc) handleRedisplay, &xmvt);

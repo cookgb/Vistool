@@ -43,6 +43,8 @@ public:  // data for 1DDump Abscissa
 public:
   FileType importtype;
   list<vt_drawwin *> draw_list;
+  list<vt_drawwin *> sync_list;
+  bool sync_dup;
   vt_mainwin();
   ~vt_mainwin();
   void incrementAnimation();
@@ -83,7 +85,6 @@ protected:
   stack <bounds_2D *> bounds_stack;
 protected:
   vt_mainwin & mvt;
-  bool redraw;
   bool animate;
   bool forward_animation;
   double current_l;
@@ -97,6 +98,8 @@ public:
   FileType importtype;
   char * name;
   bool selected;
+  bool sync_window;
+  bool redisplay;
   vt_drawwin(const char * n, vt_mainwin & mw);
   vt_drawwin(vt_drawwin & dw);
   ~vt_drawwin();
