@@ -12,6 +12,7 @@
 //-------------------------------------------------------------------------
 
 #include <Xm/RowColumn.h>
+#include <Xm/ToggleB.h>
 #include <Xm/FileSB.h>
 #include <X11/GLw/GLwMDrawA.h>
 
@@ -33,6 +34,7 @@ void ensurePulldownColormapInstalled(Widget w, XtPointer client_data,
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
 void mw_openfs_cb(Widget, XtPointer, XtPointer);
+void mw_file_cancel_cb(Widget, XtPointer, XtPointer);
 //----------------------------------------------------------------------------
 // Callback routine for main window File->Open menu selection
 void mw_file_open(Widget w, XtPointer client_data, XtPointer call_data)
@@ -42,13 +44,29 @@ void mw_file_open(Widget w, XtPointer client_data, XtPointer call_data)
   if(!mw->OpenDialog()) {
     mw->Open_Dialog = XmCreateFileSelectionDialog(mw->top_shell, "opendialog",
 						  NULL, 0);
-    XtAddCallback(mw->Open_Dialog, XmNokCallback, mw_openfs_cb, mw);
-    XtAddCallback(mw->Open_Dialog, XmNcancelCallback,
-		  (XtCallbackProc) XtUnmanageChild, NULL);
+    XtAddCallback(mw->OpenDialog(), XmNokCallback, mw_openfs_cb, mw);
+    XtAddCallback(mw->OpenDialog(), XmNcancelCallback, mw_file_cancel_cb, mw);
   }
   XtManageChild(mw->OpenDialog());
   XtPopup(XtParent(mw->OpenDialog()),XtGrabNone);
 }
+
+// Callback routine for main window File->Open->GIO menu selection
+void mw_file_cancel_cb(Widget w, XtPointer client_data, XtPointer call_data)
+{
+  xvt_mainwin * mw = (xvt_mainwin *) client_data;
+  switch(mw->importtype) {
+  case TYPE_GIO:
+  case TYPE_1DDump:
+    break;
+  case TYPE_1DAb:
+    mw->Abscissa_Set = !mw->Abscissa_Set;
+    XmToggleButtonSetState(mw->CheckButton_1DAbs, mw->Abscissa_Set, False);
+    break;
+  }
+  XtUnmanageChild(mw->OpenDialog());
+}
+
 // Callback routine for main window File->Open->GIO menu selection
 void mw_file_open_GIO(Widget w, XtPointer client_data, XtPointer call_data)
 {
@@ -62,6 +80,21 @@ void mw_file_open_1DDump(Widget w, XtPointer client_data, XtPointer call_data)
   xvt_mainwin * mw = (xvt_mainwin *) client_data;
   mw->importtype = TYPE_1DDump;
   mw_file_open(w, client_data, call_data);
+}
+// Callback routine for main window File->Open->GIO menu selection
+void mw_file_open_1DDAb(Widget w, XtPointer client_data, XtPointer call_data)
+{
+  xvt_mainwin * mw = (xvt_mainwin *) client_data;
+  mw->importtype = TYPE_1DAb;
+  mw->Abscissa_Set = !mw->Abscissa_Set;
+  if(mw->Abscissa_Set) {
+    mw_file_open(w, client_data, call_data);
+  } else {
+    if(mw->Abscissa_Filename) delete [] mw->Abscissa_Filename;
+    if(mw->Abscissa_Data) delete mw->Abscissa_Data;
+    mw->Abscissa_Filename = 0;
+    mw->Abscissa_Data = 0;
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -88,6 +121,21 @@ void mw_openfs_cb(Widget w, XtPointer client_data, XtPointer call_data)
       break;
     case TYPE_1DDump:
       if(!(dw->ImportFile_1DDump(file))) dw->close();
+      break;
+    case TYPE_1DAb:
+      if(dw->ImportFile_1DAbs(file)) {
+	if(mw->Abscissa_Filename) delete [] mw->Abscissa_Filename;
+	if(mw->Abscissa_Data) delete mw->Abscissa_Data;
+	mw->Abscissa_Filename = dw->Abscissa_Filename;
+	mw->Abscissa_Data = dw->Abscissa_Data;
+	dw->Abscissa_Set = 0;
+	dw->Abscissa_Filename = 0;
+	dw->Abscissa_Data = 0;
+      } else {
+	mw->Abscissa_Set = !mw->Abscissa_Set;
+	XmToggleButtonSetState(mw->CheckButton_1DAbs, mw->Abscissa_Set, False);
+      }
+      dw->close();
       break;
     }
     XtFree(file);
@@ -199,13 +247,104 @@ void dw_file_close(Widget w, XtPointer client_data, XtPointer call_data)
 
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
-//  void dw_openfs_cb_gio(Widget, XtPointer, XtPointer);
+void dw_openfs_cb(Widget, XtPointer, XtPointer);
+void dw_file_cancel_cb(Widget, XtPointer, XtPointer);
 //----------------------------------------------------------------------------
 // Callback routine for drawing window File->Open menu selection
 void dw_file_open(Widget w, XtPointer client_data, XtPointer call_data)
 {
-//    xvt_drawwin * dw = (xvt_drawwin *) client_data;
-  cout << "Selected Open... in a draw window" << endl;
+  xvt_drawwin * dw = (xvt_drawwin *) client_data;
+
+  if(!dw->OpenDialog()) {
+    dw->Open_Dialog = XmCreateFileSelectionDialog(dw->draw_shell, "opendialog",
+						  NULL, 0);
+    XtAddCallback(dw->OpenDialog(), XmNokCallback, dw_openfs_cb, dw);
+    XtAddCallback(dw->OpenDialog(), XmNcancelCallback, dw_file_cancel_cb, dw);
+  }
+  XtManageChild(dw->OpenDialog());
+  XtPopup(XtParent(dw->OpenDialog()),XtGrabNone);
+}
+
+// Callback routine for main window File->Open->GIO menu selection
+void dw_file_cancel_cb(Widget w, XtPointer client_data, XtPointer call_data)
+{
+  xvt_drawwin * dw = (xvt_drawwin *) client_data;
+  switch(dw->importtype) {
+  case TYPE_GIO:
+  case TYPE_1DDump:
+    break;
+  case TYPE_1DAb:
+    dw->Abscissa_Set = !dw->Abscissa_Set;
+    XmToggleButtonSetState(dw->CheckButton_1DAbs, dw->Abscissa_Set, False);
+    break;
+  }
+  XtUnmanageChild(dw->OpenDialog());
+}
+// Callback routine for drawing window File->Open menu selection
+void dw_file_open_GIO(Widget w, XtPointer client_data, XtPointer call_data)
+{
+  xvt_drawwin * dw = (xvt_drawwin *) client_data;
+  dw->importtype = TYPE_GIO;
+  dw_file_open(w, client_data, call_data);
+}
+// Callback routine for drawing window File->Open menu selection
+void dw_file_open_1DDump(Widget w, XtPointer client_data, XtPointer call_data)
+{
+  xvt_drawwin * dw = (xvt_drawwin *) client_data;
+  dw->importtype = TYPE_1DDump;
+  dw_file_open(w, client_data, call_data);
+}
+// Callback routine for drawing window File->Open menu selection
+void dw_file_open_1DDAb(Widget w, XtPointer client_data, XtPointer call_data)
+{
+  xvt_drawwin * dw = (xvt_drawwin *) client_data;
+  dw->importtype = TYPE_1DAb;
+  dw->Abscissa_Set = !dw->Abscissa_Set;
+  if(dw->Abscissa_Set) {
+    dw_file_open(w, client_data, call_data);
+  } else {
+    if(dw->Abscissa_Filename) delete [] dw->Abscissa_Filename;
+    if(dw->Abscissa_Data) delete dw->Abscissa_Data;
+    dw->Abscissa_Filename = 0;
+    dw->Abscissa_Data = 0;
+  }
+}
+
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+// Callback routine for open dialogue from main window File->Open 
+void dw_openfs_cb(Widget w, XtPointer client_data, XtPointer call_data)
+{
+  xvt_drawwin * dw = (xvt_drawwin *) client_data;
+
+  XmFileSelectionBoxCallbackStruct * fs = 
+    (XmFileSelectionBoxCallbackStruct *) call_data;
+
+  char * file;
+
+  if(fs) {
+    if(!XmStringGetLtoR(fs->value,XmFONTLIST_DEFAULT_TAG,&file))
+      return; // internal error
+    switch(dw->importtype) {
+    case TYPE_GIO:
+      dw->ImportFile_GIO(file);
+      break;
+    case TYPE_1DDump:
+      dw->ImportFile_1DDump(file);
+      break;
+    case TYPE_1DAb:
+      if(!(dw->ImportFile_1DAbs(file))) {
+	dw->Abscissa_Set = !dw->Abscissa_Set;
+	XmToggleButtonSetState(w, dw->Abscissa_Set, False);
+	if(dw->Abscissa_Filename) delete [] dw->Abscissa_Filename;
+	if(dw->Abscissa_Data) delete dw->Abscissa_Data;
+      }
+      break;
+    }
+    XtFree(file);
+  }
+  XtUnmanageChild(dw->OpenDialog());
 }
 
 //----------------------------------------------------------------------------

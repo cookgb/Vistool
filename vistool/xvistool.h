@@ -42,6 +42,8 @@ private:
   bool redisplayPending;
   XtWorkProcId redisplayID;
 public:
+  Widget CheckButton_1DAbs;
+public:
   xvt_mainwin(int & argc, char ** argv);
   ~xvt_mainwin();
   void Loop() { XtAppMainLoop(app);}
@@ -57,6 +59,7 @@ class xvt_drawwin : public vt_drawwin {
 private:
   friend xvt_mainwin;
   friend void mapStateChanged(Widget, XtPointer, XEvent *, Boolean *);
+  friend void dw_file_open(Widget, XtPointer, XtPointer);
   friend void dw_popup_animate(Widget, XtPointer, XtPointer);
   xvt_mainwin & xmvt;
   Widget draw_shell;
@@ -74,6 +77,8 @@ private:
   GLXContext cx;
   Dimension viewWidth, viewHeight;
 public:
+  Widget CheckButton_1DAbs;
+public:
   xvt_drawwin(const char * file, xvt_mainwin & mw);
   ~xvt_drawwin();
   virtual void deleteme() { delete this;}
@@ -84,6 +89,7 @@ public:
 public:
   Dimension wWidth() {return viewWidth;}
   Dimension wHeight() {return viewHeight;}
+  Widget OpenDialog() {return Open_Dialog;}
 };
 
 #endif // XVISTOOL_H

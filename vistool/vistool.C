@@ -17,6 +17,7 @@
 #include "GIO/GIOlib.h"
 
 vt_mainwin::vt_mainwin()
+  : Abscissa_Set(0), Abscissa_Filename(0), Abscissa_Data(0)
 {
 }
 
@@ -27,6 +28,10 @@ vt_mainwin::~vt_mainwin()
   while((p = draw_list.begin()) != draw_list.end()) {
     draw_list.erase(p);
     (*p)->deleteme();
+  }
+  if(Abscissa_Set) {
+    delete [] Abscissa_Filename;
+    delete Abscissa_Data;
   }
 }
 
@@ -48,16 +53,31 @@ void vt_mainwin::incrementAnimation()
 
 vt_drawwin::vt_drawwin(const char * n, vt_mainwin & mw)
   : Lb_x(0.), Ub_x(1.), Lb_y(0.), Ub_y(1.),
-    mvt(mw), animate(false), redraw(false)
+    mvt(mw), animate(false), redraw(false),
+    Abscissa_Set(mw.Abscissa_Set)
 {
   name = new char[strlen(n)+1];
   strcpy(name,n);
+
+  if(Abscissa_Set) {
+    Abscissa_Filename = new char[strlen(mw.Abscissa_Filename)+1];
+    strcpy(Abscissa_Filename,mw.Abscissa_Filename);
+    Abscissa_Data = new vt_data_1d(*mw.Abscissa_Data);
+  } else {
+    Abscissa_Filename = 0;
+    Abscissa_Data = 0;
+  }
+
   mw.draw_list.push_back(this);
 }
 
 vt_drawwin::~vt_drawwin()
 {
-  delete name;
+  delete [] name;
+  if(Abscissa_Set) {
+    delete [] Abscissa_Filename;
+    delete Abscissa_Data;
+  }
 }
 void vt_drawwin::close()
 {
@@ -119,6 +139,7 @@ bool vt_drawwin::ImportFile_GIO(char * file)
     windowReshape(cur_width,cur_height);
     break;
   }
+  draw();
   return true;
 }
 
@@ -127,7 +148,7 @@ bool vt_drawwin::ImportFile_1DDump(char * filename)
   // Open file
   ifstream file;
   file.open(filename,ios::in);
-  if(!file) return false;
+  if(!file.good()) return false;
 
   // Create new vt_data_series
   vt_data_series *series = new vt_data_series(filename);
@@ -140,20 +161,27 @@ bool vt_drawwin::ImportFile_1DDump(char * filename)
     // Time
     double time;
     file.read((char *) &time,sizeof(double)); 
-    if(!file) break;
+    if(!file.good() || (file.gcount() != sizeof(double))) break;
 
     // Shape
     int *shape = new int[dim];
     file.read((char *) shape,dim*sizeof(int)); 
-    if(!file) {
+    if(!file.good() || (file.gcount() != dim*sizeof(int))) {
       delete[] shape;
       break;
     }
+
+    int i;
+    for(i=0;i<dim;i++)
+      if(shape[i] <= 0) {
+	delete [] shape;
+	break;
+      }
     
     // Wbox
     double *wbox = new double[2*dim];
     file.read(((char *) wbox),2*dim*sizeof(double));
-    if(!file) {
+    if(!file.good() || (file.gcount() != 2*dim*sizeof(double))) {
       delete[] shape;
       delete[] wbox;
       break;
@@ -161,28 +189,45 @@ bool vt_drawwin::ImportFile_1DDump(char * filename)
     
     // Data
     int datasize = 1;
-    int i;
     for(i=0;i<dim;i++) datasize *= shape[i];
     double *data = new double[datasize];
+    if(!data) {
+      delete[] shape;
+      delete[] wbox;
+      break;
+    }
     file.read((char *) data,datasize*sizeof(double));
-    if(!file) {
+    if(file.gcount() != datasize*sizeof(double)) {
       delete[] shape;
       delete[] wbox;
       delete[] data;
       break;
     }
     
-    // Compute coordinates
-    double *x        = new double[shape[0]];
-    const double dx  = (wbox[1]-wbox[0])/(shape[0]-1);
-    for(i=0;i<shape[0];i++) x[i] = wbox[0] + dx*i;
-
     // Create a new vt_data_1d and append to series
-    series->Append(new vt_data_1d(time,shape[0],x,data));
-    Retrieved_Valid_Timestep++;
-
+    if(Abscissa_Set) {
+      // Get coords from abscissa
+      if(Abscissa_Data->Size() == shape[0]) {
+	double *x             = new double[shape[0]];
+	const double *xevery2 = Abscissa_Data->Data();
+	for(int i=0;i<shape[0];i++) x[i] = xevery2[2*i+1];
+	// Now append
+	series->Append(new vt_data_1d(time,shape[0],x,data));
+	Retrieved_Valid_Timestep++;
+	delete[] x;
+      }
+    } else {
+      // Compute coordinates
+      double *x        = new double[shape[0]];
+      const double dx  = (wbox[1]-wbox[0])/(shape[0]-1);
+      for(int i=0;i<shape[0];i++) x[i] = wbox[0] + dx*i;
+      // Now append
+      series->Append(new vt_data_1d(time,shape[0],x,data));
+      Retrieved_Valid_Timestep++;
+      delete[] x;
+    }
+    
     // Clean up
-    delete[] x;
     delete[] data;
     delete[] wbox;
     delete[] shape;
@@ -197,6 +242,95 @@ bool vt_drawwin::ImportFile_1DDump(char * filename)
   // Add series to list
   Add(series);
   windowReshape(cur_width,cur_height);
+
+  draw();
+  return true;
+}
+
+bool vt_drawwin::ImportFile_1DAbs(char * filename)
+{
+  // Open file
+  ifstream file;
+  file.open(filename,ios::in);
+  if(!file.good()) return false;
+
+  // Read ONE timestep from file
+  const int dim=1;
+
+  // Time
+  double time;
+  file.read((char *) &time,sizeof(double)); 
+  if(!file.good() || (file.gcount() != sizeof(double))) {
+    file.close();
+    return false;
+  }
+  
+  // Shape
+  int *shape = new int[dim];
+  file.read((char *) shape,dim*sizeof(int)); 
+  if(!file.good() || (file.gcount() != dim*sizeof(int))) {
+    delete[] shape;
+    file.close();
+    return false;
+  }
+
+  int i;
+  for(i=0;i<dim;i++)
+    if(shape[i] <= 0) {
+      delete [] shape;
+      file.close();
+      return false;
+    }
+
+  // Wbox
+  double *wbox = new double[2*dim];
+  file.read(((char *) wbox),2*dim*sizeof(double));
+  if(!file.good() || (file.gcount() != 2*dim*sizeof(double))) {
+    delete[] shape;
+    delete[] wbox;
+    file.close();
+    return false;
+  }
+
+  // Coordinate Data
+  int datasize = 1;
+  for(i=0;i<dim;i++) datasize *= shape[i];
+  double *data = new double[datasize];
+  if(!data) {
+    delete[] shape;
+    delete[] wbox;
+    file.close();
+    return false;
+  }
+  file.read((char *) data,datasize*sizeof(double));
+  if(file.gcount() != datasize*sizeof(double)) {
+    delete[] shape;
+    delete[] wbox;
+    delete[] data;
+    file.close();
+    return false;
+  }
+  
+  // Compute coordinates
+  double *x        = new double[shape[0]];
+  const double dx  = (wbox[1]-wbox[0])/(shape[0]-1);
+  for(i=0;i<shape[0];i++) x[i] = wbox[0] + dx*i;
+
+  // Set data
+  if(Abscissa_Data) delete Abscissa_Data;
+  Abscissa_Data = new vt_data_1d(time,shape[0],x,data);
+
+  // Set filename
+  if(Abscissa_Filename) delete[] Abscissa_Filename;
+  Abscissa_Filename = new char[strlen(filename)+1];
+  strcpy(Abscissa_Filename,filename);
+  
+  // Clean up
+  delete[] x;
+  delete[] wbox;
+  delete[] shape;
+  delete[] data;
+  file.close();
 
   return true;
 }
@@ -290,6 +424,18 @@ vt_data_1d::vt_data_1d(double l, int s, const double * x, const double * y)
     else if(ly > Ub_y) Ub_y = ly;
     data[i++] = ly;
   }
+}
+
+vt_data_1d::vt_data_1d(const vt_data_1d & src)
+  : vt_data(src.label,src.size)
+{
+  data = new double[2*size];
+  Lb_x = src.Lb_x;
+  Ub_x = src.Ub_x;
+  Lb_y = src.Lb_y;
+  Ub_y = src.Ub_y;
+  for(int d=0; d<2*size; d++) data[d] = src.data[d];
+
 }
 
 void vt_data_1d::draw() {

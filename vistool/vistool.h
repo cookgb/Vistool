@@ -13,12 +13,18 @@
 
 enum FileType {
   TYPE_GIO,
-  TYPE_1DDump
+  TYPE_1DDump,
+  TYPE_1DAb
 };
 
 class vt_drawwin;
+class vt_data_1d;
 
 class vt_mainwin {
+public:  // data for 1DDump Abscissa
+  bool Abscissa_Set;
+  char * Abscissa_Filename;
+  vt_data_1d * Abscissa_Data;
 public:
   FileType importtype;
   list<vt_drawwin *> draw_list;
@@ -43,6 +49,10 @@ protected:
   vt_mainwin & mvt;
   bool animate;
   bool redraw;
+public:  // data for 1DDump Abscissa
+  bool Abscissa_Set;
+  char * Abscissa_Filename;
+  vt_data_1d * Abscissa_Data;
 public:
   FileType importtype;
   char * name;
@@ -51,6 +61,7 @@ public:
   void close();
   bool ImportFile_GIO(char * file);
   bool ImportFile_1DDump(char * file);
+  bool ImportFile_1DAbs(char * file);
   virtual void deleteme() { delete this;}
   virtual void init(int, int);
   virtual void draw();
@@ -80,12 +91,15 @@ public:
   double UBy() {return Ub_y;}
   virtual void draw() {}
   double Label() {return label;}
+  const double *Data() const {return data;};
+  int Size() const {return size;};
 };
 
 class vt_data_1d : public vt_data {
 protected:
 public:
   vt_data_1d(double l, int n, const double * x, const double * y);
+  vt_data_1d(const vt_data_1d & src);
   void draw();
 };
 

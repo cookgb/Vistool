@@ -38,6 +38,7 @@ void main(int argc, char * argv[])
 void ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
 void mw_file_open_GIO(Widget, XtPointer, XtPointer);
 void mw_file_open_1DDump(Widget, XtPointer, XtPointer);
+void mw_file_open_1DDAb(Widget, XtPointer, XtPointer);
 void mw_file_quit(Widget, XtPointer, XtPointer);
 void mw_help(Widget, XtPointer, XtPointer);
 //----------------------------------------------------------------------------
@@ -181,9 +182,12 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
   // Open submenu
   XmString m_gio_format = XmStringCreateLocalized("GIO Format");
   XmString m_1ddump_format = XmStringCreateLocalized("1DDump Format");
+  XmString m_1ddump_abscissa = XmStringCreateLocalized("1DDump Abscissa");
   //
 #define OPENMENU XmVaPUSHBUTTON,m_gio_format,'G',NULL,NULL,\
-	         XmVaPUSHBUTTON,m_1ddump_format,'1',NULL,NULL
+                 XmVaSEPARATOR,\
+	         XmVaPUSHBUTTON,m_1ddump_format,'1',NULL,NULL,\
+		 XmVaCHECKBUTTON,m_1ddump_abscissa,NULL,NULL,NULL
   //
   Widget open_popout;
   if(overlayVisual) {
@@ -210,6 +214,11 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
     XtAddCallback(w, XmNactivateCallback, mw_file_open_GIO, this);
   if(Widget w = XtNameToWidget(open_popout,"button_1"))
     XtAddCallback(w, XmNactivateCallback, mw_file_open_1DDump, this);
+  if(Widget w = XtNameToWidget(open_popout,"button_2")) {
+    CheckButton_1DAbs = w;
+    XtAddCallback(w, XmNvalueChangedCallback, mw_file_open_1DDAb, this);
+    XmToggleButtonSetState(w, Abscissa_Set, False);
+  }
 
   //--------------------------------------------------------------------------
   // Last menu is the Help menu
@@ -268,6 +277,9 @@ void mapStateChanged(Widget, XtPointer, XEvent *, Boolean *);
 void dw_popup_animate(Widget, XtPointer, XtPointer);
 void ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
 void dw_file_open(Widget, XtPointer, XtPointer);
+void dw_file_open_GIO(Widget, XtPointer, XtPointer);
+void dw_file_open_1DDump(Widget, XtPointer, XtPointer);
+void dw_file_open_1DDAb(Widget, XtPointer, XtPointer);
 void dw_file_close(Widget, XtPointer, XtPointer);
 void dw_help(Widget, XtPointer, XtPointer);
 void activatePopup(Widget, XtPointer, XEvent *, Boolean *);
@@ -281,7 +293,7 @@ void apply_ln(Widget, XtPointer, XtPointer);
 //----------------------------------------------------------------------------
 // Creator for X11 version of drawing window.
 xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
-  : vt_drawwin(filename,mw), xmvt(mw)
+  : vt_drawwin(filename,mw), xmvt(mw), Open_Dialog(0)
 {
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
@@ -372,9 +384,12 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
   // Open submenu
   XmString m_gio_format = XmStringCreateLocalized("GIO Format");
   XmString m_1ddump_format = XmStringCreateLocalized("1DDump format");
+  XmString m_1ddump_abscissa = XmStringCreateLocalized("1DDump Abscissa");
   //
 #define OPENMENU XmVaPUSHBUTTON,m_gio_format,'G',NULL,NULL,\
-	         XmVaPUSHBUTTON,m_1ddump_format,'1',NULL,NULL
+                 XmVaSEPARATOR,\
+	         XmVaPUSHBUTTON,m_1ddump_format,'1',NULL,NULL,\
+		 XmVaCHECKBUTTON,m_1ddump_abscissa,NULL,NULL,NULL
   //
   Widget open_popout;
   if(xmvt.overlayVisual) {
@@ -398,9 +413,14 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
   XmStringFree(m_1ddump_format);
   // Set the callback routines for each menu button.
   if(Widget w = XtNameToWidget(open_popout,"button_0"))
-    XtAddCallback(w, XmNactivateCallback, dw_file_open, this);
+    XtAddCallback(w, XmNactivateCallback,dw_file_open_GIO, this);
   if(Widget w = XtNameToWidget(open_popout,"button_1"))
-    XtAddCallback(w, XmNactivateCallback, dw_file_open, this);
+    XtAddCallback(w, XmNactivateCallback,dw_file_open_1DDump, this);
+  if(Widget w = XtNameToWidget(open_popout,"button_2")) {
+    CheckButton_1DAbs = w;
+    XtAddCallback(w, XmNvalueChangedCallback,dw_file_open_1DDAb, this);
+    XmToggleButtonSetState(w, Abscissa_Set, False);
+  }
 
   //--------------------------------------------------------------------------
   // Last menu is the Help menu
