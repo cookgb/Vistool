@@ -33,8 +33,8 @@ vt_mainwin::~vt_mainwin()
   typedef std::list<vt_drawwin *>::iterator I_dw;
   I_dw p;
   while((p = draw_list.begin()) != draw_list.end()) {
-    draw_list.erase(p);
     (*p)->deleteme();
+    draw_list.erase(p);
   }
   if(Abscissa_Set) {
     delete [] Abscissa_Filename;
@@ -153,8 +153,8 @@ vt_drawwin::~vt_drawwin()
   // Delete data list
   std::list<vt_data_series *>::iterator p;
   while((p = data_list.begin()) != data_list.end()) {
-    data_list.erase(p);
     delete *p;
+    data_list.erase(p);
   }
   // Delete name of window
   delete [] name;
@@ -177,7 +177,7 @@ void vt_drawwin::close()
   mvt.draw_list.erase(d);
 
   // delete memory
-  (*d)->deleteme();
+  deleteme();
 }
 
 bool vt_drawwin::ImportFile_GIO(const char *const file)
@@ -1008,8 +1008,8 @@ vt_data_series::~vt_data_series()
   typedef std::list<vt_data *>::iterator I_vd;
   I_vd p;
   while((p = data.begin()) != data.end()) {
-    data.erase(p);
     delete *p;
+    data.erase(p);
   }
   if(name) delete[] name;
   if(origin) delete[] origin;
