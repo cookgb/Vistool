@@ -1,7 +1,7 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.18 2000-08-10 18:12:07 cookgb Exp $
+# $Id: Makefile,v 1.19 2000-08-10 18:19:29 cookgb Exp $
 #
 ###############################################################################
 # linux
@@ -58,5 +58,6 @@ depend:
 	make localdepend
 
 localdepend:
-	makedepend -f makefile -I$(CXXINCLUDES) -- $(CXXFLAGS) -- \
+	makedepend -f makefile \
+		-- -I$(CXXINCLUDES) $(CXXFLAGS) -- \
 		$(FILES) $(LIBFILES)
