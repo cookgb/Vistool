@@ -18,9 +18,11 @@ class xvt_drawwin;
 
 class xvt_mainwin : public vt_mainwin {
 private:
-  friend void mw_file_cb(Widget, XtPointer, XtPointer);
+  friend void ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
+  friend void mw_file_open(Widget, XtPointer, XtPointer);
   friend void mw_openfs_cb(Widget, XtPointer, XtPointer);
   friend void dw_InstallPDColormap(Widget, XtPointer, XtPointer);
+  friend void activateMenu(Widget, XtPointer, XEvent *, Boolean *);
   friend class xvt_drawwin;
   // X/Motif data
   Display * display;
@@ -44,12 +46,15 @@ public:
 
 class xvt_drawwin : public vt_drawwin {
 private:
+  friend void activateMenu(Widget, XtPointer, XEvent *, Boolean *);
   xvt_mainwin & xvt;
   Widget draw_shell;
   Widget main_w;
   Widget frame;
   Widget glx_area;
   Widget menu_bar;
+  Widget popup;
+  WidgetList popuplist;
   Widget Open_Dialog;
 public:
   xvt_drawwin(const char * file, xvt_mainwin & mw);
