@@ -173,7 +173,7 @@ bool vt_drawwin::ImportFile_GIO(char * file)
     vt_data_series ** vsa = new vt_data_series * [Ns];
     const int Nd = GIO.NDataSets();
     const bool firstiscoord = (Nd < 2) ? false : true;
-    int datastart=1;
+    const int datastart = firstiscoord ? 1 : 0;
     for(int i=0; i<Nd; i++) vsa[i] = new vt_data_series(GIO.Name(i), file);
     for(int N=0; N<Ns; N++) {
       if(GIO.Read()) {
@@ -184,9 +184,8 @@ bool vt_drawwin::ImportFile_GIO(char * file)
 	if(firstiscoord) {
 	  x = GIO.Data(0);
 	} else {
-	  datastart = 0;
 	  xc = new double[ext];
-	  for(int ix=1; ix<=ext; ix++) xc[ix] = ix;
+	  for(int ix=0; ix<ext; ix++) xc[ix] = ix;
 	  x = xc;
 	}
 	for(int i=datastart; i<Nd; i++) {
