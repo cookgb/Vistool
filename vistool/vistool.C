@@ -74,6 +74,7 @@ bool vt_mainwin::ImportFile(char * file, vt_drawwin & dw)
     }
     for(int j=0; j<Nd; j++) dw.Add(vsa[j]);
     delete [] vsa;
+    dw.windowReshape(dw.Width(),dw.Height());
     break;
   }
   return true;
@@ -96,7 +97,8 @@ void vt_mainwin::incrementAnimation()
 
 
 vt_drawwin::vt_drawwin(const char * n, vt_mainwin & mw)
-  : mvt(mw), animate(false), redraw(false)
+  : Lb_x(0.), Ub_x(1.), Lb_y(0.), Ub_y(1.),
+    mvt(mw), animate(false), redraw(false)
 {
   name = new char[strlen(n)+1];
   strcpy(name,n);
@@ -123,6 +125,8 @@ void vt_drawwin::close()
 void vt_drawwin::init(int width, int height)
 {
   glClearColor(0.4, 0.4, 0.4, 0.0);
+  cur_width = width;
+  cur_height = height;
   windowReshape(width,height);
 }
 
@@ -158,7 +162,29 @@ void vt_drawwin::windowReshape(int width, int height)
   glViewport(0, 0, width, height);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  gluOrtho2D(-6.0,6.0,-2.0,2.0);
+  const double xb = 0.025*(Ub_x - Lb_x);
+  const double yb = 0.025*(Ub_y - Lb_y);
+  gluOrtho2D(Lb_x-xb,Ub_x+xb,Lb_y-yb,Ub_y+yb);
+}
+
+void vt_drawwin::Add(vt_data_series * ds)
+{
+  const double lbx = ds->LBx();
+  const double ubx = ds->UBx();
+  const double lby = ds->LBy();
+  const double uby = ds->UBy();
+  if(!(data_list.size())) {
+    Lb_x = lbx;
+    Ub_x = ubx;
+    Lb_y = lby;
+    Ub_y = uby;
+  } else {
+    if(lbx < Lb_x) Lb_x = lbx;
+    if(ubx > Ub_x) Ub_x = ubx;
+    if(lby < Lb_y) Lb_y = lby;
+    if(uby > Ub_y) Ub_y = uby;
+  }
+  data_list.push_back(ds);
 }
 
 vt_data::~vt_data()

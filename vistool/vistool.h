@@ -27,6 +27,12 @@ class vt_data_series;
 class vt_drawwin {
 private:
   list<vt_data_series *> data_list;
+  int cur_width;
+  int cur_height;
+  double Lb_x;
+  double Ub_x;
+  double Lb_y;
+  double Ub_y;
 protected:
   friend vt_mainwin;
   vt_mainwin & mvt;
@@ -43,7 +49,9 @@ public:
   void increment();
   virtual void resize(int, int);
   void windowReshape(int, int);
-  void Add(vt_data_series * ds) {data_list.push_back(ds);}
+  void Add(vt_data_series * ds);
+  int Width() {return cur_width;}
+  int Height() {return cur_height;}
 };
 
 class vt_data {

@@ -17,11 +17,15 @@ double wave(double t, double x)
 {
   return 1.5*sin(t - x);
 }
+double wave2(double t, double x)
+{
+  return sin(t + x);
+}
 
 main()
 {
   const char * filename = "Wave.data";
-  const char * names[] = {"x","y"};
+  const char * names[] = {"y","z"};
   const double t0 =  0.0;
   const double t1 = 10.0;
   const int    nt =  201;
@@ -33,7 +37,9 @@ main()
 
   double * x = new double[nx];
   double * y = new double[nx];
-  double * data[] = {x,y};
+  double * z = new double[nx];
+  double * data[] = {y,z};
+//    double * data[] = {y};
 
   for(int i=0; i<nx; i++) x[i] = x0 + i*dx;
 
@@ -41,6 +47,7 @@ main()
 
   {
     GIO_double1DC output(filename,names,2,status);
+//      GIO_double1DC output(filename,names,1,status);
     if(!status) {
       cerr << "Opening output file failed" << endl;
       abort();
@@ -51,11 +58,15 @@ main()
     int ext[1];
     for(int n=0; n<nt; n++) {
       double t = t0 + n*dt;
-      for(int i=0; i<nx; i++) y[i] = wave(t,x[i]);
+      for(int i=0; i<nx; i++) {
+	y[i] = wave(t,x[i]);
+	z[i] = wave2(t,x[i]);
+      }
       Lb[0] = x[0];
       Ub[0] = x[nx-1];
       ext[0] = nx;
       output.Write(t,Lb,Ub,ext,data,2);
+//        output.Write(t,Lb,Ub,ext,data,1);
       //output.Write(t,ext,data,2);
     }
   }
