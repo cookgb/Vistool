@@ -736,10 +736,24 @@ void vt_drawwin::Coords_Text(const bool add)
 void vt_drawwin::Apply(const TransformationFunction T)
 {
   std::list<vt_data_series *>::iterator p = data_list.begin();
-  Default_Bounds = (*p)->Bounds();
+  bool first = true;
   for(p = data_list.begin(); p != data_list.end(); p++) {
     (*p)->Apply(T);
-    Default_Bounds.Union((*p)->Bounds());
+    if(first) {Default_Bounds = (*p)->Bounds(); first = false;}
+    else Default_Bounds.Union((*p)->Bounds());
+  }
+
+  reset_CurrentBounds();
+}
+
+void vt_drawwin::Apply_Seq(const TransformSequence T)
+{
+  std::list<vt_data_series *>::iterator p = data_list.begin();
+  bool first = true;
+  for(p = data_list.begin(); p != data_list.end(); p++) {
+    (*p)->Apply_Seq(T);
+    if(first) {Default_Bounds = (*p)->Bounds(); first = false;}
+    else Default_Bounds.Union((*p)->Bounds());
   }
 
   reset_CurrentBounds();
@@ -848,6 +862,31 @@ void vt_data_1d::Apply(const TransformationFunction T)
     break;
   default :
     cerr << "Unknown TransformationFunction in vt_data_1d::Apply" << endl;
+  }
+}
+
+void vt_data_1d::Apply_Seq(const TransformSequence T, vt_data & n)
+{
+  int i;
+  double Lb_y;
+  double Ub_y;
+  double dtinv;
+  double ly;
+  switch(T) {
+  case T_Deriv :
+    dtinv = n.Label() - label; if(dtinv == 0.0) dtinv = 1.0;
+    dtinv = 1.0/dtinv;
+    Ub_y = Lb_y = (n.Data()[1] - data[1])*dtinv;
+    for(i=1; i<2*size; i+=2) {
+      data[i] = ly = (n.Data()[i] - data[i])*dtinv;
+      if(ly < Lb_y) Lb_y = ly;
+      else if(ly > Ub_y) Ub_y = ly;
+    }
+    bounds.Lb_y = Lb_y;
+    bounds.Ub_y = Ub_y;
+    break;
+  default :
+    cerr << "Unknown TransformSequence in vt_data_1d::Apply_Seq" << endl;
   }
 }
 
@@ -1009,10 +1048,11 @@ void vt_data_series::Reset(const bool forward_animation)
 void vt_data_series::Apply(const TransformationFunction T)
 {
   std::list<vt_data *>::iterator p = data.begin();
-  bounds = (*p)->Bounds();
+  bool first = true;
   for(p = data.begin(); p != data.end(); p++) {
     (*p)->Apply(T);
-    bounds.Union((*p)->Bounds());
+    if(first) {bounds = (*p)->Bounds(); first = false;}
+    else bounds.Union((*p)->Bounds());
   }
   switch(T) {
   case Abs :
@@ -1026,6 +1066,29 @@ void vt_data_series::Apply(const TransformationFunction T)
     break;
   default :
     cerr << "Unknown TransformationFunction in vt_data_series::Apply" << endl;
+  }
+}
+
+void vt_data_series::Apply_Seq(const TransformSequence T)
+{
+  std::list<vt_data *>::iterator p = data.begin();
+  bool first = true;
+  for(p = data.begin(); p != --(data.end()); p++) {
+    std::list<vt_data *>::iterator n = p;
+    (*p)->Apply_Seq(T, **(++n));
+    if(first) {bounds = (*p)->Bounds(); first = false;}
+    else bounds.Union((*p)->Bounds());
+  }
+  vt_data * last = data.back();
+  data.pop_back();
+  delete last;
+
+  switch(T) {
+  case T_Deriv :
+    FunctionName("d/dt");
+    break;
+  default :
+    cerr << "Unknown TransformSequence in vt_data_series::Apply_Seq" << endl;
   }
 }
 

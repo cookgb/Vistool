@@ -22,7 +22,11 @@ enum FileType {
 enum TransformationFunction {
   Abs,
   Log,
-  Ln
+  Ln,
+};
+
+enum TransformSequence {
+  T_Deriv
 };
 
 enum NormType {
@@ -135,6 +139,7 @@ public:
   void Label_Text(const bool add);
   void Coords_Text(const bool add);
   void Apply(const TransformationFunction T);
+  void Apply_Seq(const TransformSequence T);
 };
 
 class vt_data {
@@ -157,6 +162,7 @@ public:
   const double *Data() const {return data;};
   int Size() const {return size;};
   virtual void Apply(const TransformationFunction T) = 0;
+  virtual void Apply_Seq(const TransformSequence T, vt_data & n) = 0;
   virtual double Norm(const NormType T) const = 0;
 };
 
@@ -169,6 +175,7 @@ public:
   void draw() const;
   vt_data * Copy() const;
   void Apply(const TransformationFunction T);
+  void Apply_Seq(const TransformSequence T, vt_data & n);
   double Norm(const NormType T) const;
 };
 
@@ -207,6 +214,7 @@ public:
   void Decrement();
   void Reset(const bool forward_iteration);
   void Apply(const TransformationFunction T);
+  void Apply_Seq(const TransformSequence T);
   void FunctionName(const char *const func);
   vt_data_series * Norm(const NormType T) const;
 };

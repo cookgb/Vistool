@@ -40,6 +40,13 @@ void apply_ln(Widget w, XtPointer client_data, XtPointer call_data)
   ndw->Apply(Ln);
 }
 
+void apply_dt(Widget w, XtPointer client_data, XtPointer call_data)
+{
+  xvt_drawwin * dw = (xvt_drawwin *) client_data;
+  vt_drawwin * ndw = new xvt_drawwin(*dw);
+  ndw->Apply_Seq(T_Deriv);
+}
+
 void norm_Linf(Widget w, XtPointer client_data, XtPointer call_data)
 {
   xvt_drawwin * dw = (xvt_drawwin *) client_data;

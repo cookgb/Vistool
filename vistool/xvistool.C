@@ -423,6 +423,7 @@ void apply_copy(Widget, XtPointer, XtPointer);
 void apply_abs(Widget, XtPointer, XtPointer);
 void apply_log(Widget, XtPointer, XtPointer);
 void apply_ln(Widget, XtPointer, XtPointer);
+void apply_dt(Widget, XtPointer, XtPointer);
 //----------------------------------------------------------------------------
 void norm_Linf(Widget, XtPointer, XtPointer);
 void norm_L1(Widget, XtPointer, XtPointer);
@@ -561,6 +562,8 @@ void xvt_drawwin::CreateWindow()
       apply_log, this, NULL},
     { "Ln", &xmPushButtonGadgetClass, '\0', NULL, NULL, 0,
       apply_ln, this, NULL},
+    { "d/dt", &xmPushButtonGadgetClass, '\0', NULL, NULL, 0,
+      apply_dt, this, NULL},
     NULL,
   };
   MenuItem Norms_menu[] = {

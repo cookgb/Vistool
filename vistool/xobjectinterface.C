@@ -332,6 +332,8 @@ void mw_anim_sync(Widget w, XtPointer client_data, XtPointer call_data)
 	dwp->animate = false;
 	dwp->SetAnimateToggle(false);
       }
+      // Set to forward animation.
+      dwp->forward_animation = true;
       // And reset the lists.
       dwp->reset_list();
       // Finally, you can set the window to be synced.
