@@ -25,7 +25,6 @@ public:
   friend void mw_openfs_cb(Widget, XtPointer, XtPointer);
   friend void dw_InstallPDColormap(Widget, XtPointer, XtPointer);
   friend void activateMenu(Widget, XtPointer, XEvent *, Boolean *);
-  friend class xvt_drawwin;
   // X/Motif data
   Display * display;
   XtAppContext app;
@@ -48,7 +47,6 @@ public:
 
 class xvt_drawwin : public vt_drawwin {
 private:
-public:
   friend void dw_ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
   friend void activateMenu(Widget, XtPointer, XEvent *, Boolean *);
   xvt_mainwin & xvt;

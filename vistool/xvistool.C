@@ -92,31 +92,31 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
 
   //--------------------------------------------------------------------------
   // Detect overlay support
-//    {
-//      int entries = 2; // need more than 2 colormap entries for reasonable menus.
-//      for(int layer = 1; layer <=3; layer++) {
-//        sovVisualInfo templ;
-//        int nVisuals=0;
-//        templ.layer = layer; templ.vinfo.screen = DefaultScreen(display);
-//        sovVisualInfo * overlayVisuals =
-//  	sovGetVisualInfo(display,
-//  			 VisualScreenMask | VisualLayerMask,
-//  			 &templ, &nVisuals);
-//        if(overlayVisuals) {
-//  	for(int i = 0; i < nVisuals; i++) {
-//  	  if(overlayVisuals[i].vinfo.visual->map_entries > entries) {
-//  	    overlayVisual = overlayVisuals[i].vinfo.visual;
-//  	    overlayDepth  = overlayVisuals[i].vinfo.depth;
-//  	    entries = overlayVisual->map_entries;
-//  	  }
-//  	}
-//  	XFree(overlayVisuals);
-//        }
-//      }
-//      if(overlayVisual) 
-//        overlayColormap = XCreateColormap(display,DefaultRootWindow(display),
-//  					overlayVisual, AllocNone);
-//    }
+  {
+    int entries = 2; // need more than 2 colormap entries for reasonable menus.
+    for(int layer = 1; layer <=3; layer++) {
+      sovVisualInfo templ;
+      int nVisuals=0;
+      templ.layer = layer; templ.vinfo.screen = DefaultScreen(display);
+      sovVisualInfo * overlayVisuals =
+	sovGetVisualInfo(display,
+			 VisualScreenMask | VisualLayerMask,
+			 &templ, &nVisuals);
+      if(overlayVisuals) {
+	for(int i = 0; i < nVisuals; i++) {
+	  if(overlayVisuals[i].vinfo.visual->map_entries > entries) {
+	    overlayVisual = overlayVisuals[i].vinfo.visual;
+	    overlayDepth  = overlayVisuals[i].vinfo.depth;
+	    entries = overlayVisual->map_entries;
+	  }
+	}
+	XFree(overlayVisuals);
+      }
+    }
+    if(overlayVisual) 
+      overlayColormap = XCreateColormap(display,DefaultRootWindow(display),
+					overlayVisual, AllocNone);
+  }
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
@@ -200,22 +200,11 @@ void mw_ensurePulldownColormapInstalled(Widget w, XtPointer client_data,
 				     XtPointer call_data)
 {
   // Get the xvt_mainwin.
-  Widget lw = w;
   xvt_mainwin * mw = NULL;
   XtVaGetValues(w,XmNuserData,&mw,NULL);
-  // Extra indirection if overlays are used
-  if(!mw) {
-    XtVaGetValues(XtParent(w),XmNuserData,&mw,NULL);
-    cout << "**** Getting Parent Widget in "
-	 << "mw_ensurePulldownColormapInstalled" <<endl;
-    lw = XtParent(w);
-  }
-  cout << "mw_ensurePulldownColormapInstalled" << endl;
-  cout << "top_shell   : " << mw->top_shell   << endl;
-  cout << "main_w      : " << mw->main_w      << endl;
-  cout << "menu_bar    : " << mw->menu_bar    << endl;
-  cout << "Open_Dialog : " << mw->Open_Dialog << endl;
-  cout << "Widget      : " << lw              << endl;
+  // Extra indirection if overlays are used !!!!
+  if(!mw) XtVaGetValues(XtParent(w),XmNuserData,&mw,NULL);
+  //if(!mw) {cerr << "Error getting xvt_mainwin pointer" << endl; abort();}
 
   XInstallColormap(mw->display, mw->overlayColormap);
 }
@@ -228,21 +217,9 @@ void mw_openfs_cb(Widget, XtPointer, XtPointer);
 void mw_file_open(Widget w, XtPointer client_data, XtPointer call_data)
 {
   // Get the xvt_mainwin.
-  Widget lw = w;
   xvt_mainwin * mw = NULL;
-  // Extra indirection if overlays are used
-  if(!mw) {
-    XtVaGetValues(XtParent(w),XmNuserData,&mw,NULL);
-    cout << "**** Getting Parent Widget in "
-	 << "mw_file_open" <<endl;
-    lw = XtParent(w);
-  }
-  cout << "mw_file_open" << endl;
-  cout << "top_shell   : " << mw->top_shell   << endl;
-  cout << "main_w      : " << mw->main_w      << endl;
-  cout << "menu_bar    : " << mw->menu_bar    << endl;
-  cout << "Open_Dialog : " << mw->Open_Dialog << endl;
-  cout << "Widget      : " << lw              << endl;
+  XtVaGetValues(w,XmNuserData,&mw,NULL);
+  //if(!mw) {cerr << "Error getting xvt_mainwin pointer" << endl; abort();}
 
   if(!mw->Open_Dialog) {
     Arg args;
@@ -265,22 +242,9 @@ void mw_file_open(Widget w, XtPointer client_data, XtPointer call_data)
 void mw_file_quit(Widget w, XtPointer client_data, XtPointer call_data)
 {
   // Get the xvt_mainwin.
-  Widget lw = w;
   xvt_mainwin * mw = NULL;
   XtVaGetValues(w,XmNuserData,&mw,NULL);
-  // Extra indirection if overlays are used
-  if(!mw) {
-    XtVaGetValues(XtParent(w),XmNuserData,&mw,NULL);
-    cout << "**** Getting Parent Widget in "
-	 << "mw_file_quit" <<endl;
-    lw = XtParent(w);
-  }
-  cout << "mw_file_quit" << endl;
-  cout << "top_shell   : " << mw->top_shell   << endl;
-  cout << "main_w      : " << mw->main_w      << endl;
-  cout << "menu_bar    : " << mw->menu_bar    << endl;
-  cout << "Open_Dialog : " << mw->Open_Dialog << endl;
-  cout << "Widget      : " << lw              << endl;
+  //if(!mw) {cerr << "Error getting xvt_mainwin pointer" << endl; abort();}
 
   delete mw;
   exit(0);
@@ -302,22 +266,9 @@ void mw_help(Widget w, XtPointer client_data, XtPointer call_data)
 void mw_openfs_cb(Widget w, XtPointer client_data, XtPointer call_data)
 {
   // Get the xvt_mainwin.
-  Widget lw = w;
   xvt_mainwin * mw = NULL;
   XtVaGetValues(w,XmNuserData,&mw,NULL);
-  // Extra indirection if overlays are used
-  if(!mw) {
-    XtVaGetValues(XtParent(w),XmNuserData,&mw,NULL);
-    cout << "**** Getting Parent Widget in "
-	 << "mw_openfs_cb" <<endl;
-    lw = XtParent(w);
-  }
-  cout << "mw_openfs_cb" << endl;
-  cout << "top_shell   : " << mw->top_shell   << endl;
-  cout << "main_w      : " << mw->main_w      << endl;
-  cout << "menu_bar    : " << mw->menu_bar    << endl;
-  cout << "Open_Dialog : " << mw->Open_Dialog << endl;
-  cout << "Widget      : " << lw              << endl;
+  //if(!mw) {cerr << "Error getting xvt_mainwin pointer" << endl; abort();}
 
   XmFileSelectionBoxCallbackStruct * fs = 
     (XmFileSelectionBoxCallbackStruct *) call_data;
@@ -514,26 +465,11 @@ void dw_ensurePulldownColormapInstalled(Widget w, XtPointer client_data,
 					XtPointer call_data)
 {
   // Get the xvt_mainwin.
-  Widget lw = w;
   xvt_drawwin * dw = NULL;
   XtVaGetValues(w,XmNuserData,&dw,NULL);
-  // Extra indirection if overlays are used
-  if(!dw) {
-    XtVaGetValues(XtParent(w),XmNuserData,&dw,NULL);
-    cout << "**** Getting Parent Widget in "
-	 << "dw_ensurePulldownColormapInstalled" <<endl;
-    lw = XtParent(w);
-  }
-  cout << "dw_ensurePulldownColormapInstalled" << endl;
-  cout << "draw_shell  : " << dw->draw_shell  << endl;
-  cout << "main_w      : " << dw->main_w      << endl;
-  cout << "frame       : " << dw->frame       << endl;
-  cout << "glx_area    : " << dw->glx_area    << endl;
-  cout << "menu_bar    : " << dw->menu_bar    << endl;
-  cout << "popup       : " << dw->popup       << endl;
-  cout << "popuplist   : " << dw->popuplist   << endl;
-  cout << "Open_Dialog : " << dw->Open_Dialog << endl;
-  cout << "Widget      : " << lw              << endl;
+  // Extra indirection if overlays are used !!!!
+  if(!dw) XtVaGetValues(XtParent(w),XmNuserData,&dw,NULL);
+  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
 
   XInstallColormap(dw->xvt.display, dw->xvt.overlayColormap);
 }
@@ -546,26 +482,9 @@ void dw_ensurePulldownColormapInstalled(Widget w, XtPointer client_data,
 void dw_file_open(Widget w, XtPointer client_data, XtPointer call_data)
 {
   // Get the xvt_drawwin.
-  Widget lw = w;
   xvt_drawwin * dw = NULL;
   XtVaGetValues(w,XmNuserData,&dw,NULL);
-  // Extra indirection if overlays are used
-  if(!dw) {
-    XtVaGetValues(XtParent(w),XmNuserData,&dw,NULL);
-    cout << "**** Getting Parent Widget in "
-	 << "dw_file_open" <<endl;
-    lw = XtParent(w);
-  }
-  cout << "dw_file_open" << endl;
-  cout << "draw_shell  : " << dw->draw_shell  << endl;
-  cout << "main_w      : " << dw->main_w      << endl;
-  cout << "frame       : " << dw->frame       << endl;
-  cout << "glx_area    : " << dw->glx_area    << endl;
-  cout << "menu_bar    : " << dw->menu_bar    << endl;
-  cout << "popup       : " << dw->popup       << endl;
-  cout << "popuplist   : " << dw->popuplist   << endl;
-  cout << "Open_Dialog : " << dw->Open_Dialog << endl;
-  cout << "Widget      : " << lw              << endl;
+  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
 
 //        if(!xvt->Open_Dialog) {
 //  	xvt->Open_Dialog = XmCreateFileSelectionDialog(xvt->top_shell,
@@ -587,26 +506,9 @@ void dw_file_open(Widget w, XtPointer client_data, XtPointer call_data)
 void dw_file_close(Widget w, XtPointer client_data, XtPointer call_data)
 {
   // Get the xvt_drawwin.
-  Widget lw = w;
   xvt_drawwin * dw = NULL;
   XtVaGetValues(w,XmNuserData,&dw,NULL);
-  // Extra indirection if overlays are used
-  if(!dw) {
-    XtVaGetValues(XtParent(w),XmNuserData,&dw,NULL);
-    cout << "**** Getting Parent Widget in "
-	 << "dw_file_close" <<endl;
-    lw = XtParent(w);
-  }
-  cout << "dw_file_close" << endl;
-  cout << "draw_shell  : " << dw->draw_shell  << endl;
-  cout << "main_w      : " << dw->main_w      << endl;
-  cout << "frame       : " << dw->frame       << endl;
-  cout << "glx_area    : " << dw->glx_area    << endl;
-  cout << "menu_bar    : " << dw->menu_bar    << endl;
-  cout << "popup       : " << dw->popup       << endl;
-  cout << "popuplist   : " << dw->popuplist   << endl;
-  cout << "Open_Dialog : " << dw->Open_Dialog << endl;
-  cout << "Widget      : " << lw              << endl;
+  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
 
   if(dw) {
     dw->close();
@@ -652,26 +554,9 @@ void activateMenu(Widget w, XtPointer client_data, XEvent *event,
 		  Boolean *cont)
 {
   // Get the xvt_drawwin.
-  Widget lw = w;
   xvt_drawwin * dw = NULL;
   XtVaGetValues(w,XmNuserData,&dw,NULL);
-  // Extra indirection if overlays are used
-  if(!dw) {
-    XtVaGetValues(XtParent(w),XmNuserData,&dw,NULL);
-    cout << "**** Getting Parent Widget in "
-	 << "activateMenu" <<endl;
-    lw = XtParent(w);
-  }
-  cout << "activateMenu" << endl;
-  cout << "draw_shell  : " << dw->draw_shell  << endl;
-  cout << "main_w      : " << dw->main_w      << endl;
-  cout << "frame       : " << dw->frame       << endl;
-  cout << "glx_area    : " << dw->glx_area    << endl;
-  cout << "menu_bar    : " << dw->menu_bar    << endl;
-  cout << "popup       : " << dw->popup       << endl;
-  cout << "popuplist   : " << dw->popuplist   << endl;
-  cout << "Open_Dialog : " << dw->Open_Dialog << endl;
-  cout << "Widget      : " << lw              << endl;
+  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
 
   if(dw->xvt.overlayVisual)
     XInstallColormap(dw->xvt.display, dw->xvt.overlayColormap);
@@ -686,26 +571,11 @@ void activateMenu(Widget w, XtPointer client_data, XEvent *event,
 void dw_pulldownMenuUse(Widget w, XtPointer client_data, XtPointer call_data)
 {
   // Get the xvt_drawwin.
-  Widget lw = w;
   xvt_drawwin * dw = NULL;
   XtVaGetValues(w,XmNuserData,&dw,NULL);
-  // Extra indirection if overlays are used
-  if(!dw) {
-    XtVaGetValues(XtParent(w),XmNuserData,&dw,NULL);
-    cout << "**** Getting Parent Widget in "
-	 << "dw_pulldownMenuUse" <<endl;
-    lw = XtParent(w);
-  }
-  cout << "dw_pulldownMenuUse" << endl;
-  cout << "draw_shell  : " << dw->draw_shell  << endl;
-  cout << "main_w      : " << dw->main_w      << endl;
-  cout << "frame       : " << dw->frame       << endl;
-  cout << "glx_area    : " << dw->glx_area    << endl;
-  cout << "menu_bar    : " << dw->menu_bar    << endl;
-  cout << "popup       : " << dw->popup       << endl;
-  cout << "popuplist   : " << dw->popuplist   << endl;
-  cout << "Open_Dialog : " << dw->Open_Dialog << endl;
-  cout << "Widget      : " << lw              << endl;
+  // Extra indirection if overlays are used !!!!
+  if(!dw) XtVaGetValues(XtParent(w),XmNuserData,&dw,NULL);
+  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
 
   switch((int) client_data) {
   case 0:
@@ -725,26 +595,9 @@ void Button1DownAction(Widget w, XEvent * event, String * params,
 		       Cardinal * num_params)
 {
   // Get the xvt_drawwin.
-  Widget lw = w;
   xvt_drawwin * dw = NULL;
   XtVaGetValues(w,XmNuserData,&dw,NULL);
-  // Extra indirection if overlays are used
-  if(!dw) {
-    XtVaGetValues(XtParent(w),XmNuserData,&dw,NULL);
-    cout << "**** Getting Parent Widget in "
-	 << "Button1DownAction" <<endl;
-    lw = XtParent(w);
-  }
-  cout << "Button1DownAction" << endl;
-  cout << "draw_shell  : " << dw->draw_shell  << endl;
-  cout << "main_w      : " << dw->main_w      << endl;
-  cout << "frame       : " << dw->frame       << endl;
-  cout << "glx_area    : " << dw->glx_area    << endl;
-  cout << "menu_bar    : " << dw->menu_bar    << endl;
-  cout << "popup       : " << dw->popup       << endl;
-  cout << "popuplist   : " << dw->popuplist   << endl;
-  cout << "Open_Dialog : " << dw->Open_Dialog << endl;
-  cout << "Widget      : " << lw          << endl;
+  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
 
   const int x = event->xbutton.x;
   const int y = event->xbutton.y;
@@ -763,26 +616,9 @@ void Button1MotionAction(Widget w, XEvent * event, String * params,
 			 Cardinal * num_params)
 {
   // Get the xvt_drawwin.
-  Widget lw = w;
   xvt_drawwin * dw = NULL;
   XtVaGetValues(w,XmNuserData,&dw,NULL);
-  // Extra indirection if overlays are used
-  if(!dw) {
-    XtVaGetValues(XtParent(w),XmNuserData,&dw,NULL);
-    cout << "**** Getting Parent Widget in "
-	 << "Button1MotionAction" <<endl;
-    lw = XtParent(w);
-  }
-  cout << "Button1MotionAction" << endl;
-  cout << "draw_shell  : " << dw->draw_shell  << endl;
-  cout << "main_w      : " << dw->main_w      << endl;
-  cout << "frame       : " << dw->frame       << endl;
-  cout << "glx_area    : " << dw->glx_area    << endl;
-  cout << "menu_bar    : " << dw->menu_bar    << endl;
-  cout << "popup       : " << dw->popup       << endl;
-  cout << "popuplist   : " << dw->popuplist   << endl;
-  cout << "Open_Dialog : " << dw->Open_Dialog << endl;
-  cout << "Widget      : " << lw              << endl;
+  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
 
   const int x = event->xbutton.x;
   const int y = event->xbutton.y;
@@ -801,25 +637,9 @@ void Button2DownAction(Widget w, XEvent * event, String * params,
 		       Cardinal * num_params)
 {
   // Get the xvt_drawwin.
-  Widget lw = w;
   xvt_drawwin * dw = NULL;
   XtVaGetValues(w,XmNuserData,&dw,NULL);
-  // Extra indirection if overlays are used
-  if(!dw) {
-    XtVaGetValues(XtParent(w),XmNuserData,&dw,NULL);
-    cout << "**** Getting Parent Widget in "
-	 << "Button2DownAction" <<endl;
-  }
-  cout << "Button2DownAction" << endl;
-  cout << "draw_shell  : " << dw->draw_shell  << endl;
-  cout << "main_w      : " << dw->main_w      << endl;
-  cout << "frame       : " << dw->frame       << endl;
-  cout << "glx_area    : " << dw->glx_area    << endl;
-  cout << "menu_bar    : " << dw->menu_bar    << endl;
-  cout << "popup       : " << dw->popup       << endl;
-  cout << "popuplist   : " << dw->popuplist   << endl;
-  cout << "Open_Dialog : " << dw->Open_Dialog << endl;
-  cout << "Widget      : " << lw              << endl;
+  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
 
   const int x = event->xbutton.x;
   const int y = event->xbutton.y;
@@ -838,26 +658,9 @@ void Button2MotionAction(Widget w, XEvent * event, String * params,
 			 Cardinal * num_params)
 {
   // Get the xvt_drawwin.
-  Widget lw = w;
   xvt_drawwin * dw = NULL;
   XtVaGetValues(w,XmNuserData,&dw,NULL);
-  // Extra indirection if overlays are used
-  if(!dw) {
-    XtVaGetValues(XtParent(w),XmNuserData,&dw,NULL);
-    cout << "**** Getting Parent Widget in "
-	 << "Button2MotionAction" <<endl;
-    lw = XtParent(w);
-  }
-  cout << "Button2MotionAction" << endl;
-  cout << "draw_shell  : " << dw->draw_shell  << endl;
-  cout << "main_w      : " << dw->main_w      << endl;
-  cout << "frame       : " << dw->frame       << endl;
-  cout << "glx_area    : " << dw->glx_area    << endl;
-  cout << "menu_bar    : " << dw->menu_bar    << endl;
-  cout << "popup       : " << dw->popup       << endl;
-  cout << "popuplist   : " << dw->popuplist   << endl;
-  cout << "Open_Dialog : " << dw->Open_Dialog << endl;
-  cout << "Widget      : " << lw              << endl;
+  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
 
   const int x = event->xbutton.x;
   const int y = event->xbutton.y;
