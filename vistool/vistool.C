@@ -739,10 +739,11 @@ void vt_data_1d::Apply(TransformationFunction T)
 {
   int i;
   double Lb_y = data[1];
-  double Ub_y = Lb_y;
+  double Ub_y;
   switch(T) {
   case Abs :
-    Lb_y = abs(data[1]);
+    Lb_y = fabs(data[1]);
+    Ub_y = Lb_y;
     for(i=1; i<2*size; i+=2) {
       const double ly = data[i] = fabs(data[i]);
       if(ly < Lb_y) Lb_y = ly;
@@ -752,7 +753,9 @@ void vt_data_1d::Apply(TransformationFunction T)
     bounds.Ub_y = Ub_y;
     break;
   case Log :
-    Lb_y = abs(data[1]);
+    if(data[1] == 0.0) Lb_y = -100.0;
+    else Lb_y = log10(data[1]);
+    Ub_y = Lb_y;
     for(i=1; i<2*size; i+=2) {
       double ly;
       if(data[i] == 0.0) ly = data[i] = -100.0;
@@ -764,11 +767,13 @@ void vt_data_1d::Apply(TransformationFunction T)
     bounds.Ub_y = Ub_y;
     break;
   case Ln :
-    Lb_y = abs(data[1]);
+    if(data[1] == 0.0) Lb_y = -100.0;
+    else Lb_y = log(data[1]);
+    Ub_y = Lb_y;
     for(i=1; i<2*size; i+=2) {
       double ly;
       if(data[i] == 0.0) ly = data[i] = -100.0;
-      else ly = data[i] = log10(data[i]);
+      else ly = data[i] = log(data[i]);
       if(ly < Lb_y) Lb_y = ly;
       else if(ly > Ub_y) Ub_y = ly;
     }

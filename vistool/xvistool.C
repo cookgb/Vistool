@@ -521,7 +521,7 @@ void xvt_drawwin::CreateWindow()
     { "Log", &xmPushButtonGadgetClass, '\0', NULL, NULL,0,
       apply_log, this, NULL},
     { "Ln", &xmPushButtonGadgetClass, '\0', NULL, NULL, 0,
-      apply_log, this, NULL},
+      apply_ln, this, NULL},
     NULL,
   };
   MenuItem Animate_menu[] = {
