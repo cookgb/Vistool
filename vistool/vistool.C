@@ -20,7 +20,8 @@
 #define LAST_LABEL 1.e30
 
 vt_mainwin::vt_mainwin()
-  : Abscissa_Set(0), Abscissa_Filename(0), Abscissa_Data(0)
+  : drawwin_count(0),
+    Abscissa_Set(0), Abscissa_Filename(0), Abscissa_Data(0)
 {
 }
 
@@ -52,6 +53,14 @@ void vt_mainwin::incrementAnimation()
   }
 }
 
+char * vt_mainwin::NewDrawWindow()
+{
+  const int len = 18;
+  char * buf = new char[len];
+  ostrstream dw(buf,len);
+  dw << "Draw Window (" << ++drawwin_count << ")" << ends;
+  return buf;
+}
 
 
 vt_drawwin::vt_drawwin(const char * n, vt_mainwin & mw)
@@ -59,8 +68,9 @@ vt_drawwin::vt_drawwin(const char * n, vt_mainwin & mw)
     mvt(mw), animate(false), redraw(false),
     Abscissa_Set(mw.Abscissa_Set)
 {
-  name = new char[strlen(n)+1];
-  strcpy(name,n);
+//    name = new char[strlen(n)+1];
+//    strcpy(name,n);
+  name = mw.NewDrawWindow();
   
   labelbuf = new char[70];
   label = new ostrstream(labelbuf,69);

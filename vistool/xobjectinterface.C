@@ -14,6 +14,7 @@
 #include <Xm/RowColumn.h>
 #include <Xm/ToggleB.h>
 #include <Xm/FileSB.h>
+#include <Xm/List.h>
 #include <X11/GLw/GLwMDrawA.h>
 
 #include "xvistool.h"
@@ -160,6 +161,72 @@ void mw_file_quit(Widget w, XtPointer client_data, XtPointer call_data)
   xvt_mainwin * mw = (xvt_mainwin *) client_data;
   delete mw;
   exit(0);
+}
+
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+// Callback routine for main window draw window list
+void mw_windowlist(Widget w, XtPointer client_data, XtPointer call_data)
+{
+  xvt_mainwin * mw = (xvt_mainwin *) client_data;
+  XmListCallbackStruct * cbs = (XmListCallbackStruct *) call_data;
+
+  typedef list<vt_drawwin *>::iterator I_dw;
+  I_dw p;
+  for(p = mw->draw_list.begin(); p != mw->draw_list.end(); p++)
+    (*p)->selected = false;
+
+  const int sic = cbs->selected_item_count;
+
+  if(cbs->reason == XmCR_EXTENDED_SELECT) {
+    if(cbs->selection_type == XmINITIAL)
+      cout << "Extended selection -- initial selection: ";
+    else if(cbs->selection_type == XmMODIFICATION)
+      cout << "Extended selection -- modification of selection: ";
+    else if(cbs->selection_type == XmADDITION)
+      cout << "Extended selection -- additional selection: ";
+    cout << cbs->selected_item_count << " items selected" << endl;
+    for(int i=0; i < sic; ++i) {
+      const int sip = cbs->selected_item_positions[i];
+      int k;
+      for(p=mw->draw_list.begin(), k=1; p != mw->draw_list.end(); p++, k++)
+	if(k == sip) {
+	  (*p)->selected = true;
+	  break;
+	}
+
+      char * choice;
+      XmStringGetLtoR(cbs->selected_items[i], XmFONTLIST_DEFAULT_TAG,
+		      &choice);
+      cout << (*p)->name << " | "
+	   << choice << "(" << cbs->selected_item_positions[i] << ")" << endl;
+      XtFree(choice);
+    }
+    // Delete all items in dataset list and replace the list if only one
+    // window is selected
+    Widget sb;
+    XtVaGetValues(mw->dataset_list,XmNhorizontalScrollBar,&sb,NULL);
+    XtVaSetValues(sb,XmNvalue,0,NULL);
+    XmListDeleteAllItems(mw->dataset_list);
+    if(sic == 1) {
+      vt_drawwin & dw = **p;
+      typedef list<vt_data_series *>::iterator I_vd;
+      I_vd d;
+      for(d = dw.data_list.begin(); d != dw.data_list.end(); d++) {
+	XmString DataName = XmStringCreateLocalized((String)(*d)->Name());
+	XmListAddItemUnselected(mw->dataset_list,DataName,0);
+	XmStringFree(DataName);
+      }
+      XtVaSetValues(sb,XmNvalue,0,NULL);
+    }
+  } else {
+    char * choice;
+    XmStringGetLtoR(cbs->item, XmFONTLIST_DEFAULT_TAG, &choice);
+    cout << "Default action -- selcted item " << choice
+	 << "(" << cbs->item_position << ")" << endl;
+      XtFree(choice);
+  }
 }
 
 //----------------------------------------------------------------------------

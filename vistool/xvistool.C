@@ -26,6 +26,7 @@
 #include <map.h>
 
 #include "xvistool.h"
+#include "xMenu.h"
 
 
 //----------------------------------------------------------------------------
@@ -45,11 +46,13 @@ void mw_file_open_GIO(Widget, XtPointer, XtPointer);
 void mw_file_open_1DDump(Widget, XtPointer, XtPointer);
 void mw_file_open_1DDAb(Widget, XtPointer, XtPointer);
 void mw_file_quit(Widget, XtPointer, XtPointer);
+void mw_windowlist(Widget, XtPointer, XtPointer);
 void mw_help(Widget, XtPointer, XtPointer);
 //----------------------------------------------------------------------------
 // Creator for X11 version of main window.
 xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
-  : vt_mainwin(), Open_Dialog(0), vi(0), overlayDepth(0), doubleBuffer(true),
+  : vt_mainwin(), Open_Dialog(0), vi(0), overlayVisual(0), overlayDepth(0),
+    doubleBuffer(true),
     animateCount(0), animateHiddenCount(0),animateID(0),redisplayPending(0)
 {
 
@@ -63,16 +66,15 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
     "*sgiMode: true",           // Try to enable Indigo Magic look & feel
     "*useSchemes: all",         // and SGI schemes.
     "xvistool.title: Visualization Tool",
-    "*window_list.width: 170",
-    "*window_list.visibleItemCount: 4",
-    "*window_list.scrollBarDisplayPolicy: as_needed",
-    "*window_list.listSizePolicy: constant",
-    "*window_list.selectionPolicy: extended_select",
-    "*dataset_list.width: 170",
-    "*dataset_list.visibleItemCount: 4",
-    "*dataset_list.scrollBarDisplayPolicy: as_needed",
-    "*dataset_list.listSizePolicy: constant",
-    "*dataset_list.selectionPolicy: extended_select",
+    "*XmScrolledWindow.width: 170",
+    "*XmScrolledWindow.scrollBarDisplayPolicy: as_needed",
+    "*XmList.listSizePolicy: constant",
+    "*windowlist.width: 170",
+    "*windowlist.visibleItemCount: 4",
+    "*windowlist.selectionPolicy: extended_select",
+    "*datasetlist.width: 170",
+    "*datasetlist.visibleItemCount: 4",
+    "*datasetlist.selectionPolicy: extended_select",
 //      "*main.width: 350",
 //      "*main.height: 150",
     "*glxarea.width: 300",
@@ -132,7 +134,7 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
 	XFree(overlayVisuals);
       }
     }
-    if(overlayVisual) 
+    if(overlayVisual)
       overlayColormap = XCreateColormap(display,DefaultRootWindow(display),
 					overlayVisual, AllocNone);
   }
@@ -147,123 +149,59 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
   // Create the MenuBar
-  XmString m_file = XmStringCreateLocalized("File");
-  XmString m_help = XmStringCreateLocalized("Help");
-  menu_bar = XmVaCreateSimpleMenuBar(main_w,"menubar",
-				     XmVaCASCADEBUTTON, m_file, 'F',
-				     XmVaCASCADEBUTTON, m_help, 'H',
-				     NULL);
-  XmStringFree(m_file);
+  menu_bar = XmCreateMenuBar(main_w, "menubar", NULL, 0);
 
-  // Tell the MenuBar which button is th help menu
-  if(Widget w = XtNameToWidget(menu_bar,"button_1"))
-    XtVaSetValues(menu_bar,XmNmenuHelpWidget,w,NULL);
+  // Set OverlayVisual structure for menus
+  MenuOverlayVisual * overlay_Visual = 0;
+  if(overlayVisual) {
+    overlay_Visual = new MenuOverlayVisual;
+    overlay_Visual->overlayVisual   = overlayVisual;
+    overlay_Visual->overlayDepth    = overlayDepth;
+    overlay_Visual->overlayColormap = overlayColormap;
+    overlay_Visual->popupCallback   =
+      (XtCallbackProc) ensurePulldownColormapInstalled;
+    overlay_Visual->callback_data   = this;
+  }
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
   // First menu is the File menu
-  XmString m_open = XmStringCreateLocalized("Open...");
-  XmString m_quit = XmStringCreateLocalized("Quit");
-  //
-#define FILEMENU XmVaCASCADEBUTTON,m_open,'n',\
-                 XmVaSEPARATOR,\
-	         XmVaPUSHBUTTON,m_quit,'Q',NULL,NULL
-  //
-  Widget menu_pane;
-  if(overlayVisual) {
-    menu_pane =
-      XmVaCreateSimplePulldownMenu(menu_bar,"filemenu",0,NULL,
-				   FILEMENU,
-				   XmNvisual, overlayVisual,
-				   XmNdepth, overlayDepth,
-				   XmNcolormap, overlayColormap,
-				   NULL);
-    XtAddCallback(XtParent(menu_pane), XmNpopupCallback,
-		  (XtCallbackProc) ensurePulldownColormapInstalled, this);
-  } else {
-    menu_pane =
-      XmVaCreateSimplePulldownMenu(menu_bar,"filemenu",0,NULL,
-				   FILEMENU,
-				   NULL);
-  }
-#undef FILEMENU
-  XmStringFree(m_open);
-  XmStringFree(m_quit);
-  // Set the callback routines for each menu button.
-  if(Widget w = XtNameToWidget(menu_pane,"button_1"))
-    XtAddCallback(w, XmNactivateCallback, mw_file_quit, this);
-
-  //--------------------------------------------------------------------------
-  // Open submenu
-  XmString m_gio_format = XmStringCreateLocalized("GIO Format");
-  XmString m_1ddump_format = XmStringCreateLocalized("1DDump Format");
-  XmString m_1ddump_abscissa = XmStringCreateLocalized("1DDump Abscissa");
-  //
-#define OPENMENU XmVaPUSHBUTTON,m_gio_format,'G',NULL,NULL,\
-                 XmVaSEPARATOR,\
-	         XmVaPUSHBUTTON,m_1ddump_format,'1',NULL,NULL,\
-		 XmVaCHECKBUTTON,m_1ddump_abscissa,NULL,NULL,NULL
-  //
-  Widget open_popout;
-  if(overlayVisual) {
-    open_popout =
-      XmVaCreateSimplePulldownMenu(menu_pane, "options", 0, NULL,
-				   OPENMENU,
-				   XmNvisual, overlayVisual,
-				   XmNdepth, overlayDepth,
-				   XmNcolormap, overlayColormap,
-				   NULL);
-    XtAddCallback(XtParent(open_popout), XmNpopupCallback,
-		  (XtCallbackProc) ensurePulldownColormapInstalled, this);
-  } else {
-    open_popout =
-      XmVaCreateSimplePulldownMenu(menu_pane, "options", 0, NULL,
-				   OPENMENU,
-				   NULL);
-  }
-#undef OPENMENU
-  XmStringFree(m_gio_format);
-  XmStringFree(m_1ddump_format);
-  XmStringFree(m_1ddump_abscissa);
-  // Set the callback routines for each menu button.
-  if(Widget w = XtNameToWidget(open_popout,"button_0"))
-    XtAddCallback(w, XmNactivateCallback, mw_file_open_GIO, this);
-  if(Widget w = XtNameToWidget(open_popout,"button_1"))
-    XtAddCallback(w, XmNactivateCallback, mw_file_open_1DDump, this);
-  if(Widget w = XtNameToWidget(open_popout,"button_2")) {
-    CheckButton_1DAbs = w;
-    XtAddCallback(w, XmNvalueChangedCallback, mw_file_open_1DDAb, this);
-    XmToggleButtonSetState(w, Abscissa_Set, False);
-  }
+  MenuItem Open_menu[] = {
+    { "GIO Format", &xmPushButtonGadgetClass, 'G', NULL, NULL, 0,
+      mw_file_open_GIO, this, NULL},
+    { "_sep1", &xmSeparatorGadgetClass, '\0', NULL, NULL, 0, NULL, NULL, NULL},
+    { "1DDump Format", &xmPushButtonGadgetClass, '1', NULL, NULL, 0,
+      mw_file_open_1DDump, this, NULL},
+    { "1DDump Abscissa", &xmToggleButtonGadgetClass, '\0', NULL, NULL,
+      Abscissa_Set, mw_file_open_1DDAb, this, NULL},
+    NULL,
+  };
+  MenuItem File_menu[] = {
+    { "Open...", &xmCascadeButtonGadgetClass, 'n', NULL, NULL, 0,
+      NULL, this, Open_menu},
+    { "_sep1", &xmSeparatorGadgetClass, '\0', NULL, NULL, 0, NULL, NULL, NULL},
+    { "Quit", &xmPushButtonGadgetClass, 'Q', "Ctrl<Key>C", "Ctrl+C", 0,
+      mw_file_quit, this, NULL},
+    NULL,
+  };
+  BuildMenu(menu_bar, XmMENU_PULLDOWN, "File", 'F', overlay_Visual,
+	    false, File_menu);
 
   //--------------------------------------------------------------------------
   // Last menu is the Help menu
   //
-#define HELPMENU XmVaPUSHBUTTON,m_help,'H',NULL,NULL
-  //
-  if(overlayVisual) {
-    menu_pane =
-      XmVaCreateSimplePulldownMenu(menu_bar,"helpmenu",1,NULL,
-				   HELPMENU,
-				   XmNvisual, overlayVisual,
-				   XmNdepth, overlayDepth,
-				   XmNcolormap, overlayColormap,
-				   NULL);
-    XtAddCallback(XtParent(menu_pane), XmNpopupCallback,
-		  (XtCallbackProc) ensurePulldownColormapInstalled, this);
-  } else {
-    menu_pane =
-      XmVaCreateSimplePulldownMenu(menu_bar,"helpmenu",1,NULL,
-				   HELPMENU,
-				   NULL);
-  }
-#undef HELPMENU
-  XmStringFree(m_help);
-  // Set the callback routines for each menu button.
-  if(Widget w = XtNameToWidget(menu_pane,"button_0"))
-    XtAddCallback(w, XmNactivateCallback, mw_help, this);
+  MenuItem Help_menu[] = {
+    { "Help", &xmPushButtonGadgetClass, 'H', NULL, NULL,0,
+      mw_help, this, NULL},
+    NULL,
+  };
+  Widget Help_m =
+    BuildMenu(menu_bar, XmMENU_PULLDOWN, "Help", 'H', overlay_Visual,
+	      false, Help_menu);
+  XtVaSetValues(menu_bar, XmNmenuHelpWidget, Help_m, NULL);
 
   XtManageChild(menu_bar);
+  delete overlay_Visual;
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
@@ -286,29 +224,33 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
   XtSetArg(args[nl],XmNbottomAttachment,XmATTACH_FORM); nl++;
   XtSetArg(args[nl],XmNbottomOffset,4); nl++;
   XtSetArg(args[nl],XmNtopOffset,2); nl++;
-  window_list = XmCreateScrolledList(mw_form,"window_list",args,nl);
-  XtManageChild(window_list);
+  window_list = XmCreateScrolledList(mw_form,"windowlist",args,nl);
+  Widget listpar = XtParent(window_list);
   Widget dslab = XtVaCreateManagedWidget("Data sets:",xmLabelGadgetClass,
 					 mw_form,
-					 XmNleftAttachment, XmATTACH_WIDGET,
-					 XmNleftWidget, window_list,
+  					 XmNleftAttachment, XmATTACH_WIDGET,
+  					 XmNleftWidget, listpar,
 					 XmNleftOffset,8,
-					 XmNtopAttachment,
+					 XmNbottomAttachment,
 					 XmATTACH_OPPOSITE_WIDGET,
-					 XmNtopWidget, winlab,
+					 XmNbottomWidget, winlab,
 					 NULL);
   nl = 0;
   XtSetArg(args[nl],XmNscrollingPolicy,XmAUTOMATIC); nl++;
   XtSetArg(args[nl],XmNtopAttachment,XmATTACH_OPPOSITE_WIDGET); nl++;
-  XtSetArg(args[nl],XmNtopWidget,window_list); nl++;
+  XtSetArg(args[nl],XmNtopWidget,listpar); nl++;
   XtSetArg(args[nl],XmNleftAttachment,XmATTACH_OPPOSITE_WIDGET); nl++;
   XtSetArg(args[nl],XmNleftWidget,dslab); nl++;
   XtSetArg(args[nl],XmNbottomAttachment,XmATTACH_FORM); nl++;
   XtSetArg(args[nl],XmNrightAttachment,XmATTACH_FORM); nl++;
   XtSetArg(args[nl],XmNrightOffset,4); nl++;
   XtSetArg(args[nl],XmNbottomOffset,4); nl++;
-  dataset_list = XmCreateScrolledList(mw_form,"dataset_list",args,nl);
+  dataset_list = XmCreateScrolledList(mw_form,"datasetlist",args,nl);
+  XtManageChild(window_list);
   XtManageChild(dataset_list);
+
+  XtAddCallback(window_list, XmNextendedSelectionCallback,
+		mw_windowlist, this);
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
@@ -382,13 +324,13 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw,
   draw_shell = XtVaAppCreateShell("xvistool","drawshell",
 				  topLevelShellWidgetClass,
 				  xmvt.display,
-				  XmNtitle,filename,
+				  XmNtitle,name,
 				  NULL);
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
   // Register the window in the main window list
-  xmvt.RegisterDW(filename);
+  xmvt.RegisterDW(name);
 
   //--------------------------------------------------------------------------
   // Make sure the window is properly deleted if the window manager kills
@@ -423,120 +365,55 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw,
 
   //--------------------------------------------------------------------------
   // Create the MenuBar
-  XmString m_file = XmStringCreateLocalized("File");
-  XmString m_help = XmStringCreateLocalized("Help");
-  menu_bar = XmVaCreateSimpleMenuBar(main_w,"menubar",
-				     XmVaCASCADEBUTTON, m_file, 'F',
-				     XmVaCASCADEBUTTON, m_help, 'H',
-				     NULL);
-  XmStringFree(m_file);
+  menu_bar = XmCreateMenuBar(main_w, "menubar", NULL, 0);
 
-  // Tell the MenuBar which button is th help menu
-  if(Widget w = XtNameToWidget(menu_bar,"button_1"))
-    XtVaSetValues(menu_bar,XmNmenuHelpWidget,w,NULL);
+  // Set OverlayVisual structure for menus
+  MenuOverlayVisual * overlay_Visual = 0;
+  if(xmvt.overlayVisual) {
+    overlay_Visual = new MenuOverlayVisual;
+    overlay_Visual->overlayVisual   = xmvt.overlayVisual;
+    overlay_Visual->overlayDepth    = xmvt.overlayDepth;
+    overlay_Visual->overlayColormap = xmvt.overlayColormap;
+    overlay_Visual->popupCallback   =
+      (XtCallbackProc) ensurePulldownColormapInstalled;
+    overlay_Visual->callback_data   = this;
+  }
 
   //--------------------------------------------------------------------------
   // First menu is the File menu
-  XmString m_open  = XmStringCreateLocalized("Open...");
-  XmString m_close = XmStringCreateLocalized("Close");
-  //
-#define FILEMENU XmVaCASCADEBUTTON,m_open,'n',\
-                 XmVaSEPARATOR,\
-	         XmVaPUSHBUTTON,m_close,'C',NULL,NULL
-  //
-  Widget menu_pane;
-  if(xmvt.overlayVisual) {
-    menu_pane =
-      XmVaCreateSimplePulldownMenu(menu_bar,"filemenu",0,NULL,
-				   FILEMENU,
-				   XmNvisual, xmvt.overlayVisual,
-				   XmNdepth, xmvt.overlayDepth,
-				   XmNcolormap, xmvt.overlayColormap,
-				   NULL);
-    XtAddCallback(XtParent(menu_pane), XmNpopupCallback,
-		  (XtCallbackProc) ensurePulldownColormapInstalled, &xmvt);
-  } else {
-    menu_pane =
-      XmVaCreateSimplePulldownMenu(menu_bar,"filemenu",0,NULL,
-				   FILEMENU,
-				   NULL);
-  }
-#undef FILEMENU
-  XmStringFree(m_open);
-  XmStringFree(m_close);
-  // Set the callback routines for each menu button.
-  if(Widget w = XtNameToWidget(menu_pane,"button_1"))
-    XtAddCallback(w, XmNactivateCallback, dw_file_close, this);
-
-  //--------------------------------------------------------------------------
-  // Open submenu
-  XmString m_gio_format = XmStringCreateLocalized("GIO Format");
-  XmString m_1ddump_format = XmStringCreateLocalized("1DDump format");
-  XmString m_1ddump_abscissa = XmStringCreateLocalized("1DDump Abscissa");
-  //
-#define OPENMENU XmVaPUSHBUTTON,m_gio_format,'G',NULL,NULL,\
-                 XmVaSEPARATOR,\
-	         XmVaPUSHBUTTON,m_1ddump_format,'1',NULL,NULL,\
-		 XmVaCHECKBUTTON,m_1ddump_abscissa,NULL,NULL,NULL
-  //
-  Widget open_popout;
-  if(xmvt.overlayVisual) {
-    open_popout =
-      XmVaCreateSimplePulldownMenu(menu_pane, "options", 0, NULL,
-				   OPENMENU,
-				   XmNvisual, xmvt.overlayVisual,
-				   XmNdepth, xmvt.overlayDepth,
-				   XmNcolormap, xmvt.overlayColormap,
-				   NULL);
-    XtAddCallback(XtParent(open_popout), XmNpopupCallback,
-		  (XtCallbackProc) ensurePulldownColormapInstalled, &xmvt);
-  } else {
-    open_popout =
-      XmVaCreateSimplePulldownMenu(menu_pane, "options", 0, NULL,
-				   OPENMENU,
-				   NULL);
-  }
-#undef OPENMENU
-  XmStringFree(m_gio_format);
-  XmStringFree(m_1ddump_format);
-  XmStringFree(m_1ddump_abscissa);
-  // Set the callback routines for each menu button.
-  if(Widget w = XtNameToWidget(open_popout,"button_0"))
-    XtAddCallback(w, XmNactivateCallback,dw_file_open_GIO, this);
-  if(Widget w = XtNameToWidget(open_popout,"button_1"))
-    XtAddCallback(w, XmNactivateCallback,dw_file_open_1DDump, this);
-  if(Widget w = XtNameToWidget(open_popout,"button_2")) {
-    CheckButton_1DAbs = w;
-    XtAddCallback(w, XmNvalueChangedCallback,dw_file_open_1DDAb, this);
-    XmToggleButtonSetState(w, Abscissa_Set, False);
-  }
+  MenuItem Open_menu[] = {
+    { "GIO Format", &xmPushButtonGadgetClass, 'G', NULL, NULL, 0,
+      dw_file_open_GIO, this, NULL},
+    { "_sep1", &xmSeparatorGadgetClass, '\0', NULL, NULL, 0, NULL, NULL, NULL},
+    { "1DDump Format", &xmPushButtonGadgetClass, '1', NULL, NULL, 0,
+      dw_file_open_1DDump, this, NULL},
+    { "1DDump Abscissa", &xmToggleButtonGadgetClass, '\0', NULL, NULL,
+      Abscissa_Set, dw_file_open_1DDAb, this, NULL},
+    NULL,
+  };
+  MenuItem File_menu[] = {
+    { "Open...", &xmCascadeButtonGadgetClass, 'n', NULL, NULL,0 ,
+      NULL, this, Open_menu},
+    { "_sep2", &xmSeparatorGadgetClass, '\0', NULL, NULL, 0, NULL, NULL, NULL},
+    { "Close", &xmPushButtonGadgetClass, 'C', NULL, NULL, 0,
+      dw_file_close, this, NULL},
+    NULL,
+  };
+  BuildMenu(menu_bar, XmMENU_PULLDOWN, "File", 'F', overlay_Visual,
+	    false, File_menu);
 
   //--------------------------------------------------------------------------
   // Last menu is the Help menu
   //
-#define HELPMENU XmVaPUSHBUTTON,m_help,'H',NULL,NULL
-  //
-  if(xmvt.overlayVisual) {
-    menu_pane =
-      XmVaCreateSimplePulldownMenu(menu_bar,"helpmenu",1,NULL,
-				   HELPMENU,
-				   XmNvisual,  xmvt.overlayVisual,
-				   XmNdepth,  xmvt.overlayDepth,
-				   XmNcolormap,  xmvt.overlayColormap,
-				   NULL);
-    XtAddCallback(XtParent(menu_pane), XmNpopupCallback,
-		  (XtCallbackProc) ensurePulldownColormapInstalled, &xmvt);
-  } else {
-    menu_pane =
-      XmVaCreateSimplePulldownMenu(menu_bar,"helpmenu",1,NULL,
-				   HELPMENU,
-				   NULL);
-  }
-#undef HELPMENU
-  XmStringFree(m_help);
-  // Set the callback routines for each menu button.
-  if(Widget w = XtNameToWidget(menu_pane,"button_0"))
-    XtAddCallback(w, XmNactivateCallback, dw_help, this);
+  MenuItem Help_menu[] = {
+    { "Help", &xmPushButtonGadgetClass, 'H', NULL, NULL,0,
+      dw_help, this, NULL},
+    NULL,
+  };
+  Widget Help_m =
+    BuildMenu(menu_bar, XmMENU_PULLDOWN, "Help", 'H', overlay_Visual,
+	      false, Help_menu);
+  XtVaSetValues(menu_bar, XmNmenuHelpWidget, Help_m, NULL);
 
   XtManageChild(menu_bar);
 
@@ -550,114 +427,35 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw,
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
   // Create Popup menu for frame area of drawing window
-  XmString m_reset = XmStringCreateLocalized("Reset");
-  XmString m_apply = XmStringCreateLocalized("Apply");
-  XmString m_anim = XmStringCreateLocalized("Animate");
-  //
-#define POPUPMENU XmVaPUSHBUTTON,m_reset,NULL,NULL,NULL,\
-                  XmVaCASCADEBUTTON,m_apply,NULL,\
-                  XmVaSEPARATOR,\
-		  XmVaCASCADEBUTTON,m_anim,NULL
-#ifdef LESSTIF_VERSION
-  #define PUB_APPLY 1
-  #define PUB_ANIMATE 2
-#else
-  #define PUB_APPLY 1
-  #define PUB_ANIMATE 3
-#endif
-  //
-  if(xmvt.overlayVisual) {
-    popup =
-      XmVaCreateSimplePopupMenu(frame,"popupmenu",NULL,
-				POPUPMENU,
-				XmNvisual, xmvt.overlayVisual,
-				XmNdepth, xmvt.overlayDepth,
-				XmNcolormap, xmvt.overlayColormap,
-				NULL);
-    XtAddCallback(XtParent(popup), XmNpopupCallback,
-		  (XtCallbackProc) ensurePulldownColormapInstalled, &xmvt);
-  } else {
-    popup =
-      XmVaCreateSimplePopupMenu(frame,"popupmenu",NULL,
-				POPUPMENU,
-				NULL);
-  }
-#undef POPUPMENU
-  XmStringFree(m_apply);
-  // Set the callback routines for each menu button.
-  if(Widget w = XtNameToWidget(popup,"button_0"))
-    XtAddCallback(w, XmNactivateCallback, dw_popup_reset, this);
+  MenuItem Apply_menu[] = {
+    { "Log", &xmPushButtonGadgetClass, '\0', NULL, NULL,0,
+      apply_log, this, NULL},
+    { "Ln", &xmPushButtonGadgetClass, '\0', NULL, NULL, 0,
+      apply_log, this, NULL},
+    NULL,
+  };
+  MenuItem Animate_menu[] = {
+    { "Animate", &xmToggleButtonGadgetClass, '\0', "Ctrl<Key>A", "Ctrl+A",
+      animate, dw_animate, this, NULL},
+    { "Reset", &xmPushButtonGadgetClass, '\0', "Ctrl<Key>R", "Ctrl+R", 0,
+      dw_reset_animate, this, NULL},
+    NULL,
+  };
+  MenuItem Popup_menu[] = {
+    { "Reset", &xmPushButtonGadgetClass, '\0', NULL, NULL, 0,
+      dw_popup_reset, this, NULL},
+    { "Apply", &xmCascadeButtonGadgetClass, '\0', NULL, NULL, 0,
+      NULL, this, Apply_menu},
+    { "_sep3", &xmSeparatorGadgetClass, '\0', NULL, NULL, 0, NULL, NULL, NULL},
+    { "Animate", &xmCascadeButtonGadgetClass, '\0', NULL, NULL, 0,
+      NULL, this, Animate_menu},
+    NULL,
+  };
+  popup = BuildMenu(frame, XmMENU_POPUP, "", '\0', overlay_Visual,
+		    false, Popup_menu);
 
   XtAddEventHandler(frame, ButtonPressMask, False, activatePopup, popup);
-
-  //--------------------------------------------------------------------------
-  // Apply submenu
-  XmString m_f_log = XmStringCreateLocalized("log");
-  XmString m_f_ln = XmStringCreateLocalized("ln");
-  //
-#define APPLYMENU XmVaPUSHBUTTON,m_f_log,NULL,NULL,NULL,\
-	          XmVaPUSHBUTTON,m_f_ln,NULL,NULL,NULL
-  //
-  Widget apply_popout;
-  if(xmvt.overlayVisual) {
-    apply_popout =
-      XmVaCreateSimplePulldownMenu(popup, "apply", PUB_APPLY, NULL,
-				   APPLYMENU,
-				   XmNvisual, xmvt.overlayVisual,
-				   XmNdepth, xmvt.overlayDepth,
-				   XmNcolormap, xmvt.overlayColormap,
-				   NULL);
-    XtAddCallback(XtParent(apply_popout), XmNpopupCallback,
-		  (XtCallbackProc) ensurePulldownColormapInstalled, &xmvt);
-  } else {
-    apply_popout =
-      XmVaCreateSimplePulldownMenu(popup, "apply", PUB_APPLY, NULL,
-				   APPLYMENU,
-				   NULL);
-  }
-#undef APPLYMENU
-  XmStringFree(m_f_log);
-  XmStringFree(m_f_ln);
-  // Set the callback routines for each menu button.
-  if(Widget w = XtNameToWidget(apply_popout,"button_0"))
-    XtAddCallback(w, XmNactivateCallback, apply_log, this);
-  if(Widget w = XtNameToWidget(apply_popout,"button_1"))
-    XtAddCallback(w, XmNactivateCallback, apply_log, this);
-
-  //--------------------------------------------------------------------------
-  // Animate submenu
-  //
-#define ANIMATEMENU XmVaCHECKBUTTON,m_anim,NULL,NULL,NULL,\
-                    XmVaPUSHBUTTON,m_reset,NULL,NULL,NULL
-  //
-  Widget animate_popout;
-  if(xmvt.overlayVisual) {
-    animate_popout =
-      XmVaCreateSimplePulldownMenu(popup, "animate", PUB_ANIMATE, NULL,
-				   ANIMATEMENU,
-				   XmNvisual, xmvt.overlayVisual,
-				   XmNdepth, xmvt.overlayDepth,
-				   XmNcolormap, xmvt.overlayColormap,
-				   NULL);
-    XtAddCallback(XtParent(animate_popout), XmNpopupCallback,
-		  (XtCallbackProc) ensurePulldownColormapInstalled, &xmvt);
-  } else {
-    animate_popout =
-      XmVaCreateSimplePulldownMenu(popup, "animate", PUB_ANIMATE, NULL,
-				   ANIMATEMENU,
-				   NULL);
-  }
-#undef APPLYMENU
-  XmStringFree(m_anim);
-  XmStringFree(m_reset);
-  // Set the callback routines for each menu button.
-  if(Widget w = XtNameToWidget(animate_popout,"button_0")) {
-    XtAddCallback(w, XmNvalueChangedCallback, dw_animate, this);
-    XmToggleButtonSetState(w, animate, False);
-  }
-  if(Widget w = XtNameToWidget(animate_popout,"button_1"))
-    XtAddCallback(w, XmNactivateCallback, dw_reset_animate, this);
-
+  delete overlay_Visual;
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
   // OpenGL drawing area
@@ -736,6 +534,11 @@ xvt_drawwin::~xvt_drawwin()
     } else xmvt.animateHiddenCount--;
   }
 
+  // Delete from main window list
+  XmString wn = XmStringCreateLocalized(name);
+  XmListDeleteItem(xmvt.window_list,wn);
+  XmStringFree(wn);
+
   // *** NOTE *** We are destroying a Shell and not a Widget ????
   // *** Mesa error message ***
   //     "Warning: XtRemoveGrab asked to remove a widget not on the list"
@@ -793,3 +596,4 @@ void xvt_drawwin::postRedisplay()
     xmvt.redisplayPending = true;
   }
 }
+

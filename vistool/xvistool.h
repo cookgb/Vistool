@@ -13,6 +13,7 @@
 
 #include "vistool.h"
 #include "sovLayerUtil.h"
+#include "xMenu.h"
 
 class xvt_drawwin;
 
@@ -23,6 +24,7 @@ private:
   friend void mw_file_open(Widget, XtPointer, XtPointer);
   friend void mapStateChanged(Widget, XtPointer, XEvent *, Boolean *);
   friend void dw_animate(Widget, XtPointer, XtPointer);
+  friend void mw_windowlist(Widget, XtPointer, XtPointer);
   friend void handleAnimate(xvt_mainwin *, XtIntervalId *);
   // X/Motif data
   Display * display;

@@ -22,6 +22,8 @@ class vt_drawwin;
 class vt_data_1d;
 
 class vt_mainwin {
+private:
+  int drawwin_count;
 public:  // data for 1DDump Abscissa
   bool Abscissa_Set;
   char * Abscissa_Filename;
@@ -32,13 +34,16 @@ public:
   vt_mainwin();
   ~vt_mainwin();
   void incrementAnimation();
+  char * NewDrawWindow();
 };
 
 class vt_data_series;
 
 class vt_drawwin {
-private:
+public:
   list<vt_data_series *> data_list;
+protected:
+  friend vt_mainwin;
   int cur_width;
   int cur_height;
   double Lb_x;
@@ -46,7 +51,6 @@ private:
   double Lb_y;
   double Ub_y;
 protected:
-  friend vt_mainwin;
   vt_mainwin & mvt;
   bool animate;
   bool redraw;
@@ -60,6 +64,7 @@ public:  // data for 1DDump Abscissa
 public:
   FileType importtype;
   char * name;
+  bool selected;
   vt_drawwin(const char * n, vt_mainwin & mw);
   ~vt_drawwin();
   void close();
