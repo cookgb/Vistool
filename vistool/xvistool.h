@@ -60,11 +60,11 @@ public:
   void Loop() { XtAppMainLoop(app);}
   void redisplay();
 public: // utility routines
-  XtAppContext Xapp() {return app;}
-  Display * Xdisplay() {return display;}
-  Colormap XoverlayCM() {return overlayColormap;}
-  Widget OpenDialog() {return Open_Dialog;}
-  void RegisterDW(const char * window);
+  XtAppContext Xapp() const {return app;}
+  Display * Xdisplay() const {return display;}
+  Colormap XoverlayCM() const {return overlayColormap;}
+  Widget OpenDialog() const {return Open_Dialog;}
+  void RegisterDW(const char *const window);
 };
 
 class xvt_drawwin : public vt_drawwin {
@@ -109,23 +109,23 @@ private:
 public:
   Widget CheckButton_1DAbs;
 public:
-  xvt_drawwin(const char * file, xvt_mainwin & mw,
-	      XmString dir, XmString pattern);
-  xvt_drawwin(xvt_drawwin & xdw);
+  xvt_drawwin(const char *const file, xvt_mainwin & mw,
+	      const XmString dir, const XmString pattern);
+  xvt_drawwin(const xvt_drawwin & xdw);
   ~xvt_drawwin();
   virtual void deleteme() { delete this;}
-  virtual void init(int, int);
+  virtual void init(const int, const int);
   virtual void draw();
-  virtual void resize(int, int);
+  virtual void resize(const int, const int);
   void postRedisplay();
   void DrawRubberBand();
-  void SetAnimateToggle(bool on);
-  void SetFullZoomToggle(bool on);
-  void Norm(NormType T);
+  void SetAnimateToggle(const bool on);
+  void SetFullZoomToggle(const bool on);
+  void Norm(const NormType T) const;
 public:
-  Dimension wWidth() {return viewWidth;}
-  Dimension wHeight() {return viewHeight;}
-  Widget OpenDialog() {return Open_Dialog;}
+  Dimension wWidth() const {return viewWidth;}
+  Dimension wHeight() const {return viewHeight;}
+  Widget OpenDialog() const {return Open_Dialog;}
 };
 
 #endif // XVISTOOL_H

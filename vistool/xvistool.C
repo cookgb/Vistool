@@ -331,7 +331,21 @@ xvt_mainwin::~xvt_mainwin()
   XmStringFree(NULL_String);
 }
 
-void xvt_mainwin::RegisterDW(const char * window)
+void xvt_mainwin::redisplay()
+{
+  typedef list<vt_drawwin *>::iterator I_dw;
+  I_dw p;
+  for(p = draw_list.begin(); p != draw_list.end(); p++) {
+    xvt_drawwin & dw = *((xvt_drawwin *) *p);
+    if(dw.redisplay) {
+      dw.draw();
+      dw.redisplay = false;
+    }
+  }
+  redisplayPending = false;
+}
+
+void xvt_mainwin::RegisterDW(const char *const window)
 {
   XmString WinName = XmStringCreateLocalized((String)window);
   XmListAddItemUnselected(window_list,WinName,0);
@@ -343,8 +357,8 @@ void xvt_mainwin::RegisterDW(const char * window)
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
 // Creator for X11 version of drawing window.
-xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw,
-			 XmString dir, XmString pattern)
+xvt_drawwin::xvt_drawwin(const char *const filename, xvt_mainwin & mw,
+			 const XmString dir, const XmString pattern)
   : vt_drawwin(filename,mw), xmvt(mw), Open_Dialog(0), swapcount(0),
     draw_RB(false)
 {
@@ -355,7 +369,7 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw,
   CreateWindow();
 }
 
-xvt_drawwin::xvt_drawwin(xvt_drawwin & xdw)
+xvt_drawwin::xvt_drawwin(const xvt_drawwin & xdw)
   : vt_drawwin(xdw), xmvt(xdw.xmvt), Open_Dialog(0), swapcount(0),
     draw_RB(false)
 {
@@ -370,7 +384,7 @@ xvt_drawwin::xvt_drawwin(xvt_drawwin & xdw)
 
   CreateWindow();
   
-  list<vt_data_series *>::iterator p;
+  list<vt_data_series *>::const_iterator p;
   for(p = xdw.data_list.begin(); p != xdw.data_list.end(); p++)
     Add(new vt_data_series(**p));
 }
@@ -699,21 +713,7 @@ xvt_drawwin::~xvt_drawwin()
   XtDestroyWidget(draw_shell);
 }
 
-void xvt_mainwin::redisplay()
-{
-  typedef list<vt_drawwin *>::iterator I_dw;
-  I_dw p;
-  for(p = draw_list.begin(); p != draw_list.end(); p++) {
-    xvt_drawwin & dw = *((xvt_drawwin *) *p);
-    if(dw.redisplay) {
-      dw.draw();
-      dw.redisplay = false;
-    }
-  }
-  redisplayPending = false;
-}
-
-void xvt_drawwin::init(int width, int height)
+void xvt_drawwin::init(const int width, const int height)
 {
   glx_win = (GLXDrawable) XtWindow(glx_area);
   glXMakeCurrent(xmvt.display,glx_win,cx);
@@ -737,7 +737,7 @@ void xvt_drawwin::draw()
   if(draw_RB) {glXWaitGL(); DrawRubberBand();}
 }
 
-void xvt_drawwin::resize(int new_width, int new_height)
+void xvt_drawwin::resize(const int new_width, const int new_height)
 {
   glXMakeCurrent(xmvt.Xdisplay(),glx_win,cx);
   vt_drawwin::resize(new_width, new_height);
@@ -768,7 +768,7 @@ void xvt_drawwin::DrawRubberBand()
 		 xorg_RB, yorg_RB, xwid_RB, ywid_RB);
 }
 
-void xvt_drawwin::SetAnimateToggle(bool on)
+void xvt_drawwin::SetAnimateToggle(const bool on)
 {
   WidgetList popup_elem, anim_elem;
   Widget anim_menu;
@@ -779,7 +779,7 @@ void xvt_drawwin::SetAnimateToggle(bool on)
 
 }
 
-void xvt_drawwin::SetFullZoomToggle(bool on)
+void xvt_drawwin::SetFullZoomToggle(const bool on)
 {
   WidgetList popup_elem, zoom_elem;
   Widget zoom_menu;
@@ -791,7 +791,7 @@ void xvt_drawwin::SetFullZoomToggle(bool on)
 
 }
 
-void xvt_drawwin::Norm(NormType T)
+void xvt_drawwin::Norm(const NormType T) const
 {
   // Save the directory so that the new Open will start searching here.
   XmString dir, pattern;
@@ -807,7 +807,7 @@ void xvt_drawwin::Norm(NormType T)
   XmStringFree(dir);
   XmStringFree(pattern);
   
-  list<vt_data_series *>::iterator p;
+  list<vt_data_series *>::const_iterator p;
   for(p = data_list.begin(); p != data_list.end(); p++)
     dw->Add((*p)->Norm(T));
 }
