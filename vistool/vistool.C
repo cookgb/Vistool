@@ -144,10 +144,8 @@ bool vt_drawwin::ImportFile_GIO(char * file)
     }
     for(int j=0; j<Nd; j++) Add(vsa[j]);
     delete [] vsa;
-    windowReshape(cur_width,cur_height);
     break;
   }
-  draw();
   return true;
 }
 
@@ -249,9 +247,7 @@ bool vt_drawwin::ImportFile_1DDump(char * filename)
 
   // Add series to list
   Add(series);
-  windowReshape(cur_width,cur_height);
 
-  draw();
   return true;
 }
 

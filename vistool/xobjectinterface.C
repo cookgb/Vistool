@@ -117,10 +117,17 @@ void mw_openfs_cb(Widget w, XtPointer client_data, XtPointer call_data)
     xvt_drawwin * dw = new xvt_drawwin(file,*mw);
     switch(mw->importtype) {
     case TYPE_GIO:
-      if(!(dw->ImportFile_GIO(file))) dw->close();
+      if(dw->ImportFile_GIO(file))
+	dw->resize(dw->Width(),dw->Height());
+      else
+	dw->close();
       break;
     case TYPE_1DDump:
-      if(!(dw->ImportFile_1DDump(file))) dw->close();
+      if(dw->ImportFile_1DDump(file))
+	dw->resize(dw->Width(),dw->Height());
+      else
+	dw->close();
+      break;
       break;
     case TYPE_1DAb:
       if(dw->ImportFile_1DAbs(file)) {
@@ -328,10 +335,16 @@ void dw_openfs_cb(Widget w, XtPointer client_data, XtPointer call_data)
       return; // internal error
     switch(dw->importtype) {
     case TYPE_GIO:
-      dw->ImportFile_GIO(file);
+      if(dw->ImportFile_GIO(file)) {
+	dw->resize(dw->Width(),dw->Height());
+	dw->postRedisplay();
+      }
       break;
     case TYPE_1DDump:
-      dw->ImportFile_1DDump(file);
+      if(dw->ImportFile_1DDump(file)) {
+	dw->resize(dw->Width(),dw->Height());
+	dw->postRedisplay();
+      }
       break;
     case TYPE_1DAb:
       if(!(dw->ImportFile_1DAbs(file))) {
