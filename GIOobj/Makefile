@@ -1,7 +1,7 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.14 2000-08-01 17:35:53 cookgb Exp $
+# $Id: Makefile,v 1.15 2000-08-01 17:43:50 cookgb Exp $
 #
 ###############################################################################
 # linux
@@ -25,7 +25,7 @@ CXX=xlC
 CXXFLAGS= -O2 -DSPX
 CXXINCLUDES = /usr/ibmcxx/include
 
-all: GIOtest
+all: GIOtest GIOswap
 
 FILES= GIOtest.C
 OBJS = $(FILES:.C=.o)
@@ -37,7 +37,7 @@ SWAPFILES= GIOswap.C
 SWAPOBJS = $(SWAPFILES:.C=.o)
 
 GIOswap: $(SWAPOBJS) libGIO.a
-	$(CXX) -o GIOswap $(SWAPOBJS) libGIO.a
+	$(CXX) -o GIOswap $(SWAPOBJS)
 
 LIBFILES= GIOlib.C GIObase.C
 LIBOBJS= $(LIBFILES:.C=.o)

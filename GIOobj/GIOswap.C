@@ -1,5 +1,6 @@
 #include <iostream.h>
 #include <fstream.h>
+#include <string.h>
 #include <stdlib.h>
 
 #include "GIOlib.h"
