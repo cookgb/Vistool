@@ -1,7 +1,7 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.9 2000-01-04 13:17:31 cookgb Exp $
+# $Id: Makefile,v 1.10 2000-03-03 21:20:21 cookgb Exp $
 #
 ###############################################################################
 # linux
@@ -36,10 +36,10 @@ GIOtest: $(OBJS) libGIO.a
 LIBFILES= GIOlib.C GIObase.C
 LIBOBJS= $(LIBFILES:.C=.o)
 # --- FOR GNU g++ 
-#libGIO.a:libGIO.a($(LIBOBJS))
+libGIO.a:libGIO.a($(LIBOBJS))
 # --- FOR SGI
-libGIO.a: $(LIBOBJS)
-	$(CXX) $(CXXFLAGS) -ar -o libGIO.a $(LIBOBJS)
+#libGIO.a: $(LIBOBJS)
+#	$(CXX) $(CXXFLAGS) -ar -o libGIO.a $(LIBOBJS)
 
 clean:
 	$(RM) $(OBJS) $(LIBOBJS) libGIO.a GIOtest
