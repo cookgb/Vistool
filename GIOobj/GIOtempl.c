@@ -98,7 +98,7 @@ GIOseries<D,L,d,KEY>::GIOseries(const char *const filename, int & status)
   if(!(FileName = new char[sl+1])) GIOAbort("memory");
   strcpy(FileName, filename);
 
-  fs = new std::fstream(FileName, std::ios::in);
+  fs = new std::fstream(FileName, std::ios_base::in);
   if(!*fs) GIOAbort("cannot open file for reading");
   
   char buffer[TESTTAGLEN];
@@ -129,7 +129,7 @@ GIOseries<D,L,d,KEY>::GIOseries(const char *const filename,
   if(!(FileName = new char[sl+1])) GIOAbort("memory");
   strcpy(FileName, filename);
 
-  fs = new std::fstream(FileName, std::ios::out|std::ios::trunc);
+  fs = new std::fstream(FileName, std::ios_base::out|std::ios_base::trunc);
   if(!*fs) GIOAbort("cannot open file for writing");
   
   fs->write(GIOTESTTAG,TESTTAGLEN);
@@ -171,7 +171,7 @@ int GIOseries<D,L,d,KEY>::Write(const L l, const int *const ex,
   Nseries++;
   fs->seekp(Nsseek);
   fs->write((char *)&Nseries,sizeof(int));
-  fs->seekp(0,std::ios::end);
+  fs->seekp(0,std::ios_base::end);
   return fs->good();
 }
 
@@ -190,7 +190,7 @@ GIOcseries<D,L,d,KEY>::GIOcseries(const char *const filename, int & status)
   if(!(FileName = new char[sl+1])) GIOAbort("memory");
   strcpy(FileName, filename);
 
-  fs = new std::fstream(FileName, std::ios::in);
+  fs = new std::fstream(FileName, std::ios_base::in);
   if(!*fs) GIOAbort("cannot open file for reading");
   
   char buffer[TESTTAGLEN];
@@ -221,7 +221,7 @@ GIOcseries<D,L,d,KEY>::GIOcseries(const char *const filename,
   if(!(FileName = new char[sl+1])) GIOAbort("memory");
   strcpy(FileName, filename);
 
-  fs = new std::fstream(FileName, std::ios::out|std::ios::trunc);
+  fs = new std::fstream(FileName, std::ios_base::out|std::ios_base::trunc);
   if(!*fs) GIOAbort("cannot open file for writing");
   
   fs->write(GIOTESTTAG,TESTTAGLEN);
@@ -269,7 +269,7 @@ int GIOcseries<D,L,d,KEY>::Write(const L l,
   Nseries++;
   fs->seekp(Nsseek);
   fs->write((char *)&Nseries,sizeof(int));
-  fs->seekp(0,std::ios::end);
+  fs->seekp(0,std::ios_base::end);
   return fs->good();
 }
 

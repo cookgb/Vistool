@@ -77,7 +77,7 @@ int GIOquery::Read(const char *const filename)
   if(!(FileName = new char[sl+1])) GIOAbort("memory");
   strcpy(FileName, filename);
 
-  fs = new std::fstream(FileName, std::ios::in);
+  fs = new std::fstream(FileName, std::ios_base::in);
   if(!*fs) GIOAbort("cannot open file for reading");
   
   char buffer[TESTTAGLEN];

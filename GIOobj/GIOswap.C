@@ -16,7 +16,7 @@ void GIOHeader(istream & in2, ostream &out,
 
   cerr << "begin GIOHeader : " << TESTTAGLEN << " : " << sizeof(int) << endl;
 
-  istream & in = *(new fstream("Wave.data",ios::in));
+  istream & in = *(new fstream("Wave.data",ios_base::in));
   char buffer[TESTTAGLEN];
   in.read(buffer,TESTTAGLEN);
   cerr << buffer << flush << endl;
