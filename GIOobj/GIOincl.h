@@ -25,9 +25,9 @@ public:
   //
   int writeheader(fstream * fs);
   int readheader(fstream * fs);
-  int NDataSets() {return Ndatasets;}
-  int Dim() {return dim;}
-  const char * Name(int i) {return name[i];}
+  int NDataSets() const {return Ndatasets;}
+  int Dim() const {return dim;}
+  const char * Name(int i) const {return name[i];}
 protected:
   void GIOAbort(const char * reason);
 };
@@ -42,7 +42,7 @@ public:
   ~GIOquery();
   //
   int Read(const char * filename);
-  int Key() {return GIOkey;}
+  int Key() const {return GIOkey;}
   void Close() {fs->close();}
 };
 
@@ -57,16 +57,16 @@ protected:
 public:
   GIOdata();
   GIOdata(const char ** names, int n, int useb = 0);
-  GIOdata(const char ** names, int n, L * lb, L * ub);
+  // GIOdata(const char ** names, int n, const L * lb, const L * ub);
   ~GIOdata();
   int Write(fstream * fs);
   int Read(fstream * fs);
-  L Label() {return label;}
-  int CoordsDefined() {return use_bounds;}
-  L Lbound(int i) {return LBcoord[i];}
-  L Ubound(int i) {return UBcoord[i];}
-  int Ext(int i) {return ext[i];}
-  const D * Data(int i) {return data[i];}
+  L Label() const {return label;}
+  int CoordsDefined() const {return use_bounds;}
+  L Lbound(int i) const {return LBcoord[i];}
+  L Ubound(int i) const {return UBcoord[i];}
+  int Ext(int i) const {return ext[i];}
+  const D * Data(int i) const {return data[i];}
 };
 
 template< class D, class L, int d, int KEY>
@@ -84,10 +84,10 @@ public:
   GIOseries(const char * filename, const char ** names, int n,
 	    int & status);
   ~GIOseries();
-  int Write(L label, int * ext, D ** dat, int n);
+  int Write(L label, const int * ext, D ** dat, int n);
   int Read();
-  int Key() {return GIOkey;}
-  int NSeries() {return Nseries;}
+  int Key() const {return GIOkey;}
+  int NSeries() const {return Nseries;}
 };
 
 template< class D, class L, int d, int KEY>
@@ -105,10 +105,11 @@ public:
   GIOcseries(const char * filename, const char ** names, int n,
 	    int & status);
   ~GIOcseries();
-  int Write(L label, L * lb, L * ub, int * ext, D ** dat, int n);
+  int Write(L label, const L * lb, const L * ub, const int * ext,
+	    D ** dat, int n);
   int Read();
-  int Key() {return GIOkey;}
-  int NSeries() {return Nseries;}
+  int Key() const {return GIOkey;}
+  int NSeries() const {return Nseries;}
 };
 
 #endif // GIOINCL_H

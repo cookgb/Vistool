@@ -146,7 +146,7 @@ GIOseries<D,L,d,KEY>::~GIOseries()
 }
 
 template< class D, class L, int d, int KEY> 
-int GIOseries<D,L,d,KEY>::Write(L l, int * ex, D ** dat, int n)
+int GIOseries<D,L,d,KEY>::Write(L l, const int * ex, D ** dat, int n)
 {
   if(n != Ndatasets) GIOAbort("incompatible number of objects being written");
   label = l;
@@ -232,8 +232,8 @@ GIOcseries<D,L,d,KEY>::~GIOcseries()
 }
 
 template< class D, class L, int d, int KEY> 
-int GIOcseries<D,L,d,KEY>::Write(L l, L * lb, L * ub, int * ex,
-				 D ** dat, int n)
+int GIOcseries<D,L,d,KEY>::Write(L l, const L * lb, const L * ub,
+				 const int * ex, D ** dat, int n)
 {
   if(n != Ndatasets) GIOAbort("incompatible number of objects being written");
   label = l;
