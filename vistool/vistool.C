@@ -648,10 +648,13 @@ void vt_drawwin::push_CurrentBounds(bounds_2D *const new_bounds)
 
 bounds_2D * vt_drawwin::Minimum_CurrentBounds()
 {
-  bounds_2D * b = new bounds_2D(0.0,0.0,0.0,0.0);
-  list<vt_data_series *>::iterator p;
-  for(p = data_list.begin(); p != data_list.end(); p++) {
-    list<vt_data *>::iterator ci = (*p)->current;
+  bounds_2D * b = new bounds_2D();
+  list<vt_data_series *>::iterator p = data_list.begin();
+  list<vt_data *>::iterator ci = (*p)->current;
+  if(ci == (*p)->data.end()) --ci;
+  *b = (*ci)->Bounds();
+  for(p = (data_list.begin())++; p != data_list.end(); p++) {
+    ci = (*p)->current;
     if(ci == (*p)->data.end()) --ci;
     b->Union((*ci)->Bounds());
   }
@@ -716,8 +719,8 @@ void vt_drawwin::Coords_Text(const bool add)
 
 void vt_drawwin::Apply(const TransformationFunction T)
 {
-  Default_Bounds = bounds_2D(0.0,0.0,0.0,0.0);
-  list<vt_data_series *>::iterator p;
+  list<vt_data_series *>::iterator p = data_list.begin();
+  Default_Bounds = (*p)->Bounds();
   for(p = data_list.begin(); p != data_list.end(); p++) {
     (*p)->Apply(T);
     Default_Bounds.Union((*p)->Bounds());
@@ -989,8 +992,8 @@ void vt_data_series::Reset(const bool forward_animation)
 
 void vt_data_series::Apply(const TransformationFunction T)
 {
-  bounds = bounds_2D(0.0,0.0,0.0,0.0);
-  list<vt_data *>::iterator p;
+  list<vt_data *>::iterator p = data.begin();
+  bounds = (*p)->Bounds();
   for(p = data.begin(); p != data.end(); p++) {
     (*p)->Apply(T);
     bounds.Union((*p)->Bounds());
