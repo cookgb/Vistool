@@ -1,21 +1,22 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.11 2000-01-03 14:37:11 cookgb Exp $
+# $Id: Makefile,v 1.12 2000-01-03 14:54:03 cookgb Exp $
 #
 ###############################################################################
 # linux
-CC=gcc
-CFLAGS= -O2
-CXX=g++
-CXXFLAGS= -O2
-LIBDIRS = -L/usr/X11R6/lib GIO/libGIO.a
+#CC=gcc
+#CFLAGS= -O2
+#CXX=g++
+#CXXFLAGS= -O2
+#LIBDIRS = -L/usr/X11R6/lib GIO/libGIO.a
 
 # SGI
-#CC=cc -mips4
-#CFLAGS = -O2
-#CXX=CC -mips4
-#CXXFLAGS= -O2
+CC=cc -mips4
+CFLAGS = -O2
+CXX=CC -mips4
+CXXFLAGS= -O2
+LIBDIRS = GIO/libGIO.a
 
 all: xvistool
 

@@ -37,7 +37,7 @@ bool vt_mainwin::ImportFile(char * file, vt_drawwin & dw)
     cerr << "Unsupported file type" << endl;
     return false;
   }
-  GIOq.Close;
+  GIOq.Close();
   if(GIOq.Dim() != 1) {
     cerr << "Unsupported data type" << endl;
     return false;
@@ -49,15 +49,15 @@ bool vt_mainwin::ImportFile(char * file, vt_drawwin & dw)
     int status;
     GIO_double1DC GIO(file, status);
     if(!status) return false;
-    vt_data_series * vsa[GIO.NSeries()];
+    const int Ns = GIO.NSeries();
+    vt_data_series ** vsa = new vt_data_series * [Ns];
     const int Nd = GIO.NDataSets();
     for(int i=0; i<Nd; i++) vsa[i] = new vt_data_series(GIO.Name(i));
-    const int Ns = GIO.NSeries();
     for(int N=0; N<Ns; N++) {
       if(GIO.Read()) {
 	const double l = GIO.Label();
 	const int ext = GIO.Ext(0);
-	double x[ext];
+	double * x = new double[ext];
 	const double lb = GIO.Lbound(0);
 	const double dx = (GIO.Ubound(0) - lb)/(ext-1);
 	for(int ix=0; ix<ext; ix++) x[ix] = lb + ix*dx;
@@ -65,12 +65,15 @@ bool vt_mainwin::ImportFile(char * file, vt_drawwin & dw)
 	  vt_data_1d * vtd = new vt_data_1d(l,ext,x,GIO.Data(i));
 	  vsa[i]->Append(vtd);
 	}
+	delete [] x;
       } else {
 	for(int i=0; i<Nd; i++) delete [] vsa[i];
+	delete [] vsa;
 	return false;
       }
     }
-    for(int i=0; i<Nd; i++) dw.Add(vsa[i]);
+    for(int j=0; j<Nd; j++) dw.Add(vsa[j]);
+    delete [] vsa;
     break;
   }
   return true;
