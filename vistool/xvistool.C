@@ -16,7 +16,11 @@
 #include <Xm/FileSB.h>
 #include <Xm/Text.h>
 
-#include <GL/GLwDrawA.h>
+#if defined(SGI)
+#include <GL/GLwMDrawA.h>  // the Motif widget looks better on SGIs
+#else
+#include <GL/GLwDrawA.h>  // but the non-Motif widget will not crash
+#endif                    // when running on openMotif under Linux
 #include <GL/glx.h>
 
 #include <iostream>
@@ -616,7 +620,11 @@ void xvt_drawwin::CreateWindow()
   //--------------------------------------------------------------------------
   // OpenGL drawing area
   glx_area = XtVaCreateManagedWidget("glxarea",
+#if defined(SGI)
+				     glwMDrawingAreaWidgetClass,
+#else
 				     glwDrawingAreaWidgetClass,
+#endif
 				     frame,
 				     GLwNvisualInfo,xmvt.vi,
 				     NULL);
