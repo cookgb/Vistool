@@ -15,7 +15,8 @@
 #include <Xm/ToggleB.h>
 #include <Xm/FileSB.h>
 #include <Xm/List.h>
-#include <X11/GLw/GLwMDrawA.h>
+
+#include <GL/GLwMDrawA.h>
 
 #include "xvistool.h"
 

@@ -15,8 +15,8 @@
 #include <Xm/Frame.h>
 #include <Xm/FileSB.h>
 #include <Xm/Text.h>
-#include <X11/GLw/GLwMDrawA.h>
 
+#include <GL/GLwMDrawA.h>
 #include <GL/glx.h>
 
 #include <iostream.h>
