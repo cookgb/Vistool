@@ -5,6 +5,7 @@
 //
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
+#include <Xm/Protocols.h>
 #include <Xm/MainW.h>
 #include <Xm/RowColumn.h>
 #include <Xm/PushBG.h>
@@ -48,8 +49,8 @@ void mw_help(Widget, XtPointer, XtPointer);
 //----------------------------------------------------------------------------
 // Creator for X11 version of main window.
 xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
-  : vt_mainwin(), Open_Dialog(0), vi(0), overlayDepth(0),
-    doubleBuffer(true), animateCount(0), animateID(0)
+  : vt_mainwin(), Open_Dialog(0), vi(0), overlayDepth(0), doubleBuffer(true),
+    animateCount(0), animateHiddenCount(0),animateID(0)
 {
 
   //--------------------------------------------------------------------------
@@ -201,6 +202,7 @@ xvt_mainwin::~xvt_mainwin()
 
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
+void mapStateChanged(Widget, XtPointer, XEvent *, Boolean *);
 void dw_ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
 void dw_file_open(Widget, XtPointer, XtPointer);
 void dw_file_close(Widget, XtPointer, XtPointer);
@@ -233,6 +235,15 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
 				  XmNtitle,filename,
 				  NULL);
 
+  //--------------------------------------------------------------------------
+  // Make sure the window is properly deleted if the window manager kills
+  // the window instead of the user using the file menu close option.
+  Atom WM_DELETE_WINDOW = XmInternAtom(xmvt.display, "WM_DELETE_WINDOW",
+				       False);
+  XmAddWMProtocolCallback(draw_shell, WM_DELETE_WINDOW, dw_file_close, this);
+
+  //--------------------------------------------------------------------------
+  // Add these actions.
   static XtActionsRec dw_actionsTable[] = {
     {"Button1DownAction",Button1DownAction},
     {"Button1MotionAction",Button1MotionAction},
@@ -251,9 +262,12 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
 				   XmNuserData,this,
 				   NULL);
 
+  XtAddEventHandler(draw_shell, StructureNotifyMask, False,
+		    mapStateChanged, this);
+
   //--------------------------------------------------------------------------
   // Create the MenuBar
-  Arg args[2];
+  Arg args[3];
   XtSetArg(args[0], XmNuserData, this);
   menu_bar = XmCreateMenuBar(main_w, "menubar", args, 1);
   XtManageChild(menu_bar);
@@ -322,7 +336,8 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
   btn = XmCreateSeparatorGadget(popup, NULL, args, 1);
   XtManageChild(btn);
   XtSetArg(args[1], XmNindicatorType, XmN_OF_MANY);
-  btn = XmCreateToggleButtonGadget(popup, "Animate", args, 2);
+  XtSetArg(args[2], XmNvisibleWhenOff, True); // needed for lesstif
+  btn = XmCreateToggleButtonGadget(popup, "Animate", args, 3);
   XtAddCallback(btn, XmNvalueChangedCallback,
 		(XtCallbackProc) dw_popup_animate, this);
   XmToggleButtonSetState(btn, animate, False);
@@ -380,6 +395,17 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
 // Destructor for X11 drawing window
 xvt_drawwin::~xvt_drawwin()
 {
+  // Make sure the animation TimeOut routine is handled correctly when
+  // a window is deleted.
+  if(animate) { 
+    if((xmvt.animateCount == 1) && visible) XtRemoveTimeOut(xmvt.animateID);
+    xmvt.animateCount--;
+    if(visible) {
+      if(xmvt.animateCount ==  xmvt.animateHiddenCount)
+	XtRemoveTimeOut(xmvt.animateID);
+    } else xmvt.animateHiddenCount--;
+  }
+
   // *** NOTE *** We are destroying a Shell and not a Widget ????
   // *** Mesa error message ***
   //     "Warning: XtRemoveGrab asked to remove a widget not on the list"
@@ -410,6 +436,7 @@ void xvt_drawwin::init(int width, int height)
 
 void xvt_drawwin::draw()
 {
+  if(!visible) return;
   glXMakeCurrent(xmvt.display,glx_win,cx);
   vt_drawwin::draw();
   glXSwapBuffers(xmvt.display,glx_win);

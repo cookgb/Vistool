@@ -1,17 +1,17 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.6 1999-12-28 13:27:31 cookgb Exp $
+# $Id: Makefile,v 1.7 1999-12-28 21:31:38 cookgb Exp $
 #
 ###############################################################################
 # linux
-CXX=g++
-CXXFLAGS= -O2
-LIBDIRS = -L/usr/X11R6/lib
+#CXX=g++
+#CXXFLAGS= -O2
+#LIBDIRS = -L/usr/X11R6/lib
 
 # SGI
-#CXX=CC
-#CXXFLAGS= -O2
+CXX=CC
+CXXFLAGS= -O2
 
 all: xvistool
 

@@ -19,6 +19,7 @@ class xvt_drawwin;
 class xvt_mainwin : public vt_mainwin {
 private:
   friend xvt_drawwin;
+  friend void mapStateChanged(Widget, XtPointer, XEvent *, Boolean *);
   friend void dw_ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
   friend void mw_ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
   friend void mw_file_open(Widget, XtPointer, XtPointer);
@@ -39,6 +40,7 @@ private:
   Colormap overlayColormap;
   bool doubleBuffer;
   int animateCount;
+  int animateHiddenCount;
   XtWorkProcId animateID;
   bool redisplayPending;
   XtWorkProcId redisplayID;
@@ -52,6 +54,7 @@ public:
 class xvt_drawwin : public vt_drawwin {
 private:
   friend xvt_mainwin;
+  friend void mapStateChanged(Widget, XtPointer, XEvent *, Boolean *);
   friend void dw_ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
   friend void dw_popup_animate(Widget, XtPointer, XtPointer);
   friend void dw_init(Widget, XtPointer, XtPointer);
@@ -64,7 +67,8 @@ private:
   Widget popup;
   WidgetList popuplist;
   Widget Open_Dialog;
-  bool  redisplay;
+  bool redisplay;
+  bool visible;
   // OpenGL data
   GLXDrawable glx_win;
   GLXContext cx;

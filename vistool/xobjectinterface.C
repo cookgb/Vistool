@@ -17,6 +17,7 @@
 
 #include "xvistool.h"
 
+#define ANIMATETIME 2000
 
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
@@ -25,16 +26,7 @@
 void mw_ensurePulldownColormapInstalled(Widget w, XtPointer client_data,
 					XtPointer call_data)
 {
-  xvt_mainwin * mw2 = (xvt_mainwin *) client_data;
-  // Get the xvt_mainwin.
-  xvt_mainwin * mw = NULL;
-  XtVaGetValues(w,XmNuserData,&mw,NULL);
-  cout << "Test pointers " << mw << " ?= " << mw2 << endl;
-
-  // Extra indirection if overlays are used !!!!
-  if(!mw) XtVaGetValues(XtParent(w),XmNuserData,&mw,NULL);
-  //if(!mw) {cerr << "Error getting xvt_mainwin pointer" << endl; abort();}
-
+  xvt_mainwin * mw = (xvt_mainwin *) client_data;
   XInstallColormap(mw->display, mw->overlayColormap);
 }
 
@@ -68,7 +60,6 @@ void mw_file_open(Widget w, XtPointer client_data, XtPointer call_data)
 void mw_file_quit(Widget w, XtPointer client_data, XtPointer call_data)
 {
   xvt_mainwin * mw = (xvt_mainwin *) client_data;
-
   delete mw;
   exit(0);
 }
@@ -79,8 +70,7 @@ void mw_file_quit(Widget w, XtPointer client_data, XtPointer call_data)
 // Callback routine for main window Help->Help menu slection
 void mw_help(Widget w, XtPointer client_data, XtPointer call_data)
 {
-  xvt_mainwin * mw = (xvt_mainwin *) client_data;
-
+//    xvt_mainwin * mw = (xvt_mainwin *) client_data;
   cout << "Selected Help" << endl;
 }
 
@@ -111,19 +101,41 @@ void mw_openfs_cb(Widget w, XtPointer client_data, XtPointer call_data)
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
 // Installation routine for colormap if overlay menus used
+void mapStateChanged(Widget w, XtPointer client_data, XEvent *event,
+		     Boolean * cont)
+{
+  xvt_drawwin * dw = (xvt_drawwin *) client_data;
+  switch (event->type) {
+  case MapNotify:
+    if(dw->animate) {
+      if(dw->xmvt.animateCount == dw->xmvt.animateHiddenCount)
+	dw->xmvt.animateID =
+	  XtAppAddTimeOut(dw->xmvt.app, ANIMATETIME,
+			  (XtTimerCallbackProc) handleAnimate, &dw->xmvt);
+      dw->xmvt.animateHiddenCount--;
+    }
+    dw->visible = true;
+    break;
+  case UnmapNotify:
+    if(dw->animate) {
+      dw->xmvt.animateHiddenCount++;
+      if(dw->xmvt.animateCount == dw->xmvt.animateHiddenCount) {
+	XtRemoveTimeOut(dw->xmvt.animateID);
+      }
+    }
+    dw->visible = false;
+    break;
+  }
+}
+
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+// Installation routine for colormap if overlay menus used
 void dw_ensurePulldownColormapInstalled(Widget w, XtPointer client_data,
 					XtPointer call_data)
 {
-  xvt_drawwin * dw2 = (xvt_drawwin *) client_data;
-  // Get the xvt_drawwin.
-  xvt_drawwin * dw = NULL;
-  XtVaGetValues(w,XmNuserData,&dw,NULL);
-  // Extra indirection if overlays are used !!!!
-  if(!dw) XtVaGetValues(XtParent(w),XmNuserData,&dw,NULL);
-  cout << "Test pointers 1 " << dw << " ?= " << dw2 << endl;
-
-  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
-
+  xvt_drawwin * dw = (xvt_drawwin *) client_data;
   XInstallColormap(dw->xmvt.display, dw->xmvt.overlayColormap);
 }
 
@@ -134,8 +146,7 @@ void dw_ensurePulldownColormapInstalled(Widget w, XtPointer client_data,
 // Callback routine for drawing window File->Open menu selection
 void dw_file_open(Widget w, XtPointer client_data, XtPointer call_data)
 {
-  xvt_drawwin * dw = (xvt_drawwin *) client_data;
-
+//    xvt_drawwin * dw = (xvt_drawwin *) client_data;
   cout << "Selected Open... in a draw window" << endl;
 }
 
@@ -150,7 +161,7 @@ void dw_file_close(Widget w, XtPointer client_data, XtPointer call_data)
   if(dw) {
     dw->close();
   } else {
-    cerr << "Widge has no xvt_drawwin resource in drawwin close." << endl;
+    cerr << "client data not set in drawwin close." << endl;
   }
 }
 
@@ -160,8 +171,7 @@ void dw_file_close(Widget w, XtPointer client_data, XtPointer call_data)
 // Callback routine for drawing window Help->Help menu slection
 void dw_help(Widget w, XtPointer client_data, XtPointer call_data)
 {
-  xvt_drawwin * dw = (xvt_drawwin *) client_data;
-
+//    xvt_drawwin * dw = (xvt_drawwin *) client_data;
   cout << "Selected Help in a draw window" << endl;
 }
 
@@ -185,8 +195,7 @@ void activatePopup(Widget w, XtPointer client_data, XEvent *event,
 // 
 void dw_popup_reset(Widget w, XtPointer client_data, XtPointer call_data)
 {
-  xvt_drawwin * dw = (xvt_drawwin *) client_data;
-
+//    xvt_drawwin * dw = (xvt_drawwin *) client_data;
   cout << "Reset popup button selected." << endl;
 }
 
@@ -199,17 +208,17 @@ void dw_popup_animate(Widget w, XtPointer client_data, XtPointer call_data)
 {
   xvt_drawwin * dw = (xvt_drawwin *) client_data;
 
-  cout << "Animate popup button selected." << endl;
   dw->animate = !dw->animate;
   if(dw->animate) {
-    dw->xmvt.animateCount++;
-    if(dw->xmvt.animateCount == 1)
+    if(dw->xmvt.animateCount == dw->xmvt.animateHiddenCount)
       dw->xmvt.animateID =
-	XtAppAddTimeOut(dw->xmvt.app,1, (XtTimerCallbackProc) handleAnimate,
-			&dw->xmvt);
+	XtAppAddTimeOut(dw->xmvt.app, ANIMATETIME,
+			(XtTimerCallbackProc) handleAnimate, &dw->xmvt);
+    dw->xmvt.animateCount++;
   } else {
     dw->xmvt.animateCount--;
-    if(!dw->xmvt.animateCount) XtRemoveTimeOut(dw->xmvt.animateID);
+    if(dw->xmvt.animateCount == dw->xmvt.animateHiddenCount)
+      XtRemoveTimeOut(dw->xmvt.animateID);
   }
 }
 
@@ -220,7 +229,7 @@ void dw_popup_animate(Widget w, XtPointer client_data, XtPointer call_data)
 void handleAnimate(xvt_mainwin * xmvt, XtIntervalId * id)
 {
   xmvt->incrementAnimation();
-  xmvt->animateID = XtAppAddTimeOut(xmvt->app, 1,
+  xmvt->animateID = XtAppAddTimeOut(xmvt->app, ANIMATETIME,
 				    (XtTimerCallbackProc) handleAnimate, xmvt);
 }
 
