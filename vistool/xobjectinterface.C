@@ -281,8 +281,8 @@ void dw_file_open(Widget w, XtPointer client_data, XtPointer call_data)
 						  dirpat, 2);
     XtAddCallback(dw->OpenDialog(), XmNokCallback, dw_openfs_cb, dw);
     XtAddCallback(dw->OpenDialog(), XmNcancelCallback, dw_file_cancel_cb, dw);
-    XmStringEmpty(dw->search_dir);
-    XmStringEmpty(dw->search_pattern);
+    XmStringFree(dw->search_dir);
+    XmStringFree(dw->search_pattern);
   }
   XtManageChild(dw->OpenDialog());
   XtPopup(XtParent(dw->OpenDialog()),XtGrabNone);

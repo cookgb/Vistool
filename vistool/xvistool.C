@@ -63,10 +63,20 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
     "*sgiMode: true",           // Try to enable Indigo Magic look & feel
     "*useSchemes: all",         // and SGI schemes.
     "xvistool.title: Visualization Tool",
-    "*main.width: 350",
-//      "*main.height: 75",
-    "*glxarea*width: 300",
-    "*glxarea*height: 300",
+    "*window_list.width: 170",
+    "*window_list.visibleItemCount: 4",
+    "*window_list.scrollBarDisplayPolicy: as_needed",
+    "*window_list.listSizePolicy: constant",
+    "*window_list.selectionPolicy: extended_select",
+    "*dataset_list.width: 170",
+    "*dataset_list.visibleItemCount: 4",
+    "*dataset_list.scrollBarDisplayPolicy: as_needed",
+    "*dataset_list.listSizePolicy: constant",
+    "*dataset_list.selectionPolicy: extended_select",
+//      "*main.width: 350",
+//      "*main.height: 150",
+    "*glxarea.width: 300",
+    "*glxarea.height: 300",
     NULL
   };
   
@@ -214,6 +224,7 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
 #undef OPENMENU
   XmStringFree(m_gio_format);
   XmStringFree(m_1ddump_format);
+  XmStringFree(m_1ddump_abscissa);
   // Set the callback routines for each menu button.
   if(Widget w = XtNameToWidget(open_popout,"button_0"))
     XtAddCallback(w, XmNactivateCallback, mw_file_open_GIO, this);
@@ -267,7 +278,7 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
 					  NULL);
   Arg args[9];
   int nl = 0;
-  XtSetArg(args[nl],XmNvisibleItemCount,8); nl++;
+  XtSetArg(args[nl],XmNscrollingPolicy,XmAUTOMATIC); nl++;
   XtSetArg(args[nl],XmNtopAttachment,XmATTACH_WIDGET); nl++;
   XtSetArg(args[nl],XmNtopWidget,winlab); nl++;
   XtSetArg(args[nl],XmNleftAttachment,XmATTACH_OPPOSITE_WIDGET); nl++;
@@ -287,7 +298,7 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
 					 XmNtopWidget, winlab,
 					 NULL);
   nl = 0;
-  XtSetArg(args[nl],XmNvisibleItemCount,8); nl++;
+  XtSetArg(args[nl],XmNscrollingPolicy,XmAUTOMATIC); nl++;
   XtSetArg(args[nl],XmNtopAttachment,XmATTACH_OPPOSITE_WIDGET); nl++;
   XtSetArg(args[nl],XmNtopWidget,window_list); nl++;
   XtSetArg(args[nl],XmNleftAttachment,XmATTACH_OPPOSITE_WIDGET); nl++;
@@ -318,6 +329,14 @@ xvt_mainwin::~xvt_mainwin()
   if(Open_Dialog) XtDestroyWidget(Open_Dialog);
   XtDestroyWidget(top_shell);
 }
+
+void xvt_mainwin::RegisterDW(const char * window)
+{
+  XmString WinName = XmStringCreateLocalized((String)window);
+  XmListAddItemUnselected(window_list,WinName,0);
+  XmStringFree(WinName);
+}
+
 
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
@@ -365,6 +384,11 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw,
 				  xmvt.display,
 				  XmNtitle,filename,
 				  NULL);
+
+  //--------------------------------------------------------------------------
+  //--------------------------------------------------------------------------
+  // Register the window in the main window list
+  xmvt.RegisterDW(filename);
 
   //--------------------------------------------------------------------------
   // Make sure the window is properly deleted if the window manager kills
@@ -475,6 +499,7 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw,
 #undef OPENMENU
   XmStringFree(m_gio_format);
   XmStringFree(m_1ddump_format);
+  XmStringFree(m_1ddump_abscissa);
   // Set the callback routines for each menu button.
   if(Widget w = XtNameToWidget(open_popout,"button_0"))
     XtAddCallback(w, XmNactivateCallback,dw_file_open_GIO, this);
@@ -601,8 +626,6 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw,
 
   //--------------------------------------------------------------------------
   // Animate submenu
-//    XmString m_anim = XmStringCreateLocalized("Animate");
-//    XmString m_reset = XmStringCreateLocalized("Reset");
   //
 #define ANIMATEMENU XmVaCHECKBUTTON,m_anim,NULL,NULL,NULL,\
                     XmVaPUSHBUTTON,m_reset,NULL,NULL,NULL

@@ -55,6 +55,7 @@ public: // utility routines
   Display * Xdisplay() {return display;}
   Colormap XoverlayCM() {return overlayColormap;}
   Widget OpenDialog() {return Open_Dialog;}
+  void RegisterDW(const char * window);
 };
 
 class xvt_drawwin : public vt_drawwin {
