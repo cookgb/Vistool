@@ -128,7 +128,6 @@ void mw_openfs_cb(Widget w, XtPointer client_data, XtPointer call_data)
       else
 	dw->close();
       break;
-      break;
     case TYPE_1DAb:
       if(dw->ImportFile_1DAbs(file)) {
 	if(mw->Abscissa_Filename) delete [] mw->Abscissa_Filename;
