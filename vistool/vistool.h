@@ -8,8 +8,8 @@
 #ifndef VISTOOL_H
 #define VISTOOL_H
 
-#include <list.h>
-#include <stack.h>
+#include <list>
+#include <stack>
 #include <string.h>
 #include <strstream.h>
 
@@ -55,8 +55,8 @@ public:
   ~vt_mainwin();
   void incrementAnimation();
   char * NewDrawWindow();
-  char * Info_Name(const char * n);
-  char * Info_Time(int t);
+  char * Info_Name(const char *const n);
+  char * Info_Time(const int t);
   char * Info_Range(const bounds_2D & b);
 };
 
@@ -107,15 +107,15 @@ public:
   bool selected;
   bool sync_window;
   bool redisplay;
-  vt_drawwin(const char * n, vt_mainwin & mw);
+  vt_drawwin(const char *const n, vt_mainwin & mw);
   vt_drawwin(const vt_drawwin & dw);
   ~vt_drawwin();
   void close();
-  bool ImportFile_GIO(const char * file);
-  bool ImportFile_1DDump(const char * file);
-  bool ImportFile_1DAbs(const char * file);
+  bool ImportFile_GIO(const char *const file);
+  bool ImportFile_1DDump(const char *const file);
+  bool ImportFile_1DAbs(const char *const file);
   virtual void deleteme() { delete this;}
-  virtual void init(int, int);
+  virtual void init(const int, const int);
   virtual void draw();
   double next_label();
   double previous_label();
@@ -124,17 +124,17 @@ public:
   void reset_list();
   bounds_2D AddBoarder(const bounds_2D & b);
   void reset_CurrentBounds();
-  void push_CurrentBounds(bounds_2D * new_bounds);
+  void push_CurrentBounds(bounds_2D *const new_bounds);
   void pop_CurrentBounds();
   bounds_2D * Minimum_CurrentBounds();
-  virtual void resize(int, int);
-  void windowReshape(int, int);
-  void Add(vt_data_series * ds);
+  virtual void resize(const int, const int);
+  void windowReshape(const int, const int);
+  void Add(vt_data_series *const ds);
   int Width() const {return cur_width;}
   int Height() const {return cur_height;}
-  void Label_Text(bool add);
-  void Coords_Text(bool add);
-  void Apply(TransformationFunction T);
+  void Label_Text(const bool add);
+  void Coords_Text(const bool add);
+  void Apply(const TransformationFunction T);
 };
 
 class vt_data {
@@ -151,24 +151,25 @@ public:
   double LBy() const {return bounds.Lb_y;}
   double UBy() const {return bounds.Ub_y;}
   bounds_2D Bounds() const {return bounds;}
-  virtual void draw() const = 0;
-  virtual vt_data * Copy() const = 0;
+  virtual void draw() const {}; // Should be = 0; (abstract) but xlC pukes.
+  virtual vt_data * Copy() const {}; // Should be = 0; but xlC pukes.
   double Label() const {return label;}
   const double *Data() const {return data;};
   int Size() const {return size;};
-  virtual void Apply(TransformationFunction T) = 0;
-  virtual double Norm(NormType T) const = 0;
+  virtual void Apply(TransformationFunction T) {}; // Should be = 0; xlC pukes.
+  virtual double Norm(NormType T) const {}; // Should be = 0; but xlC pukes.
 };
 
 class vt_data_1d : public vt_data {
 protected:
 public:
-  vt_data_1d(double l, int n, const double * x, const double * y);
+  vt_data_1d(const double l, const int n,
+	     const double *const x, const double *const y);
   vt_data_1d(const vt_data_1d & src);
   void draw() const;
   vt_data * Copy() const;
-  void Apply(TransformationFunction T);
-  double Norm(NormType T) const;
+  void Apply(const TransformationFunction T);
+  double Norm(const NormType T) const;
 };
 
 class vt_data_series {
@@ -185,7 +186,7 @@ protected:
 public:
   bool selected;
 public:
-  vt_data_series(const char * n, const char * o);
+  vt_data_series(const char *const n, const char *const o);
   vt_data_series(const vt_data_series & vs);
   ~vt_data_series();
   const char * Name() const {return name;}
@@ -196,18 +197,18 @@ public:
   double LBy() const {return bounds.Lb_y;}
   double UBy() const {return bounds.Ub_y;}
   bounds_2D Bounds() const {return bounds;}
-  void Append(vt_data * d);
+  void Append(vt_data *const d);
   vt_data * Current() const {return *current;}
   bool Done() const {return done;}
-  void Reverse(bool was_forward, double win_current_l);
+  void Reverse(const bool was_forward, const double win_current_l);
   double Next();
   double Previous();
   void Increment();
   void Decrement();
-  void Reset(bool forward_iteration);
-  void Apply(TransformationFunction T);
-  void FunctionName(const char * func);
-  vt_data_series * Norm(NormType T) const;
+  void Reset(const bool forward_iteration);
+  void Apply(const TransformationFunction T);
+  void FunctionName(const char *const func);
+  vt_data_series * Norm(const NormType T) const;
 };
 
 #endif // VISTOOL_H
