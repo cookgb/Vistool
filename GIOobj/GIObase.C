@@ -7,7 +7,6 @@
 //-------------------------------------------------------------------------
 
 #ifdef __GNUC__
-#pragma implementation
 #include <string.h>
 #else
 #include <strings.h>
@@ -16,7 +15,7 @@
 #include <fstream.h>
 #include <iostream.h>
 
-#include "GIOobj.h"
+#include "GIOtempl.h"
 
 
 GIObase::GIObase(const char ** names, int n, int d)
@@ -67,5 +66,33 @@ void GIObase::GIOAbort(const char * reason)
 {
   cerr << "ABORT from GIO library : " << reason << endl;
   abort();
+}
+
+GIOquery::~GIOquery()
+{
+  if(FileName) delete [] FileName;
+  fs->close();
+}
+
+int GIOquery::Read(const char * filename)
+{
+  const int sl = strlen(filename);
+  if(FileName) delete [] FileName;
+  if(!(FileName = new char[sl+1])) GIOAbort("memory");
+  strcpy(FileName, filename);
+
+  fs = new fstream(FileName, ios::in);
+  if(!*fs) GIOAbort("cannot open file for reading");
+  
+  char buffer[TESTTAGLEN];
+  fs->read(buffer,TESTTAGLEN);
+  if(strncmp(buffer,GIOTESTTAG,TESTTAGLEN)) {
+    fs->close();
+    return 0;
+  }
+
+  fs->read((char *)&GIOkey,sizeof(int));
+
+  return readheader(fs);
 }
 

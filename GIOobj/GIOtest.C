@@ -1,9 +1,16 @@
+// -*- c++ -*-
+//-------------------------------------------------------------------------
+//
+// $Id$
+//
+//-------------------------------------------------------------------------
+//-------------------------------------------------------------------------
 
 #include <iostream.h>
 #include <stdlib.h>
 #include <math.h>
 
-#include "GIO1d.h"
+#include "GIOlib.h"
 
 
 double wave(double t, double x)
@@ -33,25 +40,42 @@ main()
   int status;
 
   {
-    GIO1dseries<double,double> output(filename,names,2,status);
+    GIO_double1DC output(filename,names,2,status);
     if(!status) {
       cerr << "Opening output file failed" << endl;
       abort();
     }
     
+    double Lb[1];
+    double Ub[1];
+    int ext[1];
     for(int n=0; n<nt; n++) {
       double t = t0 + n*dt;
-      for(int i=1; i<nx; i++) y[i] = wave(t,x[i]);
-      output.Write(t,nx,data,2);
+      for(int i=0; i<nx; i++) y[i] = wave(t,x[i]);
+      Lb[0] = x[0];
+      Ub[0] = x[nx-1];
+      ext[0] = nx;
+      output.Write(t,Lb,Ub,ext,data,2);
+      //output.Write(t,ext,data,2);
     }
   }
 
+  GIOquery query;
+  if(!query.Read(filename)) {
+    cerr << "Opening input file for query failed" << endl;
+    abort();
+  }
+  query.Close();
+  cout << "Query Key : " << query.Key() << endl;
+  cout << "      Dim : " << query.Dim() << endl;
+
   {
-    GIO1dseries<double,double> input(filename,status);
+    GIO_double1DC input(filename,status);
     if(!status) {
       cerr << "Opening input file failed" << endl;
       abort();
     }
+    cout << "GIO Key = " << input.Key() << endl;
     cout << "Dimension = " << input.Dim() << endl;
     cout << "Ndatasets = " << input.NDataSets() << endl;
     cout << "Labels : ";
@@ -61,7 +85,13 @@ main()
     for(int n=0; n < input.NSeries(); n++) {
       input.Read();
       cout << "I = " << n << " | Label = " << input.Label() << endl;
-      cout << "Extent = " << input.Ext(0) << endl;
+      for(int i=0; i<input.Dim(); i++) {
+	cout << "[" << i << "] :: ";
+	if(input.CoordsDefined())
+	  cout << "LB(" << input.Lbound(0) << ") "
+	       << "UB(" << input.Ubound(0) << ") ";
+	cout << "ex(" << input.Ext(0)    << ")" << endl;
+      }
     }
   }
 }
