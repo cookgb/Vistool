@@ -417,6 +417,7 @@ void vt_drawwin::reset_list()
     if(c < current_l) current_l = c;
   }
   Label_Text(true);
+  draw();
 }
 
 void vt_drawwin::resize(int new_width, int new_height)
