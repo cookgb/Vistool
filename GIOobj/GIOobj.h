@@ -8,6 +8,8 @@
 #ifndef GIOOBJ_H
 #define GIOOBJ_H
 
+#pragma interface
+
 #include <fstream.h>
 
 class GIObase {
@@ -20,8 +22,11 @@ public:
   GIObase(const char ** names, int n, int d);
   ~GIObase();
   //
-  void writeheader(fstream * fs);
-  void readheader(fstream * fs);
+  bool writeheader(fstream * fs);
+  bool readheader(fstream * fs);
+  int NDataSets() {return Ndatasets;}
+  int Dim() {return dim;}
+  const char * Name(int i) {return name[i];}
 protected:
   void GIOAbort(const char * reason);
 };
@@ -38,11 +43,25 @@ public:
   {
     ext = new int[dim];
     data = new D * [Ndatasets];
+    for(int i=0; i<Ndatasets; i++) data[i] = 0;
   }
   ~GIOdata();
   bool Write(fstream * fs);
   bool Read(fstream * fs);
+  L Label() {return label;}
+  int Ext(int i) {return ext[i];}
+  const D * Data(int i) {return data[i];}
 };
 
 #endif // GIOOBJ_H
+
+
+
+
+
+
+
+
+
+
 

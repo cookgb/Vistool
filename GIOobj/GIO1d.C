@@ -9,7 +9,10 @@
 #include <string.h>
 #include <fstream.h>
 
+#pragma implementation
 #include "GIO1d.h"
+
+template class GIO1dseries<double,double>;
 
 #define GIOTESTTAG "#GIO UNIQUE TAG\0"
 #define TESTTAGLEN 16
@@ -26,14 +29,14 @@ GIO1dseries<D,L>::GIO1dseries(const char * filename, const char ** names,
 
   fs = new fstream(FileName, ios::out|ios::trunc);
   if(!*fs) GIOAbort("cannot open file for writing");
-  status = true;
   
   fs->write(GIOTESTTAG,TESTTAGLEN);
 
-  writeheader(fs);
+  status = writeheader(fs);
 
   Nsseek = fs->tellp();
   fs->write((char *)&Nseries,sizeof(int));
+  status = fs->good();
 }
 
 template< class D, class L> 
@@ -47,24 +50,20 @@ GIO1dseries<D,L>::GIO1dseries(const char * filename, bool & status)
 
   fs = new fstream(FileName, ios::in);
   if(!*fs) GIOAbort("cannot open file for writing");
-  status = true;
   
   char buffer[TESTTAGLEN];
   fs->read(buffer,TESTTAGLEN);
   if(strncmp(buffer,GIOTESTTAG,TESTTAGLEN)) GIOAbort("GIO file tag error");
 
-  readheader(fs);
+  status = readheader(fs);
 
   fs->read((char *)&Nseries,sizeof(int));
 
+  status = fs->good();
+
   ext = new int[dim];
   data = new D * [Ndatasets];
-
-  cout << "Ndatasets = " << Ndatasets << endl;
-  for(int i=0; i<Ndatasets; i++)
-    cout << "name[" << i << "] = " << name[i] << endl;
-  cout << "dim = " << dim << endl;
-  cout << "Nseries = " << Nseries << endl;
+  for(int i=0; i<Ndatasets; i++) data[i] = 0;
 }
 
 template< class D, class L> 
@@ -84,11 +83,14 @@ bool GIO1dseries<D,L>::Write(L l, int ex, D ** d, int n)
 
   if(!GIOdata<D,L>::Write(fs)) return false;
 
+  // Don't keep the data since it will be deleated if the variable dies!
+  for(int i=0; i<Ndatasets; i++) data[i] = NULL;
+
   Nseries++;
   fs->seekp(Nsseek);
   fs->write((char *)&Nseries,sizeof(int));
   fs->seekp(0,ios::end);
-  return true;
+  return fs->good();
 }
 
 template< class D, class L> 
