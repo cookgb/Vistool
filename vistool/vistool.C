@@ -58,16 +58,6 @@ void vt_mainwin::incrementAnimation()
   sync_dup = false;
 }
 
-void vt_mainwin::close_dw(vt_drawwin * dw)
-{
-  // remove me from the draw_list;
-  typedef std::list<vt_drawwin *>::iterator I_dw;
-  const vt_drawwin * me = dw;
-  I_dw d = std::find(draw_list.begin(),draw_list.end(),me);
-  if(!(*d)) std::cerr << "Couldn't remove drawwin from list" << std::endl;
-  draw_list.erase(d);
-}
-
 char * vt_mainwin::NewDrawWindow()
 {
   std::ostringstream dw;
