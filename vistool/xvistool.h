@@ -66,6 +66,9 @@ private:
   friend void mapStateChanged(Widget, XtPointer, XEvent *, Boolean *);
   friend void dw_file_open(Widget, XtPointer, XtPointer);
   friend void dw_animate(Widget, XtPointer, XtPointer);
+  friend void Button1DownAction(Widget, XEvent *, String *, Cardinal *);
+  friend void Button1MotionAction(Widget, XEvent *, String *, Cardinal *);
+  friend void Button1UpAction(Widget, XEvent *, String *, Cardinal *);
   xvt_mainwin & xmvt;
   Widget draw_shell;
   Widget main_w;
@@ -84,6 +87,12 @@ private:
   GLXDrawable glx_win;
   GLXContext cx;
   Dimension viewWidth, viewHeight;
+private:
+  GC gc_RB;
+  bool draw_RB;
+  int xpin_RB, ypin_RB;
+  int xorg_RB, yorg_RB;
+  int xwid_RB, ywid_RB;
 public:
   Widget CheckButton_1DAbs;
 public:
@@ -95,6 +104,7 @@ public:
   virtual void draw();
   virtual void resize(int, int);
   void postRedisplay();
+  void DrawRubberBand();
 public:
   Dimension wWidth() {return viewWidth;}
   Dimension wHeight() {return viewHeight;}

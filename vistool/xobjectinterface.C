@@ -484,18 +484,15 @@ void dw_popup_reset(Widget w, XtPointer client_data, XtPointer call_data)
 void Button1DownAction(Widget w, XEvent * event, String * params, 
 		       Cardinal * num_params)
 {
-  // Get the xvt_drawwin.
   xvt_drawwin * dw = NULL;
-  XtVaGetValues(w,XmNuserData,&dw,NULL);
-  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
-
-//    const int x = event->xbutton.x;
-//    const int y = event->xbutton.y;
-
-//    cout << "Button 1 Down: \n"
-//         << "Mouse at (" << x << "," << y << ")\n"
-//         << "String : " << params << "\n"
-//         << "Number of params : " << *num_params << endl;
+  XtVaGetValues(w,XmNuserData,&dw,NULL); // Get the xvt_drawwin.
+  XButtonEvent * bevent = (XButtonEvent *) event;
+  dw->xpin_RB = dw->xorg_RB = bevent->x;
+  dw->ypin_RB = dw->yorg_RB = bevent->y;
+  dw->xwid_RB = dw->ywid_RB = 0;
+  glXWaitGL();
+  dw->DrawRubberBand();
+  dw->draw_RB = true;
 }
 
 //----------------------------------------------------------------------------
@@ -505,18 +502,16 @@ void Button1DownAction(Widget w, XEvent * event, String * params,
 void Button1MotionAction(Widget w, XEvent * event, String * params, 
 			 Cardinal * num_params)
 {
-  // Get the xvt_drawwin.
   xvt_drawwin * dw = NULL;
-  XtVaGetValues(w,XmNuserData,&dw,NULL);
-  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
-
-//    const int x = event->xbutton.x;
-//    const int y = event->xbutton.y;
-
-//    cout << "Button 1 Motion: \n"
-//         << "Mouse at (" << x << "," << y << ")\n"
-//         << "String : " << params << "\n"
-//         << "Number of params : " << *num_params << endl;
+  XtVaGetValues(w,XmNuserData,&dw,NULL); // Get the xvt_drawwin.
+  XButtonEvent * bevent = (XButtonEvent *) event;
+  glXWaitGL();
+  dw->DrawRubberBand();
+  (bevent->x < dw->xpin_RB) ? dw->xorg_RB=bevent->x : dw->xorg_RB=dw->xpin_RB;
+  (bevent->y < dw->ypin_RB) ? dw->yorg_RB=bevent->y : dw->yorg_RB=dw->ypin_RB;
+  dw->xwid_RB = abs(bevent->x - dw->xpin_RB);
+  dw->ywid_RB = abs(bevent->y - dw->ypin_RB);
+  dw->DrawRubberBand();
 }
 
 //----------------------------------------------------------------------------
@@ -526,18 +521,13 @@ void Button1MotionAction(Widget w, XEvent * event, String * params,
 void Button1UpAction(Widget w, XEvent * event, String * params, 
 		     Cardinal * num_params)
 {
-  // Get the xvt_drawwin.
   xvt_drawwin * dw = NULL;
-  XtVaGetValues(w,XmNuserData,&dw,NULL);
-  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
-
-//    const int x = event->xbutton.x;
-//    const int y = event->xbutton.y;
-
-//    cout << "Button 1 Up: \n"
-//         << "Mouse at (" << x << "," << y << ")\n"
-//         << "String : " << params << "\n"
-//         << "Number of params : " << *num_params << endl;
+  XtVaGetValues(w,XmNuserData,&dw,NULL); // Get the xvt_drawwin.
+  glXWaitGL();
+  dw->DrawRubberBand();
+  dw->draw_RB = false;
+  dw->xpin_RB = dw->ypin_RB = 0;
+  dw->xwid_RB = dw->ywid_RB = 0;
 }
 
 //----------------------------------------------------------------------------

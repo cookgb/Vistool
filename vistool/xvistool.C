@@ -312,7 +312,7 @@ void apply_ln(Widget, XtPointer, XtPointer);
 // Creator for X11 version of drawing window.
 xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw,
 			 XmString & dir, XmString & pattern)
-  : vt_drawwin(filename,mw), xmvt(mw), Open_Dialog(0)
+  : vt_drawwin(filename,mw), xmvt(mw), Open_Dialog(0), draw_RB(false)
 {
   // Save the directory so that the new Open will start searching here.
   search_dir = XmStringCopy(dir);
@@ -465,6 +465,9 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw,
 				     XmNuserData,this, // For Button actions
 				     NULL);
   XtVaGetValues(glx_area, XtNwidth, &viewWidth, XtNheight, &viewHeight, NULL);
+//    gcv.foreground = BlackPixelOfScreen(XtScreen(glx_area));
+//    gc = XCreateGC(xmvt.display, XtWindow(glx_area), GCForeground, &gcv);
+//    XSetFunction(xmvt.display, gc, GXxor);
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
@@ -487,6 +490,12 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw,
   XtOverrideTranslations(glx_area, trans);
 
   //--------------------------------------------------------------------------
+  // Create OpenGL rendering context with no display list shareing and
+  // with direct rendering favored
+  cx = glXCreateContext(xmvt.display,xmvt.vi,None,TRUE);
+  if(!cx) XtAppError(xmvt.app,"could not create rendering context");
+
+  //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
   // Create a Text Widget
   text_area = XtVaCreateManagedWidget("draw_text", xmTextWidgetClass,
@@ -501,12 +510,6 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw,
 				      XmNscrollVertical, FALSE,
 				      NULL);
   XtManageChild(text_area);
-
-  //--------------------------------------------------------------------------
-  // Create OpenGL rendering context with no display list shareing and
-  // with direct rendering favored
-  cx = glXCreateContext(xmvt.display,xmvt.vi,None,TRUE);
-  if(!cx) XtAppError(xmvt.app,"could not create rendering context");
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
@@ -566,15 +569,21 @@ void xvt_drawwin::init(int width, int height)
   glx_win = (GLXDrawable) XtWindow(glx_area);
   glXMakeCurrent(xmvt.display,glx_win,cx);
   vt_drawwin::init(width, height);
+
+  XGCValues gcv;
+  gcv.function = GXinvert;
+  gc_RB = XCreateGC(xmvt.display,  (Window) glx_win, GCFunction, &gcv);
 }
 
 void xvt_drawwin::draw()
 {
   if(!visible) return;
+  if(draw_RB) glXWaitX();
   glXMakeCurrent(xmvt.Xdisplay(),glx_win,cx);
   vt_drawwin::draw();
   glXSwapBuffers(xmvt.Xdisplay(),glx_win);
   XmTextSetString(text_area,labelbuf);
+  if(draw_RB) {glXWaitGL(); DrawRubberBand();}
 }
 
 void xvt_drawwin::resize(int new_width, int new_height)
@@ -595,5 +604,11 @@ void xvt_drawwin::postRedisplay()
 					(XtWorkProc) handleRedisplay, &xmvt);
     xmvt.redisplayPending = true;
   }
+}
+
+void xvt_drawwin::DrawRubberBand()
+{
+  XDrawRectangle(xmvt.Xdisplay(), (Window) glx_win, gc_RB,
+		 xorg_RB, yorg_RB, xwid_RB, ywid_RB);
 }
 
