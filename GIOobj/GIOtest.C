@@ -30,7 +30,7 @@ main()
 
   for(int i=0; i<nx; i++) x[i] = x0 + i*dx;
 
-  bool status;
+  int status;
 
   {
     GIO1dseries<double,double> output(filename,names,2,status);

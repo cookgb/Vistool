@@ -24,8 +24,8 @@ public:
   GIObase(const char ** names, int n, int d);
   ~GIObase();
   //
-  bool writeheader(fstream * fs);
-  bool readheader(fstream * fs);
+  int writeheader(fstream * fs);
+  int readheader(fstream * fs);
   int NDataSets() {return Ndatasets;}
   int Dim() {return dim;}
   const char * Name(int i) {return name[i];}
@@ -48,8 +48,8 @@ public:
     for(int i=0; i<Ndatasets; i++) data[i] = 0;
   }
   ~GIOdata();
-  bool Write(fstream * fs);
-  bool Read(fstream * fs);
+  int Write(fstream * fs);
+  int Read(fstream * fs);
   L Label() {return label;}
   int Ext(int i) {return ext[i];}
   const D * Data(int i) {return data[i];}

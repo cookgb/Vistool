@@ -1,7 +1,7 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.2 1999-12-30 14:35:59 cookgb Exp $
+# $Id: Makefile,v 1.3 1999-12-30 16:14:14 cookgb Exp $
 #
 ###############################################################################
 # linux
@@ -15,7 +15,7 @@
 CC=cc -mips4
 CFLAGS = -O2
 CXX=CC -mips4
-CXXFLAGS= -O2 -LANG:ansi-for-init-scope=ON
+CXXFLAGS= -O2 -LANG:bool=OFF
 
 all: GIOtest
 

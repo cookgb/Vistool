@@ -25,10 +25,10 @@ template class GIO1dseries<double,double>;
 
 template< class D, class L> 
 GIO1dseries<D,L>::GIO1dseries(const char * filename, const char ** names,
-			      int n, bool & status)
+			      int n, int & status)
   : GIOdata<D,L>(names,n,1), fs(0), Nseries(0), Nsseek(0)
 {
-  status = false;
+  status = 0;
   const int sl = strlen(filename);
   if(!(FileName = new char[sl+1])) GIOAbort("memory");
   strcpy(FileName, filename);
@@ -46,10 +46,10 @@ GIO1dseries<D,L>::GIO1dseries(const char * filename, const char ** names,
 }
 
 template< class D, class L> 
-GIO1dseries<D,L>::GIO1dseries(const char * filename, bool & status)
+GIO1dseries<D,L>::GIO1dseries(const char * filename, int & status)
   : GIOdata<D,L>(), fs(0), Nseries(0), Nsseek(0)
 {
-  status = false;
+  status = 0;
   const int sl = strlen(filename);
   if(!(FileName = new char[sl+1])) GIOAbort("memory");
   strcpy(FileName, filename);
@@ -80,17 +80,17 @@ GIO1dseries<D,L>::~GIO1dseries()
 }
 
 template< class D, class L> 
-bool GIO1dseries<D,L>::Write(L l, int ex, D ** d, int n)
+int GIO1dseries<D,L>::Write(L l, int ex, D ** d, int n)
 {
   label = l;
   ext[0] = ex;
   if(n != Ndatasets) GIOAbort("incompatible number of objects being written");
   for(int i=0; i<Ndatasets; i++) data[i] = d[i];
 
-  if(!GIOdata<D,L>::Write(fs)) return false;
+  if(!GIOdata<D,L>::Write(fs)) return 0;
 
   // Don't keep the data since it will be deleated if the variable dies!
-  for(int i=0; i<Ndatasets; i++) data[i] = NULL;
+  for(int j=0; j<Ndatasets; j++) data[j] = NULL;
 
   Nseries++;
   fs->seekp(Nsseek);
@@ -100,7 +100,7 @@ bool GIO1dseries<D,L>::Write(L l, int ex, D ** d, int n)
 }
 
 template< class D, class L> 
-bool GIO1dseries<D,L>::Read()
+int GIO1dseries<D,L>::Read()
 {
   return GIOdata<D,L>::Read(fs);
 }

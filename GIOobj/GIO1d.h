@@ -24,12 +24,12 @@ protected:
   streampos Nsseek;
 public:
   GIO1dseries() : GIOdata(), FileName(0), fs(0), Nseries(0), Nsseek(0) {}
-  GIO1dseries(const char * filename, bool & status);
+  GIO1dseries(const char * filename, int & status);
   GIO1dseries(const char * filename, const char ** names, int n,
-	      bool & status);
+	      int & status);
   ~GIO1dseries();
-  bool Write(L label, int ext, D ** d, int n);
-  bool Read();
+  int Write(L label, int ext, D ** d, int n);
+  int Read();
   int NSeries() {return Nseries;}
 };
 

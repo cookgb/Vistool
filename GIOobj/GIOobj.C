@@ -43,7 +43,7 @@ GIObase::~GIObase()
   }
 }
 
-bool GIObase::writeheader(fstream * fs)
+int GIObase::writeheader(fstream * fs)
 {
   fs->write((char *)&Ndatasets,sizeof(int));
   for(int i=0; i<Ndatasets; i++) fs->write(name[i],strlen(name[i])+1);
@@ -51,7 +51,7 @@ bool GIObase::writeheader(fstream * fs)
   return fs->good();
 }
 
-bool GIObase::readheader(fstream * fs)
+int GIObase::readheader(fstream * fs)
 {
   fs->read((char *)&Ndatasets,sizeof(int));
   if(!(name = new char * [Ndatasets])) GIOAbort("memory");
@@ -83,7 +83,7 @@ template< class D, class L> GIOdata<D,L>::~GIOdata()
   }
 }
 
-template< class D, class L> bool GIOdata<D,L>::Write(fstream * fs)
+template< class D, class L> int GIOdata<D,L>::Write(fstream * fs)
 {
   fs->write((char *)&label,sizeof(L));
   int size = 1;
@@ -96,7 +96,7 @@ template< class D, class L> bool GIOdata<D,L>::Write(fstream * fs)
   return fs->good();
 }
 
-template< class D, class L> bool GIOdata<D,L>::Read(fstream * fs)
+template< class D, class L> int GIOdata<D,L>::Read(fstream * fs)
 {
   fs->read((char *)&label,sizeof(L));
   int size = 1;
@@ -109,6 +109,6 @@ template< class D, class L> bool GIOdata<D,L>::Read(fstream * fs)
     if(!(data[i] = new D[size])) GIOAbort("memory");
     fs->read((char *)data[i],size*sizeof(D));
   }
-  return true;
+  return 1;
 }
 
