@@ -440,14 +440,18 @@ vt_data_1d::vt_data_1d(const vt_data_1d & src)
 
 void vt_data_1d::draw() {
   glColor3d(1.0,1.0,1.0);
-  double * p = data;
-  glBegin(GL_LINE_STRIP);
-  for(int i=0; i<size; i++) {
-    const double * x = p++;
-    const double * y = p++;
-    glVertex2d(*x,*y);
-  }
-  glEnd();
+  glEnableClientState(GL_VERTEX_ARRAY);
+  glVertexPointer(2,GL_DOUBLE,0,data);
+  glDrawArrays(GL_LINE_STRIP,0,size);
+  glDisableClientState(GL_VERTEX_ARRAY);
+//    double * p = data;
+//    glBegin(GL_LINE_STRIP);
+//    for(int i=0; i<size; i++) {
+//      const double * x = p++;
+//      const double * y = p++;
+//      glVertex2d(*x,*y);
+//    }
+//    glEnd();
 }
 
 vt_data_series::vt_data_series(const char * n)
