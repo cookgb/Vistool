@@ -124,10 +124,10 @@ void mw_openfs_cb(Widget w, XtPointer client_data, XtPointer call_data)
     XmStringFree(patstr);
     switch(mw->importtype) {
     case TYPE_GIO:
-      if(!dw->ImportFile_GIO(file)) mw->close_dw(dw);
+      if(!dw->ImportFile_GIO(file)) {mw->close_dw(dw); delete dw;}
       break;
     case TYPE_1DDump:
-      if(!dw->ImportFile_1DDump(file)) mw->close_dw(dw);
+      if(!dw->ImportFile_1DDump(file)) {mw->close_dw(dw); delete dw;}
       break;
     case TYPE_1DAb:
       mw->Abscissa_Set = !mw->Abscissa_Set;
@@ -143,6 +143,7 @@ void mw_openfs_cb(Widget w, XtPointer client_data, XtPointer call_data)
 	XmToggleButtonSetState(mw->CheckButton_1DAbs, mw->Abscissa_Set, False);
       }
       mw->close_dw(dw);
+      delete dw;
       break;
     }
     XtFree(file);
@@ -572,6 +573,7 @@ void dw_file_close(Widget w, XtPointer client_data, XtPointer call_data)
   if(dw) {
     xvt_mainwin & mw = dw->xmvt;
     mw.close_dw(dw);
+    delete dw;
   } else {
     std::cerr << "client data not set in drawwin close." << std::endl;
   }

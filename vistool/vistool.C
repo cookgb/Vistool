@@ -66,9 +66,6 @@ void vt_mainwin::close_dw(vt_drawwin * dw)
   I_dw d = std::find(draw_list.begin(),draw_list.end(),me);
   if(!(*d)) std::cerr << "Couldn't remove drawwin from list" << std::endl;
   draw_list.erase(d);
-
-  // delete memory
-  delete dw;
 }
 
 char * vt_mainwin::NewDrawWindow()
