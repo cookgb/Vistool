@@ -1,28 +1,28 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.31 2003-07-17 15:01:26 cookgb Exp $
+# $Id: Makefile,v 1.32 2004-06-18 15:05:27 cookgb Exp $
 #
 ###############################################################################
 # linux/gcc
-CC=gcc
+#-:CC=gcc
+#-:CFLAGS= -O2
+#-:CXX=g++
+#-:#CXXFLAGS= -O2 -I/usr/X11R6/LessTif/Motif1.2/include -I/usr/X11R6/include
+#-:#LIBDIRS = -L/usr/X11R6/LessTif/Motif1.2/lib -L/usr/X11R6/lib GIO/libGIO.a
+#-:CXXFLAGS= -O2 -I/usr/X11R6/include
+#-:LIBDIRS = -L/usr/X11R6/lib GIO/libGIO.a
+#-:X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11
+
+# linux/Intel
+CC=icc
 CFLAGS= -O2
-CXX=g++
+CXX=icpc
 #CXXFLAGS= -O2 -I/usr/X11R6/LessTif/Motif1.2/include -I/usr/X11R6/include
 #LIBDIRS = -L/usr/X11R6/LessTif/Motif1.2/lib -L/usr/X11R6/lib GIO/libGIO.a
 CXXFLAGS= -O2 -I/usr/X11R6/include
 LIBDIRS = -L/usr/X11R6/lib GIO/libGIO.a
 X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11
-
-# linux/Intel
-#CC=icc
-#CFLAGS= -O2
-#CXX=icpc
-##CXXFLAGS= -O2 -I/usr/X11R6/LessTif/Motif1.2/include -I/usr/X11R6/include
-##LIBDIRS = -L/usr/X11R6/LessTif/Motif1.2/lib -L/usr/X11R6/lib GIO/libGIO.a
-#CXXFLAGS= -O2 -I/usr/X11R6/include
-#LIBDIRS = -L/usr/X11R6/lib GIO/libGIO.a
-#X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11
 
 # SGI
 #CC=cc -mips4
