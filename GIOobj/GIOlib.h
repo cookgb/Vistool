@@ -12,8 +12,6 @@
 #include <iostream>
 #include "GIOincl.h"
 
-#include <stl_locale.h>
-
 enum GIOtype {
   GIO_FLOAT_SERIES=0,
   GIO_FLOAT_CSERIES=1,
