@@ -1,15 +1,15 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.31 2003-07-17 14:59:02 cookgb Exp $
+# $Id: Makefile,v 1.32 2004-06-03 21:35:35 cookgb Exp $
 #
 ###############################################################################
-# linux/gcc3
+# linux-gnu
 CC=gcc
 CFLAGS= -O2
 CXX=g++
 CXXFLAGS= -O2
-CXXINCLUDES = -I/usr/include/g++-3/
+CXXINCLUDES = -I/usr/include/g++-3
 
 # Linux/Intel
 #CC=icc
