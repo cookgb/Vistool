@@ -1,13 +1,21 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.23 2002-07-12 23:58:40 cookgb Exp $
+# $Id: Makefile,v 1.24 2002-07-26 17:48:50 cookgb Exp $
 #
 ###############################################################################
-# linux
+# linux/gcc3
 #CC=gcc3
 #CFLAGS= -O2
 #CXX=g++3
+#CXXFLAGS= -O2 -I/usr/X11R6/LessTif/Motif1.2/include -I/usr/X11R6/include
+#LIBDIRS = -L/usr/X11R6/LessTif/Motif1.2/lib -L/usr/X11R6/lib GIO/libGIO.a
+#X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11
+
+# linux/Intel
+#CC=icc
+#CFLAGS= -O2
+#CXX=icpc
 #CXXFLAGS= -O2 -I/usr/X11R6/LessTif/Motif1.2/include -I/usr/X11R6/include
 #LIBDIRS = -L/usr/X11R6/LessTif/Motif1.2/lib -L/usr/X11R6/lib GIO/libGIO.a
 #X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11
