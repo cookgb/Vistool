@@ -381,17 +381,19 @@ void vt_drawwin::draw()
   if(forward_animation)
     for(p = data_list.begin(); p != data_list.end(); p++) {
       vt_data_series & ds = **p;
-      if(!ds.Done() && ds.current_l <= current_l) {
-	ds.Current()->draw();
+      if(!ds.Done()) {
 	all_done = false;
+	if(ds.current_l <= current_l)
+	  ds.Current()->draw();
       }
     }
   else
     for(p = data_list.begin(); p != data_list.end(); p++) {
       vt_data_series & ds = **p;
-      if(!ds.Done() && ds.current_l >= current_l) {
-	ds.Current()->draw();
+      if(!ds.Done()) {
 	all_done = false;
+	if(ds.current_l >= current_l)
+	  ds.Current()->draw();
       }
     }
   glDisableClientState(GL_VERTEX_ARRAY);
@@ -675,7 +677,7 @@ void vt_data_series::Append(vt_data * d)
 double vt_data_series::Next()
 {
   list<vt_data *>::iterator next = current;
-  next++;
+  ++next;
   if(next != data.end())
     return (**next).Label();
   else
@@ -684,21 +686,21 @@ double vt_data_series::Next()
 
 double vt_data_series::Previous()
 {
-  typedef list<vt_data *>::reverse_iterator RI_d;
-  RI_d next = RI_d(current);
-  next++;
-  if(next != data.rend())
+  list<vt_data *>::iterator next = current;
+  if(next != data.begin()) {
+    --next;
     return (**next).Label();
-  else
+  } else
     return -LAST_LABEL;
 }
 
 void vt_data_series::Increment()
 {
   ++current;
-  if(current == data.end())
+  if(current == data.end()) {
     done = true;
-  else
+    current_l = LAST_LABEL;
+  } else
     current_l = (**current).Label();
 }
 
@@ -707,8 +709,10 @@ void vt_data_series::Decrement()
   if(current != data.begin()) {
     --current;
     current_l = (**current).Label();
-  } else
+  } else {
     done = true;
+    current_l = -LAST_LABEL;
+  }
 }
 
 void vt_data_series::Reset(bool forward_animation)

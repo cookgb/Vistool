@@ -316,7 +316,8 @@ void apply_ln(Widget, XtPointer, XtPointer);
 // Creator for X11 version of drawing window.
 xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw,
 			 XmString & dir, XmString & pattern)
-  : vt_drawwin(filename,mw), xmvt(mw), Open_Dialog(0), draw_RB(false)
+  : vt_drawwin(filename,mw), xmvt(mw), Open_Dialog(0), swapcount(0),
+    draw_RB(false)
 {
   // Save the directory so that the new Open will start searching here.
   search_dir = XmStringCopy(dir);
@@ -597,11 +598,13 @@ void xvt_drawwin::init(int width, int height)
 
 void xvt_drawwin::draw()
 {
-  if(!visible) return;
-  if(draw_RB) glXWaitX();
+  ++swapcount;
+  if(!visible) {--swapcount; return;}
+  if(draw_RB) glXWaitX(); glXWaitGL();
   glXMakeCurrent(xmvt.Xdisplay(),glx_win,cx);
   vt_drawwin::draw();
-  glXSwapBuffers(xmvt.Xdisplay(),glx_win);
+  //avoid double swaps
+  if(!(--swapcount)) glXSwapBuffers(xmvt.Xdisplay(),glx_win);
   XmTextSetString(text_area,labelbuf);
   if(draw_RB) {glXWaitGL(); DrawRubberBand();}
 }

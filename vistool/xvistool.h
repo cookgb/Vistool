@@ -91,6 +91,7 @@ private:
   GLXDrawable glx_win;
   GLXContext cx;
   Dimension viewWidth, viewHeight;
+  int swapcount;
 private:
   GC gc_RB;
   bool draw_RB;
