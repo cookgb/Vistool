@@ -20,16 +20,16 @@ protected:
   int dim;        // Dimensionality of the data
 public:
   GIObase(int d = 0) : Ndatasets(0), name(0), dim(d) {}
-  GIObase(const char *const* names, int n, int d);
+  GIObase(const char *const*const names, const int n, const int d);
   ~GIObase();
   //
-  int writeheader(fstream * fs) const;
-  int readheader(fstream * fs);
+  int writeheader(fstream *const fs) const;
+  int readheader(fstream *const fs);
   int NDataSets() const {return Ndatasets;}
   int Dim() const {return dim;}
   const char * Name(int i) const {return name[i];}
 protected:
-  void GIOAbort(const char * reason) const;
+  void GIOAbort(const char *const reason) const;
 };
 
 class GIOquery : public GIObase {
@@ -41,7 +41,7 @@ public:
   GIOquery() : GIObase(), GIOkey(0), FileName(0), fs(0) {}
   ~GIOquery();
   //
-  int Read(const char * filename);
+  int Read(const char *const filename);
   int Key() const {return GIOkey;}
   void Close() {fs->close();}
 };
@@ -57,7 +57,7 @@ protected:
   D ** datar;      // Data for each object (reading)
 public:
   GIOdata();
-  GIOdata(const char *const* names, int n, int useb = 0);
+  GIOdata(const char *const*const names, const int n, const int useb = 0);
   // GIOdata(const char ** names, int n, const L * lb, const L * ub);
   ~GIOdata();
   int Write(fstream *const fs) const;
@@ -81,11 +81,12 @@ protected:
 public:
   GIOseries()
     : GIOdata<D,L,d>(), GIOkey(0), FileName(0), fs(0), Nseries(0), Nsseek(0) {}
-  GIOseries(const char * filename, int & status);
-  GIOseries(const char * filename, const char *const* names, int n,
-	    int & status);
+  GIOseries(const char *const filename, int & status);
+  GIOseries(const char *const filename, const char *const*const names,
+	    const int n, int & status);
   ~GIOseries();
-  int Write(L label, const int * ext, const D *const* dat, int n);
+  int Write(const L label, const int *const ext, const D *const*const dat,
+	    const int n);
   int Read();
   int Key() const {return GIOkey;}
   int NSeries() const {return Nseries;}
@@ -102,12 +103,12 @@ protected:
 public:
   GIOcseries()
     : GIOdata<D,L,d>(), GIOkey(0), FileName(0), fs(0), Nseries(0), Nsseek(0) {}
-  GIOcseries(const char * filename, int & status);
-  GIOcseries(const char * filename, const char *const* names, int n,
-	    int & status);
+  GIOcseries(const char *const filename, int & status);
+  GIOcseries(const char *const filename, const char *const*const names,
+	     const int n, int & status);
   ~GIOcseries();
-  int Write(L label, const L * lb, const L * ub, const int * ext,
-	    const D *const* dat, int n);
+  int Write(const L label, const L *const lb, const L *const ub,
+	    const int *const ext, const D *const*const dat, const int n);
   int Read();
   int Key() const {return GIOkey;}
   int NSeries() const {return Nseries;}

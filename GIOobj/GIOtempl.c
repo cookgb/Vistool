@@ -22,7 +22,7 @@ template< class D, class L, int d> GIOdata<D,L,d>::~GIOdata()
 {
   if(dataw && Ndatasets) {
     for(int i=0; i< Ndatasets; i++)
-      if(dataw[i]) delete [] dataw[i];
+      if(dataw[i]) delete [] (void *)dataw[i];
     delete [] dataw;
   }
   if(datar && Ndatasets) {
