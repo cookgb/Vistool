@@ -470,6 +470,13 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
                   XmVaCASCADEBUTTON,m_apply,NULL,\
                   XmVaSEPARATOR,\
 		  XmVaCASCADEBUTTON,m_anim,NULL
+#ifdef LESSTIF_VERSION
+  #define PUB_APPLY 1
+  #define PUB_ANIMATE 2
+#else
+  #define PUB_APPLY 1
+  #define PUB_ANIMATE 3
+#endif
   //
   if(xmvt.overlayVisual) {
     popup =
@@ -512,7 +519,7 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
   Widget apply_popout;
   if(xmvt.overlayVisual) {
     apply_popout =
-      XmVaCreateSimplePulldownMenu(popup, "apply", 1, NULL,
+      XmVaCreateSimplePulldownMenu(popup, "apply", PUB_APPLY, NULL,
 				   APPLYMENU,
 				   XmNvisual, xmvt.overlayVisual,
 				   XmNdepth, xmvt.overlayDepth,
@@ -522,7 +529,7 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
 		  (XtCallbackProc) ensurePulldownColormapInstalled, &xmvt);
   } else {
     apply_popout =
-      XmVaCreateSimplePulldownMenu(popup, "apply", 1, NULL,
+      XmVaCreateSimplePulldownMenu(popup, "apply", PUB_APPLY, NULL,
 				   APPLYMENU,
 				   NULL);
   }
@@ -546,7 +553,7 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
   Widget animate_popout;
   if(xmvt.overlayVisual) {
     animate_popout =
-      XmVaCreateSimplePulldownMenu(popup, "animate", 3, NULL,
+      XmVaCreateSimplePulldownMenu(popup, "animate", PUB_ANIMATE, NULL,
 				   ANIMATEMENU,
 				   XmNvisual, xmvt.overlayVisual,
 				   XmNdepth, xmvt.overlayDepth,
@@ -556,7 +563,7 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
 		  (XtCallbackProc) ensurePulldownColormapInstalled, &xmvt);
   } else {
     animate_popout =
-      XmVaCreateSimplePulldownMenu(popup, "animate", 3, NULL,
+      XmVaCreateSimplePulldownMenu(popup, "animate", PUB_ANIMATE, NULL,
 				   ANIMATEMENU,
 				   NULL);
   }
