@@ -1,7 +1,7 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.21 2001-06-12 14:43:44 cookgb Exp $
+# $Id: Makefile,v 1.22 2001-06-12 14:45:19 cookgb Exp $
 #
 ###############################################################################
 # linux
@@ -12,13 +12,13 @@
 #%%%CXXINCLUDES = /usr/include/g++-2
 
 # SGI
-#%%%CC=cc -mips4
-#%%%CFLAGS = -O2
-#%%%CXX=CC -mips4
-#%%%CXXFLAGS= -O2 -LANG:bool=OFF
-#%%%GIOARFLAGS= -ar
-#%%%CXXINCLUDES = /usr/include/CC
-#%%%TEMPLATE_DIR = ii_files
+CC=cc -mips4
+CFLAGS = -O2
+CXX=CC -mips4
+CXXFLAGS= -O2 -LANG:bool=OFF
+GIOARFLAGS= -ar
+CXXINCLUDES = /usr/include/CC
+TEMPLATE_DIR = ii_files
 
 # SP2
 #%%%CC=xlc
@@ -29,12 +29,12 @@
 #%%%TEMPLATE_DIR = tempinc
 
 # SP2 with KCC
-CC=xlc
-CFLAGS = -O2
-CXX=KCC
-CXXFLAGS= +K2 -DKCC -qmaxmem=4048
-CXXINCLUDES = /pub/share/KAICPP/KCC_BASE/include
-TEMPLATE_DIR = ti_files *.ti
+#%%%CC=xlc
+#%%%CFLAGS = -O2
+#%%%CXX=KCC
+#%%%CXXFLAGS= +K2 -DKCC -qmaxmem=4048
+#%%%CXXINCLUDES = /pub/share/KAICPP/KCC_BASE/include
+#%%%TEMPLATE_DIR = ti_files *.ti
 
 # SUN with gcc
 #%%%CC=gcc
