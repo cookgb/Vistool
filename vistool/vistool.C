@@ -332,6 +332,17 @@ bool vt_drawwin::ImportFile_1DDump(const char *const filename)
       break;
     }
     
+    // Test to see if data contains insane values
+    {
+      for(int i=0;i<shape[0];i++) 
+	if(!finite(data[i])) {
+	  delete[] shape;
+	  delete[] wbox;
+	  delete[] data;
+	  break;
+	}
+    }
+
     // Create a new vt_data_1d and append to series
     if(Abscissa_Set) {
       // Get coords from abscissa
