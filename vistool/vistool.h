@@ -151,13 +151,13 @@ public:
   double LBy() const {return bounds.Lb_y;}
   double UBy() const {return bounds.Ub_y;}
   bounds_2D Bounds() const {return bounds;}
-  virtual void draw() const {}; // Should be = 0; (abstract) but xlC pukes.
-  virtual vt_data * Copy() const {}; // Should be = 0; but xlC pukes.
+  virtual void draw() const = 0;
+  virtual vt_data * Copy() const = 0;
   double Label() const {return label;}
   const double *Data() const {return data;};
   int Size() const {return size;};
-  virtual void Apply(TransformationFunction T) {}; // Should be = 0; xlC pukes.
-  virtual double Norm(NormType T) const {}; // Should be = 0; but xlC pukes.
+  virtual void Apply(const TransformationFunction T) = 0;
+  virtual double Norm(const NormType T) const = 0;
 };
 
 class vt_data_1d : public vt_data {
