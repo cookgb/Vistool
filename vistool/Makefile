@@ -1,7 +1,7 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.29 2002-07-30 14:09:38 cookgb Exp $
+# $Id: Makefile,v 1.30 2002-07-30 18:39:13 cookgb Exp $
 #
 ###############################################################################
 # linux/gcc3
@@ -29,6 +29,7 @@ CC=cc -mips4
 CFLAGS = -O2
 CXX=CC -mips4
 CXXFLAGS= -O2 -LANG:std -DSGI -DSGI_O2
+#CXXFLAGS= -O2 -LANG:std -DSGI
 LIBDIRS = GIO/libGIO.a
 X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11
 
