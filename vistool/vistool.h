@@ -17,6 +17,7 @@
 enum FileType {
   TYPE_GIO,
   TYPE_1DDump,
+  TYPE_1DDumpChebGL,
   TYPE_1DAb
 };
 
@@ -119,6 +120,7 @@ public:
   void close();
   bool ImportFile_GIO(const char *const file);
   bool ImportFile_1DDump(const char *const file);
+  bool ImportFile_1DDumpChebGL(const char *const file);
   bool ImportFile_1DAbs(const char *const file);
   virtual void deleteme() { delete this;}
   virtual void init(const int, const int);

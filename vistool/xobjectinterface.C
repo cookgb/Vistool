@@ -61,6 +61,7 @@ void mw_file_cancel_cb(Widget w, XtPointer client_data, XtPointer call_data)
   switch(mw->importtype) {
   case TYPE_GIO:
   case TYPE_1DDump:
+  case TYPE_1DDumpChebGL:
     break;
   case TYPE_1DAb:
     mw->Abscissa_Set = !mw->Abscissa_Set;
@@ -82,6 +83,14 @@ void mw_file_open_1DDump(Widget w, XtPointer client_data, XtPointer call_data)
 {
   xvt_mainwin * mw = (xvt_mainwin *) client_data;
   mw->importtype = TYPE_1DDump;
+  mw_file_open(w, client_data, call_data);
+}
+// Callback routine for main window File->Open->GIO menu selection
+void mw_file_open_1DDumpChebGL(Widget w, XtPointer client_data,
+			       XtPointer call_data)
+{
+  xvt_mainwin * mw = (xvt_mainwin *) client_data;
+  mw->importtype = TYPE_1DDumpChebGL;
   mw_file_open(w, client_data, call_data);
 }
 // Callback routine for main window File->Open->GIO menu selection
@@ -128,6 +137,9 @@ void mw_openfs_cb(Widget w, XtPointer client_data, XtPointer call_data)
       break;
     case TYPE_1DDump:
       if(!dw->ImportFile_1DDump(file)) dw->close();
+      break;
+    case TYPE_1DDumpChebGL:
+      if(!dw->ImportFile_1DDumpChebGL(file)) dw->close();
       break;
     case TYPE_1DAb:
       mw->Abscissa_Set = !mw->Abscissa_Set;
@@ -608,6 +620,7 @@ void dw_file_cancel_cb(Widget w, XtPointer client_data, XtPointer call_data)
   switch(dw->importtype) {
   case TYPE_GIO:
   case TYPE_1DDump:
+  case TYPE_1DDumpChebGL:
     break;
   case TYPE_1DAb:
     dw->Abscissa_Set = !dw->Abscissa_Set;
@@ -628,6 +641,14 @@ void dw_file_open_1DDump(Widget w, XtPointer client_data, XtPointer call_data)
 {
   xvt_drawwin * dw = (xvt_drawwin *) client_data;
   dw->importtype = TYPE_1DDump;
+  dw_file_open(w, client_data, call_data);
+}
+// Callback routine for drawing window File->Open menu selection
+void dw_file_open_1DDumpChebGL(Widget w, XtPointer client_data,
+			       XtPointer call_data)
+{
+  xvt_drawwin * dw = (xvt_drawwin *) client_data;
+  dw->importtype = TYPE_1DDumpChebGL;
   dw_file_open(w, client_data, call_data);
 }
 // Callback routine for drawing window File->Open menu selection
@@ -670,6 +691,11 @@ void dw_openfs_cb(Widget w, XtPointer client_data, XtPointer call_data)
       break;
     case TYPE_1DDump:
       if(dw->ImportFile_1DDump(file)) {
+	dw->postRedisplay();
+      }
+      break;
+    case TYPE_1DDumpChebGL:
+      if(dw->ImportFile_1DDumpChebGL(file)) {
 	dw->postRedisplay();
       }
       break;

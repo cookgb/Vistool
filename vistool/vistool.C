@@ -376,6 +376,103 @@ bool vt_drawwin::ImportFile_1DDump(const char *const filename)
   return true;
 }
 
+bool vt_drawwin::ImportFile_1DDumpChebGL(const char *const filename)
+{
+  // Open file
+  std::ifstream file;
+  file.open(filename,std::ios_base::in);
+  if(!file.good()) return false;
+
+  // Create new vt_data_series
+  vt_data_series *series = new vt_data_series(filename,filename);
+
+  // Read timesteps from file until eof or other error
+  int Retrieved_Valid_Timestep = 0;
+  while(1) {
+    const int dim=1;
+
+    // Time
+    double time;
+    file.read((char *) &time,sizeof(double)); 
+    if(!file.good() || (file.gcount() != sizeof(double))) break;
+
+    // Dimension (must be one for now)
+    int testdim;
+    file.read((char *) &testdim,sizeof(int));
+    if(!file.good() || (file.gcount() != sizeof(int)) || testdim != dim) {
+      break;
+    }
+
+    // Shape
+    int *shape = new int[dim];
+    file.read((char *) shape,dim*sizeof(int)); 
+    if(!file.good() || (file.gcount() != dim*sizeof(int))) {
+      delete[] shape;
+      break;
+    }
+
+    int i;
+    for(i=0;i<dim;i++) {
+      if(shape[i] <= 0) {
+	delete [] shape;
+	break;
+      }
+    }
+    
+    // Data
+    int datasize = 1;
+    for(i=0;i<dim;i++) datasize *= shape[i];
+    double *data = new double[datasize];
+    if(!data) {
+      delete[] shape;
+      break;
+    }
+    file.read((char *) data,datasize*sizeof(double));
+    if(file.gcount() != datasize*sizeof(double)) {
+      delete[] shape;
+      delete[] data;
+      break;
+    }
+    
+    // Test to see if data contains insane values
+    {
+      for(int i=0;i<shape[0];i++) 
+	if(!finite(data[i])) {
+	  delete[] shape;
+	  delete[] data;
+	  break;
+	}
+    }
+
+    // Create a new vt_data_1d and append to series
+    {
+      // Compute coordinates: Assume we go from -1 to +1
+      // Use Chebyshev-Gauss-Lobatto points
+      double *x = new double[shape[0]];
+      for(int i=0;i<shape[0];i++) x[i] = -cos(M_PI*i/(shape[0]-1));
+      // Now append
+      series->Append(new vt_data_1d(time,shape[0],x,data));
+      Retrieved_Valid_Timestep++;
+      delete[] x;
+    }
+    
+    // Clean up
+    delete[] data;
+    delete[] shape;
+  }
+
+  // Close file
+  file.close();
+
+  // If nothing has been added to the series, exit
+  if(!Retrieved_Valid_Timestep) return false;
+
+  // Add series to list
+  Add(series);
+
+  return true;
+}
+
 bool vt_drawwin::ImportFile_1DAbs(const char *const filename)
 {
   // Open file

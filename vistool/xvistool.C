@@ -47,6 +47,7 @@ int main(int argc, char * argv[])
 void ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
 void mw_file_open_GIO(Widget, XtPointer, XtPointer);
 void mw_file_open_1DDump(Widget, XtPointer, XtPointer);
+void mw_file_open_1DDumpChebGL(Widget, XtPointer, XtPointer);
 void mw_file_open_1DDAb(Widget, XtPointer, XtPointer);
 void mw_file_quit(Widget, XtPointer, XtPointer);
 void mw_windowlist(Widget, XtPointer, XtPointer);
@@ -183,6 +184,8 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
     { "_sep1", &xmSeparatorGadgetClass, '\0', NULL, NULL, 0, NULL, NULL, NULL},
     { "1DDump Format", &xmPushButtonGadgetClass, '1', NULL, NULL, 0,
       mw_file_open_1DDump, this, NULL},
+    { "1DDump ChebGL", &xmPushButtonGadgetClass, '1', NULL, NULL, 0,
+      mw_file_open_1DDumpChebGL, this, NULL},
     { "1DDump Abscissa", &xmToggleButtonGadgetClass, '\0', NULL, NULL,
       Abscissa_Set, mw_file_open_1DDAb, this, NULL},
     NULL,
@@ -415,6 +418,7 @@ void ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
 void dw_file_open(Widget, XtPointer, XtPointer);
 void dw_file_open_GIO(Widget, XtPointer, XtPointer);
 void dw_file_open_1DDump(Widget, XtPointer, XtPointer);
+void dw_file_open_1DDumpChebGL(Widget, XtPointer, XtPointer);
 void dw_file_open_1DDAb(Widget, XtPointer, XtPointer);
 void dw_file_close(Widget, XtPointer, XtPointer);
 void dw_help(Widget, XtPointer, XtPointer);
@@ -505,6 +509,8 @@ void xvt_drawwin::CreateWindow()
     { "_sep1", &xmSeparatorGadgetClass, '\0', NULL, NULL, 0, NULL, NULL, NULL},
     { "1DDump Format", &xmPushButtonGadgetClass, '1', NULL, NULL, 0,
       dw_file_open_1DDump, this, NULL},
+    { "1DDump ChebGL", &xmPushButtonGadgetClass, '1', NULL, NULL, 0,
+      dw_file_open_1DDumpChebGL, this, NULL},
     { "1DDump Abscissa", &xmToggleButtonGadgetClass, '\0', NULL, NULL,
       Abscissa_Set, dw_file_open_1DDAb, this, NULL},
     NULL,
