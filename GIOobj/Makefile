@@ -1,15 +1,22 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.26 2002-07-10 21:18:53 cookgb Exp $
+# $Id: Makefile,v 1.27 2002-07-26 17:45:27 cookgb Exp $
 #
 ###############################################################################
-# linux
+# linux/gcc3
 #CC=gcc3
 #CFLAGS= -O2
 #CXX=g++3
 #CXXFLAGS= -O2
 #CXXINCLUDES = /usr/include/g++-3
+
+# Linux/Intel
+#CC=icc
+#CFLAGS= -O2
+#CXX=icpc
+#CXXFLAGS= -O2
+#CXXINCLUDES = /opt/intel//compiler60/ia32/include
 
 # SGI
 CC=cc -mips4
