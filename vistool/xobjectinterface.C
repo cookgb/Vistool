@@ -114,7 +114,9 @@ void mw_openfs_cb(Widget w, XtPointer client_data, XtPointer call_data)
     if(!XmStringGetLtoR(fs->value,XmFONTLIST_DEFAULT_TAG,&file))
       return; // internal error
     // Create and register the new drawwin
-    xvt_drawwin * dw = new xvt_drawwin(file,*mw,fs->dir,fs->pattern);
+    XmString dirstr, patstr;
+    XtVaGetValues(w,XmNdirectory,&dirstr,XmNpattern,&patstr,NULL);
+    xvt_drawwin * dw = new xvt_drawwin(file,*mw,dirstr,patstr);
     switch(mw->importtype) {
     case TYPE_GIO:
       if(dw->ImportFile_GIO(file))
