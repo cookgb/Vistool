@@ -1,7 +1,7 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.29 2002-07-26 18:12:00 cookgb Exp $
+# $Id: Makefile,v 1.30 2002-07-26 19:55:39 cookgb Exp $
 #
 ###############################################################################
 # linux/gcc3
@@ -9,14 +9,14 @@
 #CFLAGS= -O2
 #CXX=g++3
 #CXXFLAGS= -O2
-#CXXINCLUDES = /usr/include/g++-3
+#CXXINCLUDES = -I/usr/include/g++-3/
 
 # Linux/Intel
 #CC=icc
 #CFLAGS= -O2
 #CXX=icpc
 #CXXFLAGS= -O2
-#CXXINCLUDES = /opt/intel//compiler60/ia32/include
+#CXXINCLUDES = -I/opt/intel//compiler60/ia32/include
 
 # SGI
 CC=cc -mips4
@@ -24,7 +24,7 @@ CFLAGS = -O2
 CXX=CC -mips4
 CXXFLAGS= -O2 -LANG:std
 LIBRARYFLAG= -ar -ptall
-CXXINCLUDES = /usr/include/CC
+CXXINCLUDES = -I/usr/include/CC
 TEMPLATE_DIR = ii_files
 DEPFLAGS = -D_STANDARD_C_PLUS_PLUS
 
@@ -41,7 +41,7 @@ DEPFLAGS = -D_STANDARD_C_PLUS_PLUS
 #%%%CFLAGS = -O2
 #%%%CXX=KCC
 #%%%CXXFLAGS= +K2 -DKCC -qmaxmem=8096
-#%%%CXXINCLUDES = /pub/share/KAICPP/KCC_BASE/include
+#%%%CXXINCLUDES = -I/pub/share/KAICPP/KCC_BASE/include
 #%%%TEMPLATE_DIR = ti_files *.ti
 
 # SUN with gcc
@@ -50,7 +50,7 @@ DEPFLAGS = -D_STANDARD_C_PLUS_PLUS
 #%%%CCC=g++
 #%%%CXX=g++
 #%%%CXXFLAGS= -O2
-#%%%CXXINCLUDES = /usr/local/include/g++-3
+#%%%CXXINCLUDES = -I/usr/local/include/g++-3
 
 FILES= GIOtest.C
 OBJS = $(FILES:.C=.o)
@@ -86,6 +86,6 @@ depend:
 
 localdepend:
 	makedepend -f makefile \
-		-- -I$(CXXINCLUDES) $(CXXFLAGS) -- $(DEPFLAGS)\
+		-- $(CXXINCLUDES) $(CXXFLAGS) -- $(DEPFLAGS)\
 		$(FILES) $(LIBFILES)
 # DO NOT DELETE
