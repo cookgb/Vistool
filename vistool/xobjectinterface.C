@@ -170,6 +170,7 @@ void mw_windowlist(Widget w, XtPointer client_data, XtPointer call_data)
   I_dw p;
   for(p = mw->draw_list.begin(); p != mw->draw_list.end(); p++)
     (*p)->selected = false;
+  mw->dw_listed = 0;
 
   const int sic = cbs->selected_item_count;
 
@@ -205,6 +206,7 @@ void mw_windowlist(Widget w, XtPointer client_data, XtPointer call_data)
     XmListDeleteAllItems(mw->dataset_list);
     if(sic == 1) {
       vt_drawwin & dw = **p;
+      mw->dw_listed = *p;
       typedef list<vt_data_series *>::iterator I_vd;
       I_vd d;
       for(d = dw.data_list.begin(); d != dw.data_list.end(); d++) {
@@ -212,6 +214,89 @@ void mw_windowlist(Widget w, XtPointer client_data, XtPointer call_data)
 	XmListAddItemUnselected(mw->dataset_list,DataName,0);
 	XmStringFree(DataName);
       }
+      XtVaSetValues(sb,XmNvalue,0,NULL);
+    }
+    if(mw->ds_listed) { // erase the data set information
+      mw->ds_listed = 0;
+      XmListDeleteAllItems(mw->info_list);
+    }
+      
+//    } else {
+//      char * choice;
+//      XmStringGetLtoR(cbs->item, XmFONTLIST_DEFAULT_TAG, &choice);
+//      cout << "Default action -- selcted item " << choice
+//  	 << "(" << cbs->item_position << ")" << endl;
+//        XtFree(choice);
+//    }
+}
+
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+// Callback routine for main window dataset list
+void mw_datasetlist(Widget w, XtPointer client_data, XtPointer call_data)
+{
+  xvt_mainwin * mw = (xvt_mainwin *) client_data;
+  XmListCallbackStruct * cbs = (XmListCallbackStruct *) call_data;
+
+  vt_drawwin * dw = mw->dw_listed;
+  if(!dw) return;
+
+  typedef list<vt_data_series *>::iterator I_ds;
+  I_ds p;
+  for(p = dw->data_list.begin(); p != dw->data_list.end(); p++)
+    (*p)->selected = false;
+  mw->ds_listed = 0;
+
+  const int sic = cbs->selected_item_count;
+
+//    if(cbs->reason == XmCR_EXTENDED_SELECT) {
+//      if(cbs->selection_type == XmINITIAL)
+//        cout << "Extended selection -- initial selection: ";
+//      else if(cbs->selection_type == XmMODIFICATION)
+//        cout << "Extended selection -- modification of selection: ";
+//      else if(cbs->selection_type == XmADDITION)
+//        cout << "Extended selection -- additional selection: ";
+//      cout << cbs->selected_item_count << " items selected" << endl;
+    for(int i=0; i < sic; ++i) {
+      const int sip = cbs->selected_item_positions[i];
+      int k;
+      for(p=dw->data_list.begin(), k=1; p != dw->data_list.end(); p++, k++)
+	if(k == sip) {
+	  (*p)->selected = true;
+	  break;
+	}
+
+//        char * choice;
+//        XmStringGetLtoR(cbs->selected_items[i], XmFONTLIST_DEFAULT_TAG,
+//  		      &choice);
+//        cout << (*p)->Name() << " | "
+//  	   << choice << "(" << cbs->selected_item_positions[i] << ")" << endl;
+//        XtFree(choice);
+    }
+    // Delete all items in dataset list and replace the list if only one
+    // window is selected
+    Widget sb;
+    XtVaGetValues(mw->info_list,XmNhorizontalScrollBar,&sb,NULL);
+    XtVaSetValues(sb,XmNvalue,0,NULL);
+    XmListDeleteAllItems(mw->info_list);
+    if(sic == 1) {
+      vt_data_series & ds = **p;
+      mw->ds_listed = *p;
+      char * s = mw->Info_Name(ds.Origin());
+      XmString DataName = XmStringCreateLocalized((String)s);
+      XmListAddItemUnselected(mw->info_list,DataName,0);
+      delete [] s;
+      s = mw->Info_Time(ds.NSteps());
+      XmString DataSteps = XmStringCreateLocalized((String)s);
+      XmListAddItemUnselected(mw->info_list,DataSteps,0);
+      delete [] s;
+      XmStringFree(DataSteps);
+      s = mw->Info_Range(ds.Bounds());
+      XmString DataBounds = XmStringCreateLocalized((String)s);
+      XmListAddItemUnselected(mw->info_list,DataBounds,0);
+      delete [] s;
+      XmStringFree(DataBounds);
       XtVaSetValues(sb,XmNvalue,0,NULL);
     }
 //    } else {
@@ -488,6 +573,12 @@ void dw_openfs_cb(Widget w, XtPointer client_data, XtPointer call_data)
       break;
     }
     XtFree(file);
+    if((dw->xmvt).dw_listed == dw) { // Redisplay data set list
+      vt_data_series * ds = dw->data_list.back();
+      XmString DataName = XmStringCreateLocalized((String)ds->Name());
+      XmListAddItemUnselected((dw->xmvt).dataset_list,DataName,0);
+      XmStringFree(DataName);
+    }
   }
   XtUnmanageChild(dw->OpenDialog());
 }

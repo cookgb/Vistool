@@ -20,11 +20,16 @@ enum FileType {
 };
 
 class vt_drawwin;
+class vt_data_series;
 class vt_data_1d;
+class bounds_2D;
 
 class vt_mainwin {
 private:
   int drawwin_count;
+public:  // pointers to data with information listed in main window
+  vt_drawwin     * dw_listed;
+  vt_data_series * ds_listed;
 public:  // data for 1DDump Abscissa
   bool Abscissa_Set;
   char * Abscissa_Filename;
@@ -36,6 +41,9 @@ public:
   ~vt_mainwin();
   void incrementAnimation();
   char * NewDrawWindow();
+  char * Info_Name(const char * n);
+  char * Info_Time(int t);
+  char * Info_Range(const bounds_2D & b);
 };
 
 
@@ -49,6 +57,10 @@ public:
   bounds_2D(double lx = 0.0, double ly = 0.0,
 	    double ux = 1.0, double uy = 1.0) : Lb_x(lx), Lb_y(ly),
 						Ub_x(ux), Ub_y(uy) {}
+  void Union(const bounds_2D & u) {
+    if(u.Lb_x < Lb_x) Lb_x = u.Lb_x; if(u.Lb_y < Lb_y) Lb_y = u.Lb_y;
+    if(u.Ub_x > Ub_x) Ub_x = u.Ub_x; if(u.Ub_y > Ub_y) Ub_y = u.Ub_y;
+  }
 };
 
 class vt_data_series;
@@ -110,17 +122,15 @@ protected:
   double label;
   int size;
   double *data;
-  double Lb_x;
-  double Ub_x;
-  double Lb_y;
-  double Ub_y;
+  bounds_2D bounds;
 public:
   vt_data(double l, int s) : label(l), size(s) {}
   ~vt_data();
-  double LBx() const {return Lb_x;}
-  double UBx() const {return Ub_x;}
-  double LBy() const {return Lb_y;}
-  double UBy() const {return Ub_y;}
+  double LBx() const {return bounds.Lb_x;}
+  double UBx() const {return bounds.Ub_x;}
+  double LBy() const {return bounds.Lb_y;}
+  double UBy() const {return bounds.Ub_y;}
+  bounds_2D Bounds() const {return bounds;}
   virtual void draw() {}
   double Label() const {return label;}
   const double *Data() const {return data;};
@@ -140,22 +150,25 @@ private:
   friend vt_drawwin;
 protected:
   char * name;
-  double Lb_x;
-  double Ub_x;
-  double Lb_y;
-  double Ub_y;
+  char * origin;
+  bounds_2D bounds;
   bool done;
   double current_l;
   list<vt_data *> data;
   list<vt_data *>::iterator current;
 public:
-  vt_data_series(const char * n);
+  bool selected;
+public:
+  vt_data_series(const char * n, const char * o);
   ~vt_data_series();
   char * Name() {return name;}
-  double LBx() {return Lb_x;}
-  double UBx() {return Ub_x;}
-  double LBy() {return Lb_y;}
-  double UBy() {return Ub_y;}
+  char * Origin() {return origin;}
+  int NSteps() {return data.size();}
+  double LBx() {return bounds.Lb_x;}
+  double UBx() {return bounds.Ub_x;}
+  double LBy() {return bounds.Lb_y;}
+  double UBy() {return bounds.Ub_y;}
+  bounds_2D Bounds() const {return bounds;}
   void Append(vt_data * d);
   vt_data * Current() const {return *current;}
   bool Done() const {return done;}

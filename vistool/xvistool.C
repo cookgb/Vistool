@@ -23,7 +23,7 @@
 #include <strstream.h>
 #include <unistd.h>
 
-#include <map.h>
+//#include <map.h>
 
 #include "xvistool.h"
 #include "xMenu.h"
@@ -47,6 +47,7 @@ void mw_file_open_1DDump(Widget, XtPointer, XtPointer);
 void mw_file_open_1DDAb(Widget, XtPointer, XtPointer);
 void mw_file_quit(Widget, XtPointer, XtPointer);
 void mw_windowlist(Widget, XtPointer, XtPointer);
+void mw_datasetlist(Widget, XtPointer, XtPointer);
 void mw_help(Widget, XtPointer, XtPointer);
 //----------------------------------------------------------------------------
 // Creator for X11 version of main window.
@@ -75,6 +76,7 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
     "*datasetlist.width: 170",
     "*datasetlist.visibleItemCount: 4",
     "*datasetlist.selectionPolicy: extended_select",
+    "*infolist.visibleItemCount: 4",
 //      "*main.width: 350",
 //      "*main.height: 150",
     "*glxarea.width: 300",
@@ -207,6 +209,27 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
   //--------------------------------------------------------------------------
   Widget mw_form = XtVaCreateManagedWidget("form", xmFormWidgetClass,
 					   main_w, NULL);
+
+  Arg args[10];
+  int nl = 0;
+  XtSetArg(args[nl],XmNscrollingPolicy,XmAUTOMATIC); nl++;
+  XtSetArg(args[nl],XmNleftAttachment,XmATTACH_FORM); nl++;
+  XtSetArg(args[nl],XmNbottomAttachment,XmATTACH_FORM); nl++;
+  XtSetArg(args[nl],XmNrightAttachment,XmATTACH_FORM); nl++;
+  XtSetArg(args[nl],XmNleftOffset,4); nl++;
+  XtSetArg(args[nl],XmNbottomOffset,4); nl++;
+  XtSetArg(args[nl],XmNrightOffset,4); nl++;
+  info_list = XmCreateScrolledList(mw_form,"infolist",args,nl);
+  Widget infopar = XtParent(info_list);
+  Widget inflab = XtVaCreateManagedWidget("Info:",xmLabelGadgetClass,
+					  mw_form,
+					  XmNbottomAttachment, XmATTACH_WIDGET,
+					  XmNbottomWidget, infopar,
+					  XmNleftAttachment, XmATTACH_FORM,
+					  XmNbottomOffset, 4,
+					  XmNleftOffset, 4,
+					  NULL);
+
   Widget winlab = XtVaCreateManagedWidget("Windows:",xmLabelGadgetClass,
 					  mw_form,
 					  XmNtopAttachment, XmATTACH_FORM,
@@ -214,18 +237,19 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
 					  XmNtopOffset, 4,
 					  XmNleftOffset, 4,
 					  NULL);
-  Arg args[9];
-  int nl = 0;
+  nl = 0;
   XtSetArg(args[nl],XmNscrollingPolicy,XmAUTOMATIC); nl++;
   XtSetArg(args[nl],XmNtopAttachment,XmATTACH_WIDGET); nl++;
   XtSetArg(args[nl],XmNtopWidget,winlab); nl++;
   XtSetArg(args[nl],XmNleftAttachment,XmATTACH_OPPOSITE_WIDGET); nl++;
   XtSetArg(args[nl],XmNleftWidget,winlab); nl++;
-  XtSetArg(args[nl],XmNbottomAttachment,XmATTACH_FORM); nl++;
+  XtSetArg(args[nl],XmNbottomAttachment,XmATTACH_WIDGET); nl++;
+  XtSetArg(args[nl],XmNbottomWidget,inflab); nl++;
   XtSetArg(args[nl],XmNbottomOffset,4); nl++;
   XtSetArg(args[nl],XmNtopOffset,2); nl++;
   window_list = XmCreateScrolledList(mw_form,"windowlist",args,nl);
   Widget listpar = XtParent(window_list);
+
   Widget dslab = XtVaCreateManagedWidget("Data sets:",xmLabelGadgetClass,
 					 mw_form,
   					 XmNleftAttachment, XmATTACH_WIDGET,
@@ -241,16 +265,21 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
   XtSetArg(args[nl],XmNtopWidget,listpar); nl++;
   XtSetArg(args[nl],XmNleftAttachment,XmATTACH_OPPOSITE_WIDGET); nl++;
   XtSetArg(args[nl],XmNleftWidget,dslab); nl++;
-  XtSetArg(args[nl],XmNbottomAttachment,XmATTACH_FORM); nl++;
+  XtSetArg(args[nl],XmNbottomAttachment,XmATTACH_WIDGET); nl++;
+  XtSetArg(args[nl],XmNbottomWidget,inflab); nl++;
   XtSetArg(args[nl],XmNrightAttachment,XmATTACH_FORM); nl++;
   XtSetArg(args[nl],XmNrightOffset,4); nl++;
   XtSetArg(args[nl],XmNbottomOffset,4); nl++;
   dataset_list = XmCreateScrolledList(mw_form,"datasetlist",args,nl);
+
   XtManageChild(window_list);
   XtManageChild(dataset_list);
+  XtManageChild(info_list);
 
   XtAddCallback(window_list, XmNextendedSelectionCallback,
 		mw_windowlist, this);
+  XtAddCallback(dataset_list, XmNextendedSelectionCallback,
+		mw_datasetlist, this);
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
@@ -562,6 +591,15 @@ xvt_drawwin::~xvt_drawwin()
   XmString wn = XmStringCreateLocalized(name);
   XmListDeleteItem(xmvt.window_list,wn);
   XmStringFree(wn);
+
+  if(xmvt.dw_listed == this) {// Remove info from Data sets list
+    xmvt.dw_listed = 0;
+    XmListDeleteAllItems(xmvt.dataset_list);
+    if(xmvt.ds_listed) {
+      xmvt.ds_listed = 0;
+      XmListDeleteAllItems(xmvt.info_list);
+    }
+  }
 
   // *** NOTE *** We are destroying a Shell and not a Widget ????
   // *** Mesa error message ***

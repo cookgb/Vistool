@@ -20,7 +20,7 @@
 #define LAST_LABEL 1.e30
 
 vt_mainwin::vt_mainwin()
-  : drawwin_count(0),
+  : drawwin_count(0), dw_listed(0), ds_listed(0),
     Abscissa_Set(0), Abscissa_Filename(0), Abscissa_Data(0)
 {
 }
@@ -63,10 +63,39 @@ char * vt_mainwin::NewDrawWindow()
   return buf;
 }
 
+char * vt_mainwin::Info_Name(const char * n)
+{
+  const int len = 128;
+  char * buf = new char[len];
+  ostrstream info(buf,len);
+  info << "file:" << n << ends;
+  return buf;
+}
+
+char * vt_mainwin::Info_Time(int t)
+{
+  const int len = 128;
+  char * buf = new char[len];
+  ostrstream info(buf,len);
+  info << "# steps: " << t << ends;
+  return buf;
+}
+
+char * vt_mainwin::Info_Range(const bounds_2D & b)
+{
+  const int len = 128;
+  char * buf = new char[len];
+  ostrstream info(buf,len);
+  info << "data bounds: ("
+       << b.Lb_x << ", " << b.Lb_y << " -> " << b.Ub_x << ", " << b.Ub_y
+       << ")" << ends;
+  return buf;
+}
+
 
 vt_drawwin::vt_drawwin(const char * n, vt_mainwin & mw)
   : mvt(mw), redraw(false), animate(false), forward_animation(true),
-    Abscissa_Set(mw.Abscissa_Set)
+    Abscissa_Set(mw.Abscissa_Set), selected(false)
 {
 //    name = new char[strlen(n)+1];
 //    strcpy(name,n);
@@ -145,7 +174,7 @@ bool vt_drawwin::ImportFile_GIO(char * file)
     const int Ns = GIO.NSeries();
     vt_data_series ** vsa = new vt_data_series * [Ns];
     const int Nd = GIO.NDataSets();
-    for(int i=0; i<Nd; i++) vsa[i] = new vt_data_series(GIO.Name(i));
+    for(int i=0; i<Nd; i++) vsa[i] = new vt_data_series(GIO.Name(i), file);
     for(int N=0; N<Ns; N++) {
       if(GIO.Read()) {
 	const double l = GIO.Label();
@@ -180,7 +209,7 @@ bool vt_drawwin::ImportFile_1DDump(char * filename)
   if(!file.good()) return false;
 
   // Create new vt_data_series
-  vt_data_series *series = new vt_data_series(filename);
+  vt_data_series *series = new vt_data_series(filename,filename);
 
   // Read timesteps from file until eof or other error
   int Retrieved_Valid_Timestep = 0;
@@ -545,21 +574,8 @@ void vt_drawwin::windowReshape(int width, int height)
 
 void vt_drawwin::Add(vt_data_series * ds)
 {
-  const double lbx = ds->LBx();
-  const double ubx = ds->UBx();
-  const double lby = ds->LBy();
-  const double uby = ds->UBy();
-  if(!(data_list.size())) {
-    Default_Bounds.Lb_x = lbx;
-    Default_Bounds.Lb_y = lby;
-    Default_Bounds.Ub_x = ubx;
-    Default_Bounds.Ub_y = uby;
-  } else {
-    if(lbx < Default_Bounds.Lb_x) Default_Bounds.Lb_x = lbx;
-    if(lby < Default_Bounds.Lb_y) Default_Bounds.Lb_y = lby;
-    if(ubx > Default_Bounds.Ub_x) Default_Bounds.Ub_x = ubx;
-    if(uby > Default_Bounds.Ub_y) Default_Bounds.Ub_y = uby;
-  }
+  if(!(data_list.size())) Default_Bounds = ds->Bounds();
+  else Default_Bounds.Union(ds->Bounds());
   data_list.push_back(ds);
   reset_CurrentBounds();
   reset_list();
@@ -595,10 +611,10 @@ vt_data_1d::vt_data_1d(double l, int s, const double * x, const double * y)
 {
   data = new double[2*s];
   int i=0;
-  Lb_x = x[0];
-  Ub_x = x[0];
-  Lb_y = y[0];
-  Ub_y = y[0];
+  double Lb_x = x[0];
+  double Ub_x = x[0];
+  double Lb_y = y[0];
+  double Ub_y = y[0];
   for(int d=0; d<s; d++) {
     const double lx = x[d];
     if(lx < Lb_x) Lb_x = lx;
@@ -609,16 +625,14 @@ vt_data_1d::vt_data_1d(double l, int s, const double * x, const double * y)
     else if(ly > Ub_y) Ub_y = ly;
     data[i++] = ly;
   }
+  bounds = bounds_2D(Lb_x,Lb_y,Ub_x,Ub_y);
 }
 
 vt_data_1d::vt_data_1d(const vt_data_1d & src)
   : vt_data(src.label,src.size)
 {
+  bounds = src.bounds;
   data = new double[2*size];
-  Lb_x = src.Lb_x;
-  Ub_x = src.Ub_x;
-  Lb_y = src.Lb_y;
-  Ub_y = src.Ub_y;
   for(int d=0; d<2*size; d++) data[d] = src.data[d];
 
 }
@@ -637,11 +651,13 @@ void vt_data_1d::draw() {
 //    glEnd();
 }
 
-vt_data_series::vt_data_series(const char * n)
-  : name(0), done(false), current_l(0), current(0)
+vt_data_series::vt_data_series(const char * n, const char * o)
+  : name(0), origin(0), done(false), current_l(0), current(0), selected(false)
 {
   name = new char[strlen(n)+1];
   strcpy(name,n);
+  origin = new char[strlen(o)+1];
+  strcpy(origin,o);
 }
 
 vt_data_series::~vt_data_series()
@@ -657,23 +673,11 @@ vt_data_series::~vt_data_series()
 
 void vt_data_series::Append(vt_data * d)
 {
-  const double lbx = d->LBx();
-  const double ubx = d->UBx();
-  const double lby = d->LBy();
-  const double uby = d->UBy();
   bool first = false;
   if(!(data.size())) {
-    Lb_x = lbx;
-    Ub_x = ubx;
-    Lb_y = lby;
-    Ub_y = uby;
+    bounds = d->Bounds();
     first = true;
-  } else {
-    if(lbx < Lb_x) Lb_x = lbx;
-    if(ubx > Ub_x) Ub_x = ubx;
-    if(lby < Lb_y) Lb_y = lby;
-    if(uby > Ub_y) Ub_y = uby;
-  }
+  } else bounds.Union(d->Bounds());
   data.push_back(d);
   if(first) current = data.begin();
 }

@@ -22,11 +22,13 @@ private:
   friend xvt_drawwin;
   friend void dw_ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
   friend void mw_file_open(Widget, XtPointer, XtPointer);
+  friend void dw_openfs_cb(Widget, XtPointer, XtPointer);
   friend void mapStateChanged(Widget, XtPointer, XEvent *, Boolean *);
   friend void dw_animate(Widget, XtPointer, XtPointer);
   friend void dw_stepforward(Widget, XtPointer, XtPointer);
   friend void dw_stepbackward(Widget, XtPointer, XtPointer);
   friend void mw_windowlist(Widget, XtPointer, XtPointer);
+  friend void mw_datasetlist(Widget, XtPointer, XtPointer);
   friend void handleAnimate(xvt_mainwin *, XtIntervalId *);
   // X/Motif data
   Display * display;
@@ -36,6 +38,7 @@ private:
   Widget menu_bar;
   Widget window_list;
   Widget dataset_list;
+  Widget info_list;
   Widget Open_Dialog;
   XVisualInfo *vi;
   Visual * overlayVisual;
@@ -67,6 +70,7 @@ private:
   friend xvt_mainwin;
   friend void mapStateChanged(Widget, XtPointer, XEvent *, Boolean *);
   friend void dw_file_open(Widget, XtPointer, XtPointer);
+  friend void dw_openfs_cb(Widget, XtPointer, XtPointer);
   friend void dw_animate(Widget, XtPointer, XtPointer);
   friend void dw_stepforward(Widget, XtPointer, XtPointer);
   friend void dw_stepbackward(Widget, XtPointer, XtPointer);
