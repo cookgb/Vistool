@@ -1,7 +1,7 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.22 2001-06-12 14:45:19 cookgb Exp $
+# $Id: Makefile,v 1.23 2001-06-13 21:13:45 cookgb Exp $
 #
 ###############################################################################
 # linux
@@ -16,7 +16,7 @@ CC=cc -mips4
 CFLAGS = -O2
 CXX=CC -mips4
 CXXFLAGS= -O2 -LANG:bool=OFF
-GIOARFLAGS= -ar
+LIBRARYFLAG= -ar
 CXXINCLUDES = /usr/include/CC
 TEMPLATE_DIR = ii_files
 
@@ -32,7 +32,7 @@ TEMPLATE_DIR = ii_files
 #%%%CC=xlc
 #%%%CFLAGS = -O2
 #%%%CXX=KCC
-#%%%CXXFLAGS= +K2 -DKCC -qmaxmem=4048
+#%%%CXXFLAGS= +K2 -DKCC -qmaxmem=8096
 #%%%CXXINCLUDES = /pub/share/KAICPP/KCC_BASE/include
 #%%%TEMPLATE_DIR = ti_files *.ti
 
@@ -62,9 +62,13 @@ LIBOBJS= $(LIBFILES:.C=.o)
 #libGIO.a:libGIO.a($(LIBOBJS))
 # --- FOR SGI and KCC
 libGIO.a: $(LIBOBJS)
-	$(CXX) $(CXXFLAGS) $(GIOARFLAGS) -o $@ $(LIBOBJS)
+	$(CXX) $(CXXFLAGS) $(LIBRARYFLAG) -o $@ $(LIBOBJS)
 
 clean:
+	$(RM) $(OBJS) $(LIBOBJS) $(SWAPOBJS)
+	$(RM) -r $(TEMPLATE_DIR)
+
+allclean:
 	$(RM) $(OBJS) $(LIBOBJS) $(SWAPOBJS) libGIO.a GIOtest GIOswap
 	$(RM) -r $(TEMPLATE_DIR)
 

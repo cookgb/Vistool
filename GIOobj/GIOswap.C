@@ -8,37 +8,61 @@
 int DumpSwap(istream & in, ostream & out);
 
 
-void GIOHeader(istream & in, ostream &out,
+void GIOHeader(istream & in2, ostream &out,
 	       GIOtype & GIOkey, int & Ndatasets, int & dim)
 {
   char intbuf[sizeof(int)], cintbuf[sizeof(int)];
   int i,c;
 
+  cerr << "begin GIOHeader : " << TESTTAGLEN << " : " << sizeof(int) << endl;
+
+  istream & in = *(new fstream("Wave.data",ios::in));
   char buffer[TESTTAGLEN];
   in.read(buffer,TESTTAGLEN);
-  if(strncmp(buffer,GIOTESTTAG,TESTTAGLEN)) abort();
+  cerr << buffer << flush << endl;
+  if(strncmp(buffer,GIOTESTTAG,TESTTAGLEN)) {
+    cerr << "GIOHeader Abort 1" << flush << endl;
+    abort();
+  }
+
+  cerr << "GIOHeader 0a" << flush << endl;
+  
   out.write(buffer,TESTTAGLEN);
+
+  cerr << "GIOHeader 1" << flush << endl;
 
   in.read(intbuf,sizeof(int));
   for(i=sizeof(int)-1,c=0; i>=0; i--,c++) cintbuf[c] = intbuf[i];
   out.write(cintbuf,sizeof(int));
   GIOkey = *((GIOtype *) cintbuf);
 
+  cerr << "GIOHeader 2: GIOkey = " << *((GIOtype *) intbuf) 
+       << " (" << *((GIOtype *) cintbuf) << ")" << endl;
+
   in.read(intbuf,sizeof(int));
   for(i=sizeof(int)-1,c=0; i>=0; i--,c++) cintbuf[c] = intbuf[i];
   out.write(cintbuf,sizeof(int));
   Ndatasets = *((int *) cintbuf);
 
+  cerr << "GIOHeader 3: Ndatasets = " << *((int *) intbuf) 
+       << " (" << *((int *) cintbuf) << ")" << endl;
+
   for(i=0; i<Ndatasets; ++i) {
     char buffer[128];
     in.getline(buffer,128,'\0');
     out.write(buffer,strlen(buffer)+1);
+    //    cerr << "GIOHeader 3 : " << i << endl;
+
   }
+
+  cerr << "GIOHeader 4" << endl;
 
   in.read(intbuf,sizeof(int));
   for(i=sizeof(int)-1,c=0; i>=0; i--,c++) cintbuf[c] = intbuf[i];
   out.write(cintbuf,sizeof(int));
   dim = *((int *) cintbuf);
+
+  cerr << "GIOHeader 5" << endl;
 }
 
 void Swap_GIO_double(istream & in, ostream &out, int Ndatasets, int dim)
@@ -93,7 +117,7 @@ void Swap_GIO_double(istream & in, ostream &out, int Ndatasets, int dim)
   }
 }
 
-void main()
+int main()
 {
   GIOtype GIOkey;
   int Ndatasets, dim;
@@ -110,6 +134,7 @@ void main()
     cerr << "Unsupported GIO type" << endl;
     abort();
   }
+  return 0;
   //  while(GIOSwap(cin,cout));
 }
 
