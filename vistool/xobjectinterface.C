@@ -67,7 +67,8 @@ void mw_openfs_cb(Widget w, XtPointer client_data, XtPointer call_data)
     if(!XmStringGetLtoR(fs->value,XmFONTLIST_DEFAULT_TAG,&file))
       return; // internal error
     // Create and register the new drawwin
-    new xvt_drawwin(file,*mw);
+    xvt_drawwin * dw = new xvt_drawwin(file,*mw);
+    if(!(mw->ImportFile(file,*dw))) dw->close();
     XtFree(file);
   }
   XtUnmanageChild(mw->OpenDialog());
