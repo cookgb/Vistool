@@ -64,13 +64,15 @@ char * vt_mainwin::NewDrawWindow()
 
 
 vt_drawwin::vt_drawwin(const char * n, vt_mainwin & mw)
-  : Lb_x(0.), Ub_x(1.), Lb_y(0.), Ub_y(1.),
+  : // Lb_x(0.), Ub_x(1.), Lb_y(0.), Ub_y(1.),
     mvt(mw), animate(false), redraw(false),
     Abscissa_Set(mw.Abscissa_Set)
 {
 //    name = new char[strlen(n)+1];
 //    strcpy(name,n);
   name = mw.NewDrawWindow();
+
+  Cur_Bounds = new bounds_2D(0.0, 0.0, 1.0, 1.0);
   
   labelbuf = new char[70];
   label = new ostrstream(labelbuf,69);
@@ -430,6 +432,46 @@ void vt_drawwin::reset_list()
   draw();
 }
 
+void vt_drawwin::reset_CurrentBounds()
+{
+  // Clear the bounds stack
+  while(!bounds_stack.empty()) {
+    delete bounds_stack.top();
+    bounds_stack.pop();
+  }
+  // Reset the draw window to the Default with a boarder.
+  double xb = 0.025*(Default_Bounds.Ub_x - Default_Bounds.Lb_x);
+  if(xb == 0)
+    if(Default_Bounds.Ub_x != 0) xb = 0.025*Default_Bounds.Ub_x;
+    else xb = 1.e-2;
+  double yb = 0.025*(Default_Bounds.Ub_y - Default_Bounds.Lb_y);
+  if(yb == 0)
+    if(Default_Bounds.Ub_y != 0) yb = 0.025*Default_Bounds.Ub_y;
+    else yb = 1.e-2;
+  Cur_Bounds->Lb_x = Default_Bounds.Lb_x-xb;
+  Cur_Bounds->Lb_y = Default_Bounds.Lb_y-yb;
+  Cur_Bounds->Ub_x = Default_Bounds.Ub_x+xb;
+  Cur_Bounds->Ub_y = Default_Bounds.Ub_y+yb;
+  windowReshape(cur_width, cur_height);
+}
+
+void vt_drawwin::push_CurrentBounds(bounds_2D * new_bounds)
+{
+  bounds_stack.push(Cur_Bounds);
+  Cur_Bounds = new_bounds;
+  windowReshape(cur_width, cur_height);
+}
+
+void vt_drawwin::pop_CurrentBounds()
+{
+  if(!bounds_stack.empty()) {
+    delete Cur_Bounds;
+    Cur_Bounds = bounds_stack.top();
+    bounds_stack.pop();
+    windowReshape(cur_width, cur_height);
+  }
+}
+
 void vt_drawwin::resize(int new_width, int new_height)
 {
   cur_width = new_width;
@@ -442,15 +484,8 @@ void vt_drawwin::windowReshape(int width, int height)
   glViewport(0, 0, width, height);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  double xb = 0.025*(Ub_x - Lb_x);
-  if(xb == 0)
-    if(Ub_x != 0) xb = 0.025*Ub_x;
-    else xb = 1.e-2;
-  double yb = 0.025*(Ub_y - Lb_y);
-  if(yb == 0)
-    if(Ub_y != 0) yb = 0.025*Ub_y;
-    else yb = 1.e-2;
-  gluOrtho2D(Lb_x-xb,Ub_x+xb,Lb_y-yb,Ub_y+yb);
+  gluOrtho2D(Cur_Bounds->Lb_x, Cur_Bounds->Ub_x,
+	     Cur_Bounds->Lb_y, Cur_Bounds->Ub_y);
 }
 
 void vt_drawwin::Add(vt_data_series * ds)
@@ -460,17 +495,18 @@ void vt_drawwin::Add(vt_data_series * ds)
   const double lby = ds->LBy();
   const double uby = ds->UBy();
   if(!(data_list.size())) {
-    Lb_x = lbx;
-    Ub_x = ubx;
-    Lb_y = lby;
-    Ub_y = uby;
+    Default_Bounds.Lb_x = lbx;
+    Default_Bounds.Lb_y = lby;
+    Default_Bounds.Ub_x = ubx;
+    Default_Bounds.Ub_y = uby;
   } else {
-    if(lbx < Lb_x) Lb_x = lbx;
-    if(ubx > Ub_x) Ub_x = ubx;
-    if(lby < Lb_y) Lb_y = lby;
-    if(uby > Ub_y) Ub_y = uby;
+    if(lbx < Default_Bounds.Lb_x) Default_Bounds.Lb_x = lbx;
+    if(lby < Default_Bounds.Lb_y) Default_Bounds.Lb_y = lby;
+    if(ubx > Default_Bounds.Ub_x) Default_Bounds.Ub_x = ubx;
+    if(uby > Default_Bounds.Ub_y) Default_Bounds.Ub_y = uby;
   }
   data_list.push_back(ds);
+  reset_CurrentBounds();
   reset_list();
   Coords_Text(true);
 }
@@ -488,8 +524,9 @@ void vt_drawwin::Coords_Text(bool add)
   if(add) label->seekp(15);
   int p = label->precision();
   label->precision(4);
-  (*label) <<   " (" << Lb_x << ", " << Lb_y
-	   << " -> " << Ub_x << ", " << Ub_y << ")" << ends;
+  (*label) <<   " (" << Cur_Bounds->Lb_x << ", " << Cur_Bounds->Lb_y
+	   << " -> " << Cur_Bounds->Ub_x << ", " << Cur_Bounds->Ub_y
+	   <<    ")" << ends;
   label->precision(p);
 }
 

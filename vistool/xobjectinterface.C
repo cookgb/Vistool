@@ -120,16 +120,10 @@ void mw_openfs_cb(Widget w, XtPointer client_data, XtPointer call_data)
     xvt_drawwin * dw = new xvt_drawwin(file,*mw,dirstr,patstr);
     switch(mw->importtype) {
     case TYPE_GIO:
-      if(dw->ImportFile_GIO(file))
-	dw->resize(dw->Width(),dw->Height());
-      else
-	dw->close();
+      if(!dw->ImportFile_GIO(file)) dw->close();
       break;
     case TYPE_1DDump:
-      if(dw->ImportFile_1DDump(file))
-	dw->resize(dw->Width(),dw->Height());
-      else
-	dw->close();
+      if(!dw->ImportFile_1DDump(file)) dw->close();
       break;
     case TYPE_1DAb:
       if(dw->ImportFile_1DAbs(file)) {
@@ -269,6 +263,29 @@ void mapStateChanged(Widget w, XtPointer client_data, XEvent *event,
     dw->visible = false;
     break;
   }
+}
+
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+// 
+void dw_ZoomReset(Widget w, XtPointer client_data, XtPointer call_data)
+{
+  xvt_drawwin * dw = (xvt_drawwin *) client_data;
+  dw->reset_CurrentBounds();
+  dw->Coords_Text(true);
+  dw->postRedisplay();
+}
+
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+// 
+void dw_UnZoom(Widget w, XtPointer client_data, XtPointer call_data)
+{
+  xvt_drawwin * dw = (xvt_drawwin *) client_data;
+  dw->pop_CurrentBounds();
+  dw->Coords_Text(true);
+  dw->postRedisplay();
 }
 
 //----------------------------------------------------------------------------
@@ -419,13 +436,11 @@ void dw_openfs_cb(Widget w, XtPointer client_data, XtPointer call_data)
     switch(dw->importtype) {
     case TYPE_GIO:
       if(dw->ImportFile_GIO(file)) {
-	dw->resize(dw->Width(),dw->Height());
 	dw->postRedisplay();
       }
       break;
     case TYPE_1DDump:
       if(dw->ImportFile_1DDump(file)) {
-	dw->resize(dw->Width(),dw->Height());
 	dw->postRedisplay();
       }
       break;
@@ -525,9 +540,21 @@ void Button1UpAction(Widget w, XEvent * event, String * params,
   XtVaGetValues(w,XmNuserData,&dw,NULL); // Get the xvt_drawwin.
   glXWaitGL();
   dw->DrawRubberBand();
+  const double x_int   = dw->Cur_Bounds->Lb_x;
+  const double x_slope = (dw->Cur_Bounds->Ub_x - x_int)/dw->cur_width;
+  const double y_int   = dw->Cur_Bounds->Ub_y;
+  const double y_slope = (dw->Cur_Bounds->Lb_y - y_int)/dw->cur_height;
+  const double xl = dw->xorg_RB*x_slope + x_int;
+  const double xu = (dw->xorg_RB + dw->xwid_RB + 1)*x_slope + x_int;
+  const double yu = dw->yorg_RB*y_slope + y_int;
+  const double yl = (dw->yorg_RB + dw->ywid_RB + 1)*y_slope + y_int;
   dw->draw_RB = false;
   dw->xpin_RB = dw->ypin_RB = 0;
+  dw->xorg_RB = dw->yorg_RB = 0;
   dw->xwid_RB = dw->ywid_RB = 0;
+  dw->push_CurrentBounds(new bounds_2D(xl,yl,xu,yu));
+  dw->Coords_Text(true);
+  dw->postRedisplay();
 }
 
 //----------------------------------------------------------------------------

@@ -9,6 +9,7 @@
 #define VISTOOL_H
 
 #include <list.h>
+#include <stack.h>
 #include <string.h>
 #include <strstream.h>
 
@@ -37,6 +38,19 @@ public:
   char * NewDrawWindow();
 };
 
+
+class bounds_2D {
+public:
+  double Lb_x;
+  double Lb_y;
+  double Ub_x;
+  double Ub_y;
+public:
+  bounds_2D(double lx = 0.0, double ly = 0.0,
+	    double ux = 1.0, double uy = 1.0) : Lb_x(lx), Lb_y(ly),
+						Ub_x(ux), Ub_y(uy) {}
+};
+
 class vt_data_series;
 
 class vt_drawwin {
@@ -46,10 +60,9 @@ protected:
   friend vt_mainwin;
   int cur_width;
   int cur_height;
-  double Lb_x;
-  double Ub_x;
-  double Lb_y;
-  double Ub_y;
+  bounds_2D Default_Bounds;
+  bounds_2D * Cur_Bounds;
+  stack <bounds_2D *> bounds_stack;
 protected:
   vt_mainwin & mvt;
   bool animate;
@@ -77,11 +90,14 @@ public:
   double next_label();
   void increment();
   void reset_list();
+  void reset_CurrentBounds();
+  void push_CurrentBounds(bounds_2D * new_bounds);
+  void pop_CurrentBounds();
   virtual void resize(int, int);
   void windowReshape(int, int);
   void Add(vt_data_series * ds);
-  int Width() {return cur_width;}
-  int Height() {return cur_height;}
+  int Width() const {return cur_width;}
+  int Height() const {return cur_height;}
   void Label_Text(bool add);
   void Coords_Text(bool add);
 };
@@ -98,12 +114,12 @@ protected:
 public:
   vt_data(double l, int s) : label(l), size(s) {}
   ~vt_data();
-  double LBx() {return Lb_x;}
-  double UBx() {return Ub_x;}
-  double LBy() {return Lb_y;}
-  double UBy() {return Ub_y;}
+  double LBx() const {return Lb_x;}
+  double UBx() const {return Ub_x;}
+  double LBy() const {return Lb_y;}
+  double UBy() const {return Ub_y;}
   virtual void draw() {}
-  double Label() {return label;}
+  double Label() const {return label;}
   const double *Data() const {return data;};
   int Size() const {return size;};
 };
@@ -138,7 +154,7 @@ public:
   double LBy() {return Lb_y;}
   double UBy() {return Ub_y;}
   void Append(vt_data * d);
-  vt_data * Current() {return *current;}
+  vt_data * Current() const {return *current;}
   bool Done() const {return done;}
   double Next();
   void Increment();

@@ -291,6 +291,8 @@ void Button2DownAction(Widget, XEvent *, String *, Cardinal *);
 void Button2MotionAction(Widget, XEvent *, String *, Cardinal *);
 void Button2UpAction(Widget, XEvent *, String *, Cardinal *);
 void mapStateChanged(Widget, XtPointer, XEvent *, Boolean *);
+void dw_ZoomReset(Widget, XtPointer, XtPointer);
+void dw_UnZoom(Widget, XtPointer, XtPointer);
 void dw_animate(Widget, XtPointer, XtPointer);
 void dw_reset_animate(Widget, XtPointer, XtPointer);
 void ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
@@ -427,6 +429,13 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw,
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
   // Create Popup menu for frame area of drawing window
+  MenuItem Zoom_menu[] = {
+    { "UnZoom", &xmPushButtonGadgetClass, '\0', "Ctrl<Key>Z", "Ctrl+Z", 0,
+      dw_UnZoom, this, NULL},
+    { "Reset", &xmPushButtonGadgetClass, '\0', NULL, NULL,0,
+      dw_ZoomReset, this, NULL},
+    NULL,
+  };
   MenuItem Apply_menu[] = {
     { "Log", &xmPushButtonGadgetClass, '\0', NULL, NULL,0,
       apply_log, this, NULL},
@@ -442,8 +451,11 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw,
     NULL,
   };
   MenuItem Popup_menu[] = {
-    { "Reset", &xmPushButtonGadgetClass, '\0', NULL, NULL, 0,
-      dw_popup_reset, this, NULL},
+//      { "Reset", &xmPushButtonGadgetClass, '\0', NULL, NULL, 0,
+//        dw_popup_reset, this, NULL},
+    { "Zoom", &xmCascadeButtonGadgetClass, '\0', NULL, NULL, 0,
+      NULL, this, Zoom_menu},
+    { "_sep3", &xmSeparatorGadgetClass, '\0', NULL, NULL, 0, NULL, NULL, NULL},
     { "Apply", &xmCascadeButtonGadgetClass, '\0', NULL, NULL, 0,
       NULL, this, Apply_menu},
     { "_sep3", &xmSeparatorGadgetClass, '\0', NULL, NULL, 0, NULL, NULL, NULL},
