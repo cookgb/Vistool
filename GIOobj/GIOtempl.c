@@ -10,6 +10,8 @@
 
 #ifdef __GNUC__
 #include <string.h>
+#elif WIN32
+#include <string.h>
 #else
 #include <strings.h>
 #endif
@@ -78,6 +80,7 @@ template< class D, class L, int d>
  int GIOdata<D,L,d>::Read(fstream *const fs)
 {
   fs->read((char *)&label,sizeof(L));
+	cout << "GIOdata Label " << label << endl;
   fs->read((char *)&use_bounds,sizeof(int));
   int size = 1;
   for(int i=0; i<dim; i++) {
@@ -86,9 +89,11 @@ template< class D, class L, int d>
     fs->read((char *)(ext+i),sizeof(int));
     size *= ext[i];
   }
+	cout << "GIOdata Ndatasets " << Ndatasets << endl;
   for(int j=0; j<Ndatasets; j++) {
     if(datar[j]) delete [] datar[j];
     if(!(datar[j] = new D[size])) GIOAbort("memory");
+	cout << "GIOdata Dataset " << j << " Size " << size << endl;
     fs->read((char *)datar[j],size*sizeof(D));
   }
   return 1;

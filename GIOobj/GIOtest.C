@@ -24,7 +24,7 @@ double wave2(double t, double x)
   return 0.01*sin(t + x);
 }
 
-main()
+void main()
 {
   const char * filename = "Wave.data";
   const char * names[] = {"y","z"};
