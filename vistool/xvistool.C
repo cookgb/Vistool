@@ -541,6 +541,9 @@ void xvt_drawwin::CreateWindow()
   frame = XtVaCreateManagedWidget("GLframe",xmFrameWidgetClass,
 				  main_w,
 				  XmNuserData,this, // For Button actions
+                                  XmNshadowType,XmSHADOW_OUT,
+                                  XmNshadowThickness,1,
+                                  XmNchildType,XmFRAME_WORKAREA_CHILD,
 				  NULL);
 
   //--------------------------------------------------------------------------
