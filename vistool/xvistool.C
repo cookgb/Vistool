@@ -7,7 +7,11 @@
 //-------------------------------------------------------------------------
 #include <Xm/MainW.h>
 #include <Xm/RowColumn.h>
+#include <Xm/PushBG.h>
 #include <Xm/PushB.h>
+#include <Xm/ToggleBG.h>
+#include <Xm/ToggleB.h>
+#include <Xm/SeparatoG.h>
 #include <Xm/Separator.h>
 #include <Xm/ToggleB.h>
 #include <Xm/CascadeB.h>
@@ -23,11 +27,6 @@
 #include <map.h>
 
 #include "xvistool.h"
-
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-// X11 Globals
 
 
 //----------------------------------------------------------------------------
@@ -157,15 +156,15 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
   Widget menu_pane = XmCreatePulldownMenu(menu_bar, "menupane", OLargs, OLn);
   if(overlayVisual)
     XtAddCallback(XtParent(menu_pane), XmNpopupCallback,
-		  (XtCallbackProc) mw_ensurePulldownColormapInstalled, NULL);
+		  (XtCallbackProc) mw_ensurePulldownColormapInstalled, this);
   Widget btn;
-  btn = XmCreatePushButton(menu_pane, "Open...", args, 1);
-  XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc) mw_file_open, NULL);
+  btn = XmCreatePushButtonGadget(menu_pane, "Open...", args, 1);
+  XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc) mw_file_open, this);
   XtManageChild(btn);
-  btn = XmCreateSeparator(menu_pane, NULL, args, 1);
+  btn = XmCreateSeparatorGadget(menu_pane, NULL, args, 1);
   XtManageChild(btn);
-  btn = XmCreatePushButton(menu_pane, "Quit", args, 1);
-  XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc) mw_file_quit, NULL);
+  btn = XmCreatePushButtonGadget(menu_pane, "Quit", args, 1);
+  XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc) mw_file_quit, this);
   XtManageChild(btn);
   XtSetArg(args[1], XmNsubMenuId, menu_pane);
   Widget cascade = XmCreateCascadeButton(menu_bar, "File", args, 2);
@@ -176,14 +175,14 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
   menu_pane = XmCreatePulldownMenu(menu_bar, "menupane", OLargs, OLn);
   if(overlayVisual)
     XtAddCallback(XtParent(menu_pane), XmNpopupCallback,
-		  (XtCallbackProc) mw_ensurePulldownColormapInstalled, NULL);
-  btn = XmCreatePushButton(menu_pane, "Help", NULL, 0);
-  XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc) mw_help, NULL);
+		  (XtCallbackProc) mw_ensurePulldownColormapInstalled, this);
+  btn = XmCreatePushButtonGadget(menu_pane, "Help", NULL, 0);
+  XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc) mw_help, this);
   XtManageChild(btn);
   XtSetArg(args[1], XmNsubMenuId, menu_pane);
   cascade = XmCreateCascadeButton(menu_bar, "Help", args, 2);
   // Tell the MenuBar which button is the help menu
-  XtVaSetValues(menu_bar,XmNmenuHelpWidget,cascade,NULL);
+  XtVaSetValues(menu_bar, XmNmenuHelpWidget, cascade, NULL);
   XtManageChild(cascade);
 
   //--------------------------------------------------------------------------
@@ -202,105 +201,13 @@ xvt_mainwin::~xvt_mainwin()
 
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-// Installation routine for colormap if overlay menus used
-void mw_ensurePulldownColormapInstalled(Widget w, XtPointer client_data,
-					XtPointer call_data)
-{
-  // Get the xvt_mainwin.
-  xvt_mainwin * mw = NULL;
-  XtVaGetValues(w,XmNuserData,&mw,NULL);
-  // Extra indirection if overlays are used !!!!
-  if(!mw) XtVaGetValues(XtParent(w),XmNuserData,&mw,NULL);
-  //if(!mw) {cerr << "Error getting xvt_mainwin pointer" << endl; abort();}
-
-  XInstallColormap(mw->display, mw->overlayColormap);
-}
-
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-void mw_openfs_cb(Widget, XtPointer, XtPointer);
-//----------------------------------------------------------------------------
-// Callback routine for main window File->Open menu selection
-void mw_file_open(Widget w, XtPointer client_data, XtPointer call_data)
-{
-  // Get the xvt_mainwin.
-  xvt_mainwin * mw = NULL;
-  XtVaGetValues(w,XmNuserData,&mw,NULL);
-  //if(!mw) {cerr << "Error getting xvt_mainwin pointer" << endl; abort();}
-
-  if(!mw->Open_Dialog) {
-    Arg args;
-    XtSetArg(args, XmNuserData, mw);
-    mw->Open_Dialog = XmCreateFileSelectionDialog(mw->top_shell,
-						   "opendialog",
-						   & args, 1);
-    XtAddCallback(mw->Open_Dialog,XmNokCallback,mw_openfs_cb,NULL);
-    XtAddCallback(mw->Open_Dialog,XmNcancelCallback,
-		  (XtCallbackProc) XtUnmanageChild,NULL);
-  }
-  XtManageChild(mw->Open_Dialog);
-  XtPopup(XtParent(mw->Open_Dialog),XtGrabNone);
-}
-
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-// Callback routine for main window File->Quit menu selection
-void mw_file_quit(Widget w, XtPointer client_data, XtPointer call_data)
-{
-  // Get the xvt_mainwin.
-  xvt_mainwin * mw = NULL;
-  XtVaGetValues(w,XmNuserData,&mw,NULL);
-  //if(!mw) {cerr << "Error getting xvt_mainwin pointer" << endl; abort();}
-
-  delete mw;
-  exit(0);
-}
-
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-// Callback routine for main window Help->Help menu slection
-void mw_help(Widget w, XtPointer client_data, XtPointer call_data)
-{
-  cout << "Selected Help" << endl;
-}
-
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-// Callback routine for open dialogue from main window File->Open 
-void mw_openfs_cb(Widget w, XtPointer client_data, XtPointer call_data)
-{
-  // Get the xvt_mainwin.
-  xvt_mainwin * mw = NULL;
-  XtVaGetValues(w,XmNuserData,&mw,NULL);
-  //if(!mw) {cerr << "Error getting xvt_mainwin pointer" << endl; abort();}
-
-  XmFileSelectionBoxCallbackStruct * fs = 
-    (XmFileSelectionBoxCallbackStruct *) call_data;
-
-  char * file;
-
-  if(fs) {
-    if(!XmStringGetLtoR(fs->value,XmFONTLIST_DEFAULT_TAG,&file))
-      return; // internal error
-    // Create and register the new drawwin
-    new xvt_drawwin(file,*mw);
-    XtFree(file);
-  }
-  XtUnmanageChild(mw->Open_Dialog);
-}
-
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
 void dw_ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
 void dw_file_open(Widget, XtPointer, XtPointer);
 void dw_file_close(Widget, XtPointer, XtPointer);
 void dw_help(Widget, XtPointer, XtPointer);
-void activateMenu(Widget, XtPointer, XEvent *, Boolean *);
-void dw_pulldownMenuUse(Widget, XtPointer, XtPointer);
+void activatePopup(Widget, XtPointer, XEvent *, Boolean *);
+void dw_popup_reset(Widget, XtPointer, XtPointer);
+void dw_popup_animate(Widget, XtPointer, XtPointer);
 void Button1DownUpAction(Widget, XEvent *, String *, Cardinal *);
 void Button1DownAction(Widget, XEvent *, String *, Cardinal *);
 void Button1MotionAction(Widget, XEvent *, String *, Cardinal *);
@@ -364,15 +271,15 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
   Widget menu_pane = XmCreatePulldownMenu(menu_bar, "menupane", OLargs, OLn);
   if(xmvt.overlayVisual)
     XtAddCallback(XtParent(menu_pane), XmNpopupCallback,
-		  (XtCallbackProc) dw_ensurePulldownColormapInstalled, NULL);
+		  (XtCallbackProc) dw_ensurePulldownColormapInstalled, this);
   Widget btn;
-  btn = XmCreatePushButton(menu_pane, "Open...", args, 1);
-  XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc) dw_file_open, NULL);
+  btn = XmCreatePushButtonGadget(menu_pane, "Open...", args, 1);
+  XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc) dw_file_open, this);
   XtManageChild(btn);
-  btn = XmCreateSeparator(menu_pane, NULL, args, 1);
+  btn = XmCreateSeparatorGadget(menu_pane, NULL, args, 1);
   XtManageChild(btn);
-  btn = XmCreatePushButton(menu_pane, "Close", args, 1);
-  XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc) dw_file_close,NULL);
+  btn = XmCreatePushButtonGadget(menu_pane, "Close", args, 1);
+  XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc) dw_file_close,this);
   XtManageChild(btn);
   XtSetArg(args[1], XmNsubMenuId, menu_pane);
   Widget cascade = XmCreateCascadeButton(menu_bar, "File", args, 2);
@@ -383,9 +290,9 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
   menu_pane = XmCreatePulldownMenu(menu_bar, "menupane", OLargs, OLn);
   if(xmvt.overlayVisual)
     XtAddCallback(XtParent(menu_pane), XmNpopupCallback,
-		  (XtCallbackProc) dw_ensurePulldownColormapInstalled, NULL);
-  btn = XmCreatePushButton(menu_pane, "Help", args, 1);
-  XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc) dw_help, NULL);
+		  (XtCallbackProc) dw_ensurePulldownColormapInstalled, this);
+  btn = XmCreatePushButtonGadget(menu_pane, "Help", args, 1);
+  XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc) dw_help, this);
   XtManageChild(btn);
   XtSetArg(args[1], XmNsubMenuId, menu_pane);
   cascade = XmCreateCascadeButton(menu_bar, "Help", args, 2);
@@ -404,31 +311,23 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
   // Create Popup menu for frame area of drawing window
-  static XmButtonType buttonTypes[] = 
-  {XmPUSHBUTTON, XmSEPARATOR, XmCHECKBUTTON};
-  XmString buttonLabels[XtNumber(buttonTypes)];
-  buttonLabels[0] = XmStringCreateLocalized("Reset");
-  buttonLabels[1] = NULL;
-  buttonLabels[2] = XmStringCreateLocalized("Animate");
-  //--------------------------------------------------------------------------
-  int pn = 0;
-  Arg pargs[10];
-  XtSetArg(pargs[pn], XmNbuttonCount, XtNumber(buttonTypes)); pn++;
-  XtSetArg(pargs[pn], XmNbuttons, buttonLabels); pn++;
-  XtSetArg(pargs[pn], XmNbuttonType, buttonTypes); pn++;
-  XtSetArg(pargs[pn], XmNbuttonSet, 2); pn++;
-  XtSetArg(pargs[pn], XmNsimpleCallback, dw_pulldownMenuUse); pn++;
-  XtSetArg(pargs[pn], XmNuserData, this); pn++;
-  if(xmvt.overlayVisual) {
-    XtSetArg(pargs[pn], XmNvisual, xmvt.overlayVisual); pn++;
-    XtSetArg(pargs[pn], XmNdepth, xmvt.overlayDepth); pn++;
-    XtSetArg(pargs[pn], XmNcolormap, xmvt.overlayColormap); pn++;
-  }
-  popup = XmCreateSimplePopupMenu(frame, "popup", pargs, pn);
-  XtAddEventHandler(frame, ButtonPressMask, False, activateMenu, &popup);
-  for(int ifree=0; ifree<3; ifree++) XmStringFree(buttonLabels[ifree]);
-  XtVaGetValues(popup, XmNchildren, &popuplist, NULL);
-  XmToggleButtonSetState(popuplist[2], animate, False);
+  popup = XmCreatePopupMenu(frame, "menupane", OLargs, OLn);
+  if(xmvt.overlayVisual)
+    XtAddCallback(XtParent(popup), XmNpopupCallback,
+		  (XtCallbackProc) dw_ensurePulldownColormapInstalled, this);
+  btn = XmCreatePushButtonGadget(popup, "Reset", args, 1);
+  XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc) dw_popup_reset,
+		this);
+  XtManageChild(btn);
+  btn = XmCreateSeparatorGadget(popup, NULL, args, 1);
+  XtManageChild(btn);
+  XtSetArg(args[1], XmNindicatorType, XmN_OF_MANY);
+  btn = XmCreateToggleButtonGadget(popup, "Animate", args, 2);
+  XtAddCallback(btn, XmNvalueChangedCallback,
+		(XtCallbackProc) dw_popup_animate, this);
+  XmToggleButtonSetState(btn, animate, False);
+  XtManageChild(btn);
+  XtAddEventHandler(frame, ButtonPressMask, False, activatePopup, popup);
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
@@ -488,328 +387,6 @@ xvt_drawwin::~xvt_drawwin()
   XtDestroyWidget(draw_shell);
 }
 
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-// Installation routine for colormap if overlay menus used
-void dw_ensurePulldownColormapInstalled(Widget w, XtPointer client_data,
-					XtPointer call_data)
-{
-  // Get the xvt_mainwin.
-  xvt_drawwin * dw = NULL;
-  XtVaGetValues(w,XmNuserData,&dw,NULL);
-  // Extra indirection if overlays are used !!!!
-  if(!dw) XtVaGetValues(XtParent(w),XmNuserData,&dw,NULL);
-  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
-
-  XInstallColormap(dw->xmvt.display, dw->xmvt.overlayColormap);
-}
-
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-//  void dw_openfs_cb(Widget, XtPointer, XtPointer);
-//----------------------------------------------------------------------------
-// Callback routine for drawing window File->Open menu selection
-void dw_file_open(Widget w, XtPointer client_data, XtPointer call_data)
-{
-  // Get the xvt_drawwin.
-  xvt_drawwin * dw = NULL;
-  XtVaGetValues(w,XmNuserData,&dw,NULL);
-  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
-
-//        if(!xmvt->Open_Dialog) {
-//  	xmvt->Open_Dialog = XmCreateFileSelectionDialog(xmvt->top_shell,
-//  						       "opendialog",
-//  						       NULL,0);
-//  	XtAddCallback(xmvt->Open_Dialog,XmNokCallback,openfs_cb,NULL);
-//  	XtAddCallback(xmvt->Open_Dialog,XmNcancelCallback,
-//  		      (XtCallbackProc) XtUnmanageChild,NULL);
-//        }
-//        XtManageChild(xmvt->Open_Dialog);
-//        XtPopup(XtParent(xmvt->Open_Dialog),XtGrabNone);
-  cout << "Selected Open... in a draw window" << endl;
-}
-
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-// Callback routine for main window File->Close menu selection
-void dw_file_close(Widget w, XtPointer client_data, XtPointer call_data)
-{
-  // Get the xvt_drawwin.
-  xvt_drawwin * dw = NULL;
-  XtVaGetValues(w,XmNuserData,&dw,NULL);
-  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
-
-  if(dw) {
-    dw->close();
-  } else {
-    cerr << "Widge has no xvt_drawwin resource in drawwin close." << endl;
-  }
-}
-
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-// Callback routine for drawing window Help->Help menu slection
-void dw_help(Widget w, XtPointer client_data, XtPointer call_data)
-{
-  cout << "Selected Help in a draw window" << endl;
-}
-
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-// Callback routine for open dialogue from drawing window File->Open 
-//  void dw_openfs_cb(Widget w, XtPointer client_data, XtPointer call_data)
-//  {
-//    XmFileSelectionBoxCallbackStruct * fs = 
-//      (XmFileSelectionBoxCallbackStruct *) call_data;
-
-//    char * file;
-
-//    if(fs) {
-//      if(!XmStringGetLtoR(fs->value,XmFONTLIST_DEFAULT_TAG,&file))
-//        return; // internal error
-//      cout << "Opening " << file << endl;
-//      XtFree(file);
-//    }
-//    XtUnmanageChild(xmvt->Open_Dialog);
-//  }
-
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-// 
-void activateMenu(Widget w, XtPointer client_data, XEvent *event,
-		  Boolean *cont)
-{
-  // Get the xvt_drawwin.
-  xvt_drawwin * dw = NULL;
-  XtVaGetValues(w,XmNuserData,&dw,NULL);
-  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
-
-  if(dw->xmvt.overlayVisual)
-    XInstallColormap(dw->xmvt.display, dw->xmvt.overlayColormap);
-  XmMenuPosition(dw->popup, &event->xbutton);
-  XtManageChild(dw->popup);
-}
-
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-void animate(xvt_mainwin *, XtIntervalId *);
-//----------------------------------------------------------------------------
-// 
-void dw_pulldownMenuUse(Widget w, XtPointer client_data, XtPointer call_data)
-{
-  // Get the xvt_drawwin.
-  xvt_drawwin * dw = NULL;
-  XtVaGetValues(w,XmNuserData,&dw,NULL);
-  // Extra indirection if overlays are used !!!!
-  if(!dw) XtVaGetValues(XtParent(w),XmNuserData,&dw,NULL);
-  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
-
-  switch((int) client_data) {
-  case 0:
-    cout << "Reset popup button selected." << endl;
-    break;
-  case 1:
-    cout << "Animate popup button selected." << endl;
-    dw->animate = !dw->animate;
-    if(dw->animate) {
-      dw->xmvt.animateCount++;
-      if(dw->xmvt.animateCount == 1)
-	dw->xmvt.animateID =
-	  XtAppAddTimeOut(dw->xmvt.app,1, (XtTimerCallbackProc) handleAnimate,
-			  &dw->xmvt);
-    } else {
-      dw->xmvt.animateCount--;
-      if(!dw->xmvt.animateCount) XtRemoveTimeOut(dw->xmvt.animateID);
-    }
-    break;
-  }
-}
-
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-// 
-void handleAnimate(xvt_mainwin * xmvt, XtIntervalId * id)
-{
-  xmvt->incrementAnimation();
-  xmvt->animateID = XtAppAddTimeOut(xmvt->app, 1,
-				    (XtTimerCallbackProc) handleAnimate, xmvt);
-}
-
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-// 
-void handleRedisplay(xvt_mainwin * xmvt)
-{
-  xmvt->redisplay();
-}
-
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-// 
-void Button1DownAction(Widget w, XEvent * event, String * params, 
-		       Cardinal * num_params)
-{
-  // Get the xvt_drawwin.
-  xvt_drawwin * dw = NULL;
-  XtVaGetValues(w,XmNuserData,&dw,NULL);
-  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
-
-//    const int x = event->xbutton.x;
-//    const int y = event->xbutton.y;
-
-//    cout << "Button 1 Down: \n"
-//         << "Mouse at (" << x << "," << y << ")\n"
-//         << "String : " << params << "\n"
-//         << "Number of params : " << *num_params << endl;
-}
-
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-// 
-void Button1MotionAction(Widget w, XEvent * event, String * params, 
-			 Cardinal * num_params)
-{
-  // Get the xvt_drawwin.
-  xvt_drawwin * dw = NULL;
-  XtVaGetValues(w,XmNuserData,&dw,NULL);
-  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
-
-//    const int x = event->xbutton.x;
-//    const int y = event->xbutton.y;
-
-//    cout << "Button 1 Motion: \n"
-//         << "Mouse at (" << x << "," << y << ")\n"
-//         << "String : " << params << "\n"
-//         << "Number of params : " << *num_params << endl;
-}
-
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-// 
-void Button1UpAction(Widget w, XEvent * event, String * params, 
-		     Cardinal * num_params)
-{
-  // Get the xvt_drawwin.
-  xvt_drawwin * dw = NULL;
-  XtVaGetValues(w,XmNuserData,&dw,NULL);
-  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
-
-//    const int x = event->xbutton.x;
-//    const int y = event->xbutton.y;
-
-//    cout << "Button 1 Up: \n"
-//         << "Mouse at (" << x << "," << y << ")\n"
-//         << "String : " << params << "\n"
-//         << "Number of params : " << *num_params << endl;
-}
-
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-// 
-void Button2DownAction(Widget w, XEvent * event, String * params, 
-		       Cardinal * num_params)
-{
-  // Get the xvt_drawwin.
-  xvt_drawwin * dw = NULL;
-  XtVaGetValues(w,XmNuserData,&dw,NULL);
-  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
-
-//    const int x = event->xbutton.x;
-//    const int y = event->xbutton.y;
-
-//    cout << "Button 2 Down: \n"
-//         << "Mouse at (" << x << "," << y << ")\n"
-//         << "String : " << params << "\n"
-//         << "Number of params : " << *num_params << endl;
-}
-
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-// 
-void Button2MotionAction(Widget w, XEvent * event, String * params, 
-			 Cardinal * num_params)
-{
-  // Get the xvt_drawwin.
-  xvt_drawwin * dw = NULL;
-  XtVaGetValues(w,XmNuserData,&dw,NULL);
-  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
-
-//    const int x = event->xbutton.x;
-//    const int y = event->xbutton.y;
-
-//    cout << "Button 2 Motion: \n"
-//         << "Mouse at (" << x << "," << y << ")\n"
-//         << "String : " << params << "\n"
-//         << "Number of params : " << *num_params << endl;
-}
-
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-// 
-void Button2UpAction(Widget w, XEvent * event, String * params, 
-		     Cardinal * num_params)
-{
-  // Get the xvt_drawwin.
-  xvt_drawwin * dw = NULL;
-  XtVaGetValues(w,XmNuserData,&dw,NULL);
-  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
-
-//    const int x = event->xbutton.x;
-//    const int y = event->xbutton.y;
-
-//    cout << "Button 2 Up: \n"
-//         << "Mouse at (" << x << "," << y << ")\n"
-//         << "String : " << params << "\n"
-//         << "Number of params : " << *num_params << endl;
-}
-
-void dw_draw(Widget w, XtPointer data, XtPointer callData)
-{
-  // Get the xvt_drawwin.
-  xvt_drawwin * dw = NULL;
-  XtVaGetValues(w,XmNuserData,&dw,NULL);
-  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
-  
-  dw->postRedisplay();
-}
-
-void dw_resize(Widget w, XtPointer data, XtPointer callData)
-{
-  // Get the xvt_drawwin.
-  xvt_drawwin * dw = NULL;
-  XtVaGetValues(w,XmNuserData,&dw,NULL);
-  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
-  
-  GLwDrawingAreaCallbackStruct * resize =
-    (GLwDrawingAreaCallbackStruct *) callData;
-
-  glXWaitX(); // Wait until X events are processed.
-  dw->resize(resize->width,resize->height);
-}
-
-void dw_init(Widget w, XtPointer data, XtPointer callData)
-{
-  // Get the xvt_drawwin.
-  xvt_drawwin * dw = NULL;
-  XtVaGetValues(w,XmNuserData,&dw,NULL);
-  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
-  
-  dw->init(dw->viewWidth, dw->viewHeight);
-}
-
 void xvt_mainwin::redisplay()
 {
   typedef list<vt_drawwin *>::iterator I_dw;
@@ -844,6 +421,10 @@ void xvt_drawwin::resize(int new_width, int new_height)
   vt_drawwin::resize(new_width, new_height);
 }
 
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+void handleRedisplay(xvt_mainwin * xmvt);
+//----------------------------------------------------------------------------
 void xvt_drawwin::postRedisplay()
 {
   redisplay = true;
