@@ -18,7 +18,9 @@ class xvt_drawwin;
 
 class xvt_mainwin : public vt_mainwin {
 private:
-  friend void ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
+public:
+  friend void dw_ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
+  friend void mw_ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
   friend void mw_file_open(Widget, XtPointer, XtPointer);
   friend void mw_openfs_cb(Widget, XtPointer, XtPointer);
   friend void dw_InstallPDColormap(Widget, XtPointer, XtPointer);
@@ -46,6 +48,8 @@ public:
 
 class xvt_drawwin : public vt_drawwin {
 private:
+public:
+  friend void dw_ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
   friend void activateMenu(Widget, XtPointer, XEvent *, Boolean *);
   xvt_mainwin & xvt;
   Widget draw_shell;
