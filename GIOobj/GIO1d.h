@@ -8,7 +8,9 @@
 #ifndef GIO1D_H
 #define GIO1D_H
 
+#ifdef __GNUC__
 #pragma interface
+#endif
 
 #include <fstream.h>
 

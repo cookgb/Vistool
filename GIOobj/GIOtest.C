@@ -1,5 +1,6 @@
 
 #include <iostream.h>
+#include <stdlib.h>
 #include <math.h>
 
 #include "GIO1d.h"

@@ -6,13 +6,17 @@
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
 
-#include <string.h>
+#ifdef __GNUC__
+#pragma implementation
+#endif
+//#include <string.h>
 #include <fstream.h>
 
-#pragma implementation
 #include "GIO1d.h"
 
+#ifdef __GNUC__
 template class GIO1dseries<double,double>;
+#endif
 
 #define GIOTESTTAG "#GIO UNIQUE TAG\0"
 #define TESTTAGLEN 16

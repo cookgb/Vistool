@@ -1,21 +1,21 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.1 1999-12-30 13:34:45 cookgb Exp $
+# $Id: Makefile,v 1.2 1999-12-30 14:35:59 cookgb Exp $
 #
 ###############################################################################
 # linux
-CC=gcc
-CFLAGS= -O2
-CXX=g++
-CXXFLAGS= -O2 -DHAVE_STRING_H -fexternal-templates
-LIBDIRS = -L/usr/X11R6/lib
+#CC=gcc
+#CFLAGS= -O2
+#CXX=g++
+#CXXFLAGS= -O2 -fexternal-templates
+#LIBDIRS = -L/usr/X11R6/lib
 
 # SGI
-#CC=cc -mips4
-#CFLAGS = -O2
-#CXX=CC -mips4
-#CXXFLAGS= -O2
+CC=cc -mips4
+CFLAGS = -O2
+CXX=CC -mips4
+CXXFLAGS= -O2 -LANG:ansi-for-init-scope=ON
 
 all: GIOtest
 
@@ -26,6 +26,6 @@ GIOtest.o: GIO1d.h GIOobj.h
 FILES= GIOtest.o GIO1d.o GIOobj.o
 
 GIOtest: $(FILES)
-	$(CXX) -o GIOtest $(FILES)
+	$(CXX) -o GIOtest $(FILES) -lm
 
 

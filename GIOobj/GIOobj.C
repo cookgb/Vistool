@@ -6,9 +6,9 @@
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
 
-#ifdef HAVE_STRING_H
+#ifdef __GNUC__
+#pragma implementation
 #include <string.h>
-#define ANSI_STRING
 #else
 #include <strings.h>
 #endif
@@ -16,10 +16,11 @@
 #include <fstream.h>
 #include <iostream.h>
 
-#pragma implementation
 #include "GIOobj.h"
 
+#ifdef __GNUC__
 template class GIOdata<double,double>;
+#endif
 
 GIObase::GIObase(const char ** names, int n, int d)
   : Ndatasets(n), dim(d)
