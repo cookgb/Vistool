@@ -67,7 +67,7 @@ public:
   L Lbound(int i) const {return LBcoord[i];}
   L Ubound(int i) const {return UBcoord[i];}
   int Ext(int i) const {return ext[i];}
-  const D * Data(int i) const {return data[i];}
+  const D * Data(int i) const {return datar[i];}
 };
 
 template< class D, class L, int d, int KEY>
