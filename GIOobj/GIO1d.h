@@ -33,4 +33,8 @@ public:
   int NSeries() {return Nseries;}
 };
 
+#if defined(Want_c_files)
+#include "GIO1d.c"
+#endif
+
 #endif // GIO1D_H

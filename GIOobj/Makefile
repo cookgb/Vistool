@@ -1,7 +1,7 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.4 1999-12-30 17:03:12 cookgb Exp $
+# $Id: Makefile,v 1.5 1999-12-30 17:12:15 cookgb Exp $
 #
 ###############################################################################
 # linux
@@ -30,7 +30,7 @@ GIOobj.o: GIOobj.h
 GIO1d.o: GIO1d.h GIOobj.h
 GIOtest.o: GIO1d.h GIOobj.h
 
-FILES= GIOtest.o GIO1d.o GIOobj.o GIObase.o
+FILES= GIOtest.o GIObase.o
 
 GIOtest: $(FILES)
 	$(CXX) -o GIOtest $(FILES) -lm

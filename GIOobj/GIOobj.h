@@ -55,6 +55,10 @@ public:
   const D * Data(int i) {return data[i];}
 };
 
+#if defined(Want_c_files)
+#include "GIOobj.c"
+#endif
+
 #endif // GIOOBJ_H
 
 
