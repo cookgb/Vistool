@@ -88,10 +88,10 @@ void mw_file_open_1DDAb(Widget w, XtPointer client_data, XtPointer call_data)
 {
   xvt_mainwin * mw = (xvt_mainwin *) client_data;
   mw->importtype = TYPE_1DAb;
-  mw->Abscissa_Set = !mw->Abscissa_Set;
-  if(mw->Abscissa_Set) {
+  if(!mw->Abscissa_Set) {
     mw_file_open(w, client_data, call_data);
   } else {
+    mw->Abscissa_Set = !mw->Abscissa_Set;
     if(mw->Abscissa_Filename) delete [] mw->Abscissa_Filename;
     if(mw->Abscissa_Data) delete mw->Abscissa_Data;
     mw->Abscissa_Filename = 0;
@@ -127,6 +127,7 @@ void mw_openfs_cb(Widget w, XtPointer client_data, XtPointer call_data)
       if(!dw->ImportFile_1DDump(file)) dw->close();
       break;
     case TYPE_1DAb:
+      mw->Abscissa_Set = !mw->Abscissa_Set;
       if(dw->ImportFile_1DAbs(file)) {
 	if(mw->Abscissa_Filename) delete [] mw->Abscissa_Filename;
 	if(mw->Abscissa_Data) delete mw->Abscissa_Data;
@@ -136,7 +137,6 @@ void mw_openfs_cb(Widget w, XtPointer client_data, XtPointer call_data)
 	dw->Abscissa_Filename = 0;
 	dw->Abscissa_Data = 0;
       } else {
-	mw->Abscissa_Set = !mw->Abscissa_Set;
 	XmToggleButtonSetState(mw->CheckButton_1DAbs, mw->Abscissa_Set, False);
       }
       dw->close();

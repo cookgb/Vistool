@@ -98,6 +98,7 @@ char * vt_mainwin::Info_Range(const bounds_2D & b)
 vt_drawwin::vt_drawwin(const char *const n,  vt_mainwin & mw)
   : mvt(mw), redisplay(false), animate(false), forward_animation(true),
     Abscissa_Set(mw.Abscissa_Set),
+    Abscissa_Filename(0), Abscissa_Data(0),
     fullframe(false), selected(false), sync_window(false)
 {
 //    name = new char[strlen(n)+1];
