@@ -1,7 +1,7 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.17 2000-08-10 15:49:37 cookgb Exp $
+# $Id: Makefile,v 1.18 2000-08-10 18:12:07 cookgb Exp $
 #
 ###############################################################################
 # linux
@@ -55,5 +55,8 @@ clean:
 
 depend:
 	cp -f Makefile makefile
+	make localdepend
+
+localdepend:
 	makedepend -f makefile -I$(CXXINCLUDES) -- $(CXXFLAGS) -- \
 		$(FILES) $(LIBFILES)
