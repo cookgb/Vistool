@@ -1,24 +1,24 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.18 2000-08-05 21:58:36 cookgb Exp $
+# $Id: Makefile,v 1.19 2001-05-28 16:04:39 kidder Exp $
 #
 ###############################################################################
 # linux
-CC=gcc
-CFLAGS= -O2
-CXX=g++
-CXXFLAGS= -O2
-LIBDIRS = -L/usr/X11R6/lib GIO/libGIO.a
-X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11
+#CC=gcc
+#CFLAGS= -O2
+#CXX=g++
+#CXXFLAGS= -O2
+#LIBDIRS = -L/usr/X11R6/lib GIO/libGIO.a
+#X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11
 
 # SGI
-#CC=cc -mips4
-#CFLAGS = -O2
-#CXX=CC -mips4
-#CXXFLAGS= -O2
-#LIBDIRS = GIO/libGIO.a
-#X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11
+CC=cc -mips4
+CFLAGS = -O2
+CXX=CC -mips4
+CXXFLAGS= -O2
+LIBDIRS = GIO/libGIO.a
+X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11
 
 # SP2
 #CC=xlc
@@ -29,6 +29,16 @@ X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11
 #LIBDIRS = GIO/libGIO.a
 #CXXINCLUDES = /usr/ibmcxx/include
 #X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11 -brtl
+
+# SUN with gcc
+#CC=gcc
+#CFLAGS= -O2
+#CCC=g++
+#CXX=$(CCC)
+#CCFLAGS= -O2 -I/usr/openwin/include/GL -I/home/supernova/scheel
+#CXXFLAGS= $(CCFLAGS)
+#LIBDIRS = -L/usr/openwin/lib GIO/libGIO.a
+#X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11
 
 all: xvistool
 

@@ -1,7 +1,7 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.19 2000-08-10 18:19:29 cookgb Exp $
+# $Id: Makefile,v 1.20 2001-05-28 16:04:39 kidder Exp $
 #
 ###############################################################################
 # linux
@@ -12,22 +12,28 @@
 #CXXINCLUDES = /usr/include/g++-2
 
 # SGI
-#CC=cc -mips4
-#CFLAGS = -O2
-#CXX=CC -mips4
-#CXXFLAGS= -O2 -LANG:bool=OFF
-#CXXINCLUDES = /usr/include/CC
-#TEMPLATE_DIR = ii_files
+CC=cc -mips4
+CFLAGS = -O2
+CXX=CC -mips4
+CXXFLAGS= -O2 -LANG:bool=OFF
+CXXINCLUDES = /usr/include/CC
+TEMPLATE_DIR = ii_files
 
 # SP2
-CC=xlc
-CFLAGS = -O2
-CXX=xlC
-CXXFLAGS= -O2 -DSPX
-CXXINCLUDES = /usr/ibmcxx/include
-TEMPLATE_DIR = tempinc
+#CC=xlc
+#CFLAGS = -O2
+#CXX=xlC
+#CXXFLAGS= -O2 -DSPX
+#CXXINCLUDES = /usr/ibmcxx/include
+#TEMPLATE_DIR = tempinc
 
-all: GIOtest GIOswap
+# SUN with gcc
+#CC=gcc
+#CFLAGS= -O2
+#CCC=g++
+#CXX=g++
+#CXXFLAGS= -O2
+#CXXINCLUDES = /usr/local/include/g++-3
 
 FILES= GIOtest.C
 OBJS = $(FILES:.C=.o)
@@ -61,3 +67,4 @@ localdepend:
 	makedepend -f makefile \
 		-- -I$(CXXINCLUDES) $(CXXFLAGS) -- \
 		$(FILES) $(LIBFILES)
+# DO NOT DELETE
