@@ -38,7 +38,8 @@ template< class D, class L, int d> GIOdata<D,L,d>::GIOdata()
 }
 
 template< class D, class L, int d>
-GIOdata<D,L,d>::GIOdata(const char ** names, int n, int useb)
+GIOdata<D,L,d>::GIOdata(const char *const*const names,
+			const int n, const int useb)
   : GIObase(names, n, d), label(0), use_bounds(useb), data(0)
 {
   for(int i=0; i<d; i++) {
@@ -50,7 +51,8 @@ GIOdata<D,L,d>::GIOdata(const char ** names, int n, int useb)
   for(int j=0; j<Ndatasets; j++) data[j] = 0;
 }
 
-template< class D, class L, int d> int GIOdata<D,L,d>::Write(fstream * fs)
+template< class D, class L, int d>
+int GIOdata<D,L,d>::Write(fstream *const fs) const
 {
   fs->write((char *)&label,sizeof(L));
   fs->write((char *)&use_bounds,sizeof(int));
@@ -66,7 +68,8 @@ template< class D, class L, int d> int GIOdata<D,L,d>::Write(fstream * fs)
   return fs->good();
 }
 
-template< class D, class L, int d> int GIOdata<D,L,d>::Read(fstream * fs)
+template< class D, class L, int d>
+ int GIOdata<D,L,d>::Read(fstream *const fs)
 {
   fs->read((char *)&label,sizeof(L));
   fs->read((char *)&use_bounds,sizeof(int));
@@ -86,7 +89,7 @@ template< class D, class L, int d> int GIOdata<D,L,d>::Read(fstream * fs)
 }
 
 template< class D, class L, int d, int KEY>
-GIOseries<D,L,d,KEY>::GIOseries(const char * filename, int & status)
+GIOseries<D,L,d,KEY>::GIOseries(const char *const filename, int & status)
   : GIOdata<D,L,d>(), GIOkey(0), fs(0), Nseries(0), Nsseek(0)
 {
   status = 0;
@@ -115,8 +118,9 @@ GIOseries<D,L,d,KEY>::GIOseries(const char * filename, int & status)
 }
 
 template< class D, class L, int d, int KEY> 
-GIOseries<D,L,d,KEY>::GIOseries(const char * filename, const char ** names,
-				int n, int & status)
+GIOseries<D,L,d,KEY>::GIOseries(const char *const filename,
+				const char *const*const names,
+				const int n, int & status)
   : GIOdata<D,L,d>(names,n), GIOkey(KEY), fs(0), Nseries(0), Nsseek(0)
 {
   status = 0;
@@ -146,7 +150,8 @@ GIOseries<D,L,d,KEY>::~GIOseries()
 }
 
 template< class D, class L, int d, int KEY> 
-int GIOseries<D,L,d,KEY>::Write(L l, const int * ex, D ** dat, int n)
+int GIOseries<D,L,d,KEY>::Write(const L l, const int *const ex,
+				D *const*const dat, const int n)
 {
   if(n != Ndatasets) GIOAbort("incompatible number of objects being written");
   label = l;
@@ -172,7 +177,7 @@ int GIOseries<D,L,d,KEY>::Read()
 }
 
 template< class D, class L, int d, int KEY>
-GIOcseries<D,L,d,KEY>::GIOcseries(const char * filename, int & status)
+GIOcseries<D,L,d,KEY>::GIOcseries(const char *const filename, int & status)
   : GIOdata<D,L,d>(), GIOkey(0), fs(0), Nseries(0), Nsseek(0)
 {
   status = 0;
@@ -201,8 +206,9 @@ GIOcseries<D,L,d,KEY>::GIOcseries(const char * filename, int & status)
 }
 
 template< class D, class L, int d, int KEY> 
-GIOcseries<D,L,d,KEY>::GIOcseries(const char * filename, const char ** names,
-				  int n, int & status)
+GIOcseries<D,L,d,KEY>::GIOcseries(const char *const filename,
+				  const char *const*const names,
+				  const int n, int & status)
   : GIOdata<D,L,d>(names,n,1), GIOkey(KEY), fs(0), Nseries(0), Nsseek(0)
 {
   status = 0;
@@ -232,8 +238,10 @@ GIOcseries<D,L,d,KEY>::~GIOcseries()
 }
 
 template< class D, class L, int d, int KEY> 
-int GIOcseries<D,L,d,KEY>::Write(L l, const L * lb, const L * ub,
-				 const int * ex, D ** dat, int n)
+int GIOcseries<D,L,d,KEY>::Write(const L l,
+				 const L *const lb, const L *const ub,
+				 const int *const ex, D *const*const dat,
+				 const int n)
 {
   if(n != Ndatasets) GIOAbort("incompatible number of objects being written");
   label = l;

@@ -18,12 +18,12 @@
 #include "GIOtempl.h"
 
 
-GIObase::GIObase(const char ** names, int n, int d)
+GIObase::GIObase(const char *const*const names, const int n, const int d)
   : Ndatasets(n), dim(d)
 {
   if(!(name = new char * [Ndatasets])) GIOAbort("memory");
-  for(int i=0; i<n; i++) {
-    const char * namel = names[i];
+  for(int i=0; i<Ndatasets; i++) {
+    const char *const namel = names[i];
     const int sl = strlen(namel);
     if(!(name[i] = new char[sl+1])) GIOAbort("memory");
     strcpy(name[i], namel);
@@ -39,7 +39,7 @@ GIObase::~GIObase()
   }
 }
 
-int GIObase::writeheader(fstream * fs)
+int GIObase::writeheader(fstream *const fs) const
 {
   fs->write((char *)&Ndatasets,sizeof(int));
   for(int i=0; i<Ndatasets; i++) fs->write(name[i],strlen(name[i])+1);
@@ -47,7 +47,7 @@ int GIObase::writeheader(fstream * fs)
   return fs->good();
 }
 
-int GIObase::readheader(fstream * fs)
+int GIObase::readheader(fstream *const fs)
 {
   fs->read((char *)&Ndatasets,sizeof(int));
   if(!(name = new char * [Ndatasets])) GIOAbort("memory");
@@ -62,7 +62,7 @@ int GIObase::readheader(fstream * fs)
   return fs->good();
 }
 
-void GIObase::GIOAbort(const char * reason)
+void GIObase::GIOAbort(const char *const reason) const
 {
   cerr << "ABORT from GIO library : " << reason << endl;
   abort();
@@ -74,7 +74,7 @@ GIOquery::~GIOquery()
   fs->close();
 }
 
-int GIOquery::Read(const char * filename)
+int GIOquery::Read(const char *const filename)
 {
   const int sl = strlen(filename);
   if(FileName) delete [] FileName;
