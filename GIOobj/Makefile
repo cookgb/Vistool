@@ -1,7 +1,7 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.3 1999-12-30 16:14:14 cookgb Exp $
+# $Id: Makefile,v 1.4 1999-12-30 17:03:12 cookgb Exp $
 #
 ###############################################################################
 # linux
@@ -17,13 +17,20 @@ CFLAGS = -O2
 CXX=CC -mips4
 CXXFLAGS= -O2 -LANG:bool=OFF
 
+# SP2
+#CC=xlc
+#CFLAGS = -O2
+#CXX=xlC
+#CXXFLAGS= -O2
+
 all: GIOtest
 
+GIObase.o: GIOobj.h
 GIOobj.o: GIOobj.h
 GIO1d.o: GIO1d.h GIOobj.h
 GIOtest.o: GIO1d.h GIOobj.h
 
-FILES= GIOtest.o GIO1d.o GIOobj.o
+FILES= GIOtest.o GIO1d.o GIOobj.o GIObase.o
 
 GIOtest: $(FILES)
 	$(CXX) -o GIOtest $(FILES) -lm

@@ -23,7 +23,7 @@ protected:
   int Nseries;
   streampos Nsseek;
 public:
-  GIO1dseries() : GIOdata(), FileName(0), fs(0), Nseries(0), Nsseek(0) {}
+  GIO1dseries() : GIOdata<D,L>(), FileName(0), fs(0), Nseries(0), Nsseek(0) {}
   GIO1dseries(const char * filename, int & status);
   GIO1dseries(const char * filename, const char ** names, int n,
 	      int & status);
