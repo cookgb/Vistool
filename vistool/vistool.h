@@ -29,6 +29,10 @@ public:
   ~vt_drawwin();
   void close();
   virtual void deleteme() { delete this;}
+  virtual void init(int, int);
+  virtual void draw();
+  virtual void resize(int, int);
+  void windowReshape(int, int);
 };
 
 #endif // VISTOOL_H

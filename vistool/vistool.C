@@ -9,6 +9,9 @@
 #include <list.h>
 #include <algorithm>
 
+#include <GL/gl.h>
+#include <GL/glu.h>
+
 #include "vistool.h"
 
 vt_mainwin::vt_mainwin()
@@ -48,4 +51,28 @@ void vt_drawwin::close()
 
   // delete memory
   (*d)->deleteme();
+}
+
+void vt_drawwin::init(int width, int height)
+{
+  glClearColor(0.4, 0.4, 0.4, 0.0);
+  windowReshape(width,height);
+}
+
+void vt_drawwin::draw()
+{
+  glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void vt_drawwin::resize(int new_width, int new_height)
+{
+  windowReshape(new_width,new_height);
+}
+
+void vt_drawwin::windowReshape(int width, int height)
+{
+  glViewport(0, 0, width, height);
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glMatrixMode(GL_MODELVIEW);
 }

@@ -15,6 +15,8 @@
 #include <Xm/FileSB.h>
 #include <X11/GLw/GLwMDrawA.h>
 
+#include <GL/glx.h>
+
 #include <iostream.h>
 #include <unistd.h>
 
@@ -197,7 +199,7 @@ xvt_mainwin::~xvt_mainwin()
 //----------------------------------------------------------------------------
 // Installation routine for colormap if overlay menus used
 void mw_ensurePulldownColormapInstalled(Widget w, XtPointer client_data,
-				     XtPointer call_data)
+					XtPointer call_data)
 {
   // Get the xvt_mainwin.
   xvt_mainwin * mw = NULL;
@@ -293,10 +295,17 @@ void dw_file_close(Widget, XtPointer, XtPointer);
 void dw_help(Widget, XtPointer, XtPointer);
 void activateMenu(Widget, XtPointer, XEvent *, Boolean *);
 void dw_pulldownMenuUse(Widget, XtPointer, XtPointer);
+void Button1DownUpAction(Widget, XEvent *, String *, Cardinal *);
 void Button1DownAction(Widget, XEvent *, String *, Cardinal *);
 void Button1MotionAction(Widget, XEvent *, String *, Cardinal *);
+void Button1UpAction(Widget, XEvent *, String *, Cardinal *);
+void Button2DownUpAction(Widget, XEvent *, String *, Cardinal *);
 void Button2DownAction(Widget, XEvent *, String *, Cardinal *);
 void Button2MotionAction(Widget, XEvent *, String *, Cardinal *);
+void Button2UpAction(Widget, XEvent *, String *, Cardinal *);
+void dw_draw(Widget w, XtPointer data, XtPointer callData);
+void dw_resize(Widget w, XtPointer data, XtPointer callData);
+void dw_init(Widget w, XtPointer data, XtPointer callData);
 //----------------------------------------------------------------------------
 // Creator for X11 version of drawing window.
 xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
@@ -314,8 +323,10 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
   static XtActionsRec dw_actionsTable[] = {
     {"Button1DownAction",Button1DownAction},
     {"Button1MotionAction",Button1MotionAction},
+    {"Button1UpAction",Button1UpAction},
     {"Button2DownAction",Button2DownAction},
-    {"Button2MotionAction",Button2MotionAction}
+    {"Button2MotionAction",Button2MotionAction},
+    {"Button2UpAction",Button2UpAction}
   };
   XtAppAddActions(xvt.app, dw_actionsTable, XtNumber(dw_actionsTable));
 
@@ -421,6 +432,13 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
 				     GLwNvisualInfo,xvt.vi,
 				     XmNuserData,this,
 				     NULL);
+  XtVaGetValues(glx_area, XtNwidth, &viewWidth, XtNheight, &viewHeight, NULL);
+
+  //--------------------------------------------------------------------------
+  //--------------------------------------------------------------------------
+  XtAddCallback(glx_area, XmNexposeCallback, dw_draw, NULL);
+  XtAddCallback(glx_area, XmNresizeCallback, dw_resize, NULL);
+  XtAddCallback(glx_area, GLwNginitCallback, dw_init, NULL);
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
@@ -429,11 +447,18 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
     "#override\n\
     <Btn1Down>:Button1DownAction()\n\
     <Btn1Motion>:Button1MotionAction()\n\
+    <Btn1Up>:Button1UpAction()\n\
     <Btn2Down>:Button2DownAction()\n\
-    <Btn2Motion>:Button2MotionAction()\n";
+    <Btn2Motion>:Button2MotionAction()\n\
+    <Btn2Up>:Button2UpAction()\n";
   XtTranslations trans = XtParseTranslationTable(glxareaTranslations);
   XtOverrideTranslations(glx_area, trans);
 
+  //--------------------------------------------------------------------------
+  // Create OpenGL rendering context with no display list shareing and
+  // with direct rendering favored
+  cx = glXCreateContext(xvt.display,xvt.vi,None,TRUE);
+  if(!cx) XtAppError(xvt.app,"could not create rendering context");
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
@@ -602,10 +627,10 @@ void Button1DownAction(Widget w, XEvent * event, String * params,
   const int x = event->xbutton.x;
   const int y = event->xbutton.y;
 
-  cout << "Button 1 Down: \n"
-       << "Mouse at (" << x << "," << y << ")\n"
-       << "String : " << params << "\n"
-       << "Number of params : " << *num_params << endl;
+//    cout << "Button 1 Down: \n"
+//         << "Mouse at (" << x << "," << y << ")\n"
+//         << "String : " << params << "\n"
+//         << "Number of params : " << *num_params << endl;
 }
 
 //----------------------------------------------------------------------------
@@ -623,10 +648,31 @@ void Button1MotionAction(Widget w, XEvent * event, String * params,
   const int x = event->xbutton.x;
   const int y = event->xbutton.y;
 
-  cout << "Button 1 Motion: \n"
-       << "Mouse at (" << x << "," << y << ")\n"
-       << "String : " << params << "\n"
-       << "Number of params : " << *num_params << endl;
+//    cout << "Button 1 Motion: \n"
+//         << "Mouse at (" << x << "," << y << ")\n"
+//         << "String : " << params << "\n"
+//         << "Number of params : " << *num_params << endl;
+}
+
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+// 
+void Button1UpAction(Widget w, XEvent * event, String * params, 
+		     Cardinal * num_params)
+{
+  // Get the xvt_drawwin.
+  xvt_drawwin * dw = NULL;
+  XtVaGetValues(w,XmNuserData,&dw,NULL);
+  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
+
+  const int x = event->xbutton.x;
+  const int y = event->xbutton.y;
+
+//    cout << "Button 1 Up: \n"
+//         << "Mouse at (" << x << "," << y << ")\n"
+//         << "String : " << params << "\n"
+//         << "Number of params : " << *num_params << endl;
 }
 
 //----------------------------------------------------------------------------
@@ -644,10 +690,10 @@ void Button2DownAction(Widget w, XEvent * event, String * params,
   const int x = event->xbutton.x;
   const int y = event->xbutton.y;
 
-  cout << "Button 2 Down: \n"
-       << "Mouse at (" << x << "," << y << ")\n"
-       << "String : " << params << "\n"
-       << "Number of params : " << *num_params << endl;
+//    cout << "Button 2 Down: \n"
+//         << "Mouse at (" << x << "," << y << ")\n"
+//         << "String : " << params << "\n"
+//         << "Number of params : " << *num_params << endl;
 }
 
 //----------------------------------------------------------------------------
@@ -665,8 +711,83 @@ void Button2MotionAction(Widget w, XEvent * event, String * params,
   const int x = event->xbutton.x;
   const int y = event->xbutton.y;
 
-  cout << "Button 2 Motion: \n"
-       << "Mouse at (" << x << "," << y << ")\n"
-       << "String : " << params << "\n"
-       << "Number of params : " << *num_params << endl;
+//    cout << "Button 2 Motion: \n"
+//         << "Mouse at (" << x << "," << y << ")\n"
+//         << "String : " << params << "\n"
+//         << "Number of params : " << *num_params << endl;
+}
+
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+// 
+void Button2UpAction(Widget w, XEvent * event, String * params, 
+		     Cardinal * num_params)
+{
+  // Get the xvt_drawwin.
+  xvt_drawwin * dw = NULL;
+  XtVaGetValues(w,XmNuserData,&dw,NULL);
+  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
+
+  const int x = event->xbutton.x;
+  const int y = event->xbutton.y;
+
+//    cout << "Button 2 Up: \n"
+//         << "Mouse at (" << x << "," << y << ")\n"
+//         << "String : " << params << "\n"
+//         << "Number of params : " << *num_params << endl;
+}
+
+void dw_draw(Widget w, XtPointer data, XtPointer callData)
+{
+  // Get the xvt_drawwin.
+  xvt_drawwin * dw = NULL;
+  XtVaGetValues(w,XmNuserData,&dw,NULL);
+  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
+  
+  dw->draw();
+}
+
+void dw_resize(Widget w, XtPointer data, XtPointer callData)
+{
+  // Get the xvt_drawwin.
+  xvt_drawwin * dw = NULL;
+  XtVaGetValues(w,XmNuserData,&dw,NULL);
+  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
+  
+  GLwDrawingAreaCallbackStruct * resize =
+    (GLwDrawingAreaCallbackStruct *) callData;
+
+  glXWaitX(); // Wait until X events are processed.
+  dw->resize(resize->width,resize->height);
+}
+
+void dw_init(Widget w, XtPointer data, XtPointer callData)
+{
+  // Get the xvt_drawwin.
+  xvt_drawwin * dw = NULL;
+  XtVaGetValues(w,XmNuserData,&dw,NULL);
+  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
+  
+  dw->init(dw->viewWidth, dw->viewHeight);
+}
+
+void xvt_drawwin::init(int width, int height)
+{
+  glx_win = (GLXDrawable) XtWindow(glx_area);
+  glXMakeCurrent(xvt.display,glx_win,cx);
+  vt_drawwin::init(width, height);
+}
+
+void xvt_drawwin::draw()
+{
+  glXMakeCurrent(xvt.display,glx_win,cx);
+  vt_drawwin::draw();
+  glXSwapBuffers(xvt.display,glx_win);
+}
+
+void xvt_drawwin::resize(int new_width, int new_height)
+{
+  glXMakeCurrent(xvt.display,glx_win,cx);
+  vt_drawwin::resize(new_width, new_height);
 }

@@ -37,8 +37,6 @@ public:
   int      overlayDepth;
   Colormap overlayColormap;
   bool doubleBuffer;
-  // OpenGL data
-  GLXContext cx;
 public:
   xvt_mainwin(int & argc, char ** argv);
   ~xvt_mainwin();
@@ -49,6 +47,7 @@ class xvt_drawwin : public vt_drawwin {
 private:
   friend void dw_ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
   friend void activateMenu(Widget, XtPointer, XEvent *, Boolean *);
+  friend void dw_init(Widget, XtPointer, XtPointer);
   xvt_mainwin & xvt;
   Widget draw_shell;
   Widget main_w;
@@ -58,10 +57,17 @@ private:
   Widget popup;
   WidgetList popuplist;
   Widget Open_Dialog;
+  // OpenGL data
+  GLXDrawable glx_win;
+  GLXContext cx;
+  Dimension viewWidth, viewHeight;
 public:
   xvt_drawwin(const char * file, xvt_mainwin & mw);
   ~xvt_drawwin();
   virtual void deleteme() { delete this;}
+  virtual void init(int, int);
+  virtual void draw();
+  virtual void resize(int, int);
 };
 
 #endif // XVISTOOL_H
