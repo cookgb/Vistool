@@ -1,18 +1,18 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.30 2002-07-30 18:39:13 cookgb Exp $
+# $Id: Makefile,v 1.31 2003-07-17 15:01:26 cookgb Exp $
 #
 ###############################################################################
-# linux/gcc3
-#CC=gcc3
-#CFLAGS= -O2
-#CXX=g++3
-##CXXFLAGS= -O2 -I/usr/X11R6/LessTif/Motif1.2/include -I/usr/X11R6/include
-##LIBDIRS = -L/usr/X11R6/LessTif/Motif1.2/lib -L/usr/X11R6/lib GIO/libGIO.a
-#CXXFLAGS= -O2 -I/usr/X11R6/include
-#LIBDIRS = -L/usr/X11R6/lib GIO/libGIO.a
-#X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11
+# linux/gcc
+CC=gcc
+CFLAGS= -O2
+CXX=g++
+#CXXFLAGS= -O2 -I/usr/X11R6/LessTif/Motif1.2/include -I/usr/X11R6/include
+#LIBDIRS = -L/usr/X11R6/LessTif/Motif1.2/lib -L/usr/X11R6/lib GIO/libGIO.a
+CXXFLAGS= -O2 -I/usr/X11R6/include
+LIBDIRS = -L/usr/X11R6/lib GIO/libGIO.a
+X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11
 
 # linux/Intel
 #CC=icc
@@ -25,13 +25,13 @@
 #X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11
 
 # SGI
-CC=cc -mips4
-CFLAGS = -O2
-CXX=CC -mips4
-CXXFLAGS= -O2 -LANG:std -DSGI -DSGI_O2
-#CXXFLAGS= -O2 -LANG:std -DSGI
-LIBDIRS = GIO/libGIO.a
-X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11
+#CC=cc -mips4
+#CFLAGS = -O2
+#CXX=CC -mips4
+#CXXFLAGS= -O2 -LANG:std -DSGI -DSGI_O2
+##CXXFLAGS= -O2 -LANG:std -DSGI
+#LIBDIRS = GIO/libGIO.a
+#X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11
 
 # SP2
 #CC=xlc
