@@ -772,7 +772,7 @@ void Button1UpAction(Widget w, XEvent * event, String * params,
   xvt_drawwin * dw = NULL;
   XtVaGetValues(w,XmNuserData,&dw,NULL); // Get the xvt_drawwin.
   glXWaitGL();
-  dw->DrawRubberBand();
+  //dw->DrawRubberBand(); // Don't need on Indigo???
   double xl;
   double xu;
   double yl;
