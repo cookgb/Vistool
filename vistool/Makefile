@@ -1,7 +1,7 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.21 2002-07-10 19:26:05 cookgb Exp $
+# $Id: Makefile,v 1.22 2002-07-12 21:28:46 cookgb Exp $
 #
 ###############################################################################
 # linux
@@ -16,7 +16,7 @@
 CC=cc -mips4
 CFLAGS = -O2
 CXX=CC -mips4
-CXXFLAGS= -O2
+CXXFLAGS= -O2 -LANG:std -DSGI
 LIBDIRS = GIO/libGIO.a
 X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11
 
@@ -54,8 +54,8 @@ FILES= xvistool.o vistool.o xobjectinterface.o xfuncinterface.o xMenu.o \
        sovlayerutil.o
 
 xvistool: $(FILES)
-	$(CXX) -o xvistool $(FILES) $(X11LIBS) $(CXXFLAGS) -lm
+	$(CXX) -o xvistool $(CXXFLAGS) $(FILES) $(X11LIBS) -lm
 
 xvistool_sgi: $(FILES)
-	$(CXX) -o xvistool $(FILES) -lSgm $(X11LIBS) -lm
+	$(CXX) -o xvistool $(CXXFLAGS) $(FILES) -lSgm $(X11LIBS) -lm
 
