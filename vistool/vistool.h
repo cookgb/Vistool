@@ -97,6 +97,7 @@ public:  // data for 1DDump Abscissa
 public:
   FileType importtype;
   char * name;
+  bool fullframe;
   bool selected;
   bool sync_window;
   bool redisplay;
@@ -115,9 +116,11 @@ public:
   void increment();
   void decrement();
   void reset_list();
+  bounds_2D AddBoarder(const bounds_2D b);
   void reset_CurrentBounds();
   void push_CurrentBounds(bounds_2D * new_bounds);
   void pop_CurrentBounds();
+  bounds_2D * Minimum_CurrentBounds();
   virtual void resize(int, int);
   void windowReshape(int, int);
   void Add(vt_data_series * ds);

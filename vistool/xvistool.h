@@ -119,6 +119,8 @@ public:
   virtual void resize(int, int);
   void postRedisplay();
   void DrawRubberBand();
+  void SetAnimateToggle(bool on);
+  void SetFullZoomToggle(bool on);
 public:
   Dimension wWidth() {return viewWidth;}
   Dimension wHeight() {return viewHeight;}

@@ -313,8 +313,13 @@ void mw_anim_sync(Widget w, XtPointer client_data, XtPointer call_data)
 {
   xvt_mainwin * mw = (xvt_mainwin *) client_data;
   
-  mw->sync_list.clear();
   list<vt_drawwin *>::iterator p;
+  int count = 0;
+  for(p = mw->draw_list.begin(); p != mw->draw_list.end(); p++) {
+    if((*p)->selected) ++count;
+  }
+  if(count <= 1) return; // do nothing unless 2 or more windows are selected.
+  mw->sync_list.clear();
   for(p = mw->draw_list.begin(); p != mw->draw_list.end(); p++) {
     xvt_drawwin * dwp = (xvt_drawwin *) *p;
     dwp->sync_window = false;
@@ -325,12 +330,7 @@ void mw_anim_sync(Widget w, XtPointer client_data, XtPointer call_data)
 	if(mw->animateCount == mw->animateHiddenCount)
 	  XtRemoveTimeOut(mw->animateID);
 	dwp->animate = false;
-	WidgetList popup_elem, anim_elem;
-	Widget anim_menu;
-	XtVaGetValues(dwp->popup, XmNchildren, &popup_elem, NULL);
-	XtVaGetValues(popup_elem[4], XmNsubMenuId, &anim_menu, NULL);
-	XtVaGetValues(anim_menu, XmNchildren, &anim_elem, NULL);
-	XmToggleButtonSetState(anim_elem[0], False, False);
+	dwp->SetAnimateToggle(false);
       }
       // And reset the lists.
       dwp->reset_list();
@@ -400,11 +400,31 @@ void mapStateChanged(Widget w, XtPointer client_data, XEvent *event,
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
 // 
+void dw_LockFullFrame(Widget w, XtPointer client_data, XtPointer call_data)
+{
+  xvt_drawwin * dw = (xvt_drawwin *) client_data;
+
+  dw->fullframe = !dw->fullframe;
+  if(!dw->fullframe) dw->reset_CurrentBounds();
+  dw->postRedisplay();
+}
+
+void dw_ZoomCurrent(Widget w, XtPointer client_data, XtPointer call_data)
+{
+  xvt_drawwin * dw = (xvt_drawwin *) client_data;
+  if(dw->fullframe) {
+    dw->SetFullZoomToggle(false);
+    dw->reset_CurrentBounds();
+  }
+  dw->push_CurrentBounds(dw->Minimum_CurrentBounds());
+  dw->postRedisplay();
+}
+
 void dw_ZoomReset(Widget w, XtPointer client_data, XtPointer call_data)
 {
   xvt_drawwin * dw = (xvt_drawwin *) client_data;
+  if(dw->fullframe) dw->SetFullZoomToggle(false);
   dw->reset_CurrentBounds();
-  dw->Coords_Text(true);
   dw->postRedisplay();
 }
 
@@ -414,8 +434,8 @@ void dw_ZoomReset(Widget w, XtPointer client_data, XtPointer call_data)
 void dw_UnZoom(Widget w, XtPointer client_data, XtPointer call_data)
 {
   xvt_drawwin * dw = (xvt_drawwin *) client_data;
+  if(dw->fullframe) return;
   dw->pop_CurrentBounds();
-  dw->Coords_Text(true);
   dw->postRedisplay();
 }
 
@@ -456,14 +476,7 @@ void dw_animate(Widget w, XtPointer client_data, XtPointer call_data)
       xvt_drawwin * dwp = (xvt_drawwin *) *p;
       if(dw != dwp) {
 	dw_animate(w,dwp,call_data);
-	// Make sure that all of the toggles are set!
-	// Counting for the menues starts at 0 and includes separators.
-	WidgetList popup_elem, anim_elem;
-	Widget anim_menu;
-	XtVaGetValues(dwp->popup, XmNchildren, &popup_elem, NULL);
-	XtVaGetValues(popup_elem[4], XmNsubMenuId, &anim_menu, NULL);
-	XtVaGetValues(anim_menu, XmNchildren, &anim_elem, NULL);
-	XmToggleButtonSetState(anim_elem[0], dw->animate, False);
+	dwp->SetAnimateToggle(dw->animate);
       }
     }
     dw->xmvt.sync_dup = false;
@@ -482,6 +495,7 @@ void dw_stepforward(Widget w, XtPointer client_data, XtPointer call_data)
     if(dw->xmvt.animateCount == dw->xmvt.animateHiddenCount)
       XtRemoveTimeOut(dw->xmvt.animateID);
     dw->animate = false;
+    dw->SetAnimateToggle(false);
     //
     dw->xmvt.sync_dup = true;
     if(dw->sync_window) {
@@ -512,6 +526,7 @@ void dw_stepbackward(Widget w, XtPointer client_data, XtPointer call_data)
     if(dw->xmvt.animateCount == dw->xmvt.animateHiddenCount)
       XtRemoveTimeOut(dw->xmvt.animateID);
     dw->animate = false;
+    dw->SetAnimateToggle(false);
     //
     dw->xmvt.sync_dup = true;
     if(dw->sync_window) {

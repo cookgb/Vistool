@@ -97,8 +97,8 @@ char * vt_mainwin::Info_Range(const bounds_2D & b)
 
 vt_drawwin::vt_drawwin(const char * n, vt_mainwin & mw)
   : mvt(mw), redisplay(false), animate(false), forward_animation(true),
-    sync_window(false),
-    Abscissa_Set(mw.Abscissa_Set), selected(false)
+    Abscissa_Set(mw.Abscissa_Set),
+    fullframe(false), selected(false), sync_window(false)
 {
 //    name = new char[strlen(n)+1];
 //    strcpy(name,n);
@@ -126,12 +126,13 @@ vt_drawwin::vt_drawwin(const char * n, vt_mainwin & mw)
 
 vt_drawwin::vt_drawwin(vt_drawwin & dw)
   : mvt(dw.mvt), redisplay(false), animate(false), forward_animation(true),
-    sync_window(false),
-    Abscissa_Set(dw.Abscissa_Set), selected(false)
+    Abscissa_Set(dw.Abscissa_Set),
+    fullframe(false), selected(false), sync_window(false)
 {
   name = mvt.NewDrawWindow();
 
-  Cur_Bounds = dw.Cur_Bounds;
+  Cur_Bounds = new bounds_2D(0.0, 0.0, 1.0, 1.0);
+  *Cur_Bounds = *(dw.Cur_Bounds);
   
   labelbuf = new char[70];
   label = new ostrstream(labelbuf,69);
@@ -473,6 +474,7 @@ void vt_drawwin::draw()
   typedef list<vt_data_series *>::iterator I_vd;
   I_vd p;
   bool all_done = true;
+  if(fullframe) reset_CurrentBounds();
   glEnableClientState(GL_VERTEX_ARRAY);
   if(forward_animation)
     for(p = data_list.begin(); p != data_list.end(); p++) {
@@ -606,6 +608,21 @@ void vt_drawwin::reset_list()
   }
 }
 
+bounds_2D vt_drawwin::AddBoarder(const bounds_2D b)
+{
+  const double boarder_fraction = 0.025;
+  const double size_for_zero = 1.e-2;
+  double xb = boarder_fraction*(b.Ub_x - b.Lb_x);
+  if(xb == 0.0)
+    if(b.Ub_x != 0.0) xb = boarder_fraction*b.Ub_x;
+    else xb = size_for_zero;
+  double yb = boarder_fraction*(b.Ub_y - b.Lb_y);
+  if(yb == 0.0)
+    if(b.Ub_y != 0.0) yb = boarder_fraction*b.Ub_y;
+    else yb = size_for_zero;
+  return bounds_2D(b.Lb_x-xb, b.Lb_y-yb, b.Ub_x+xb, b.Ub_y+yb);
+}
+
 void vt_drawwin::reset_CurrentBounds()
 {
   // Clear the bounds stack
@@ -613,19 +630,11 @@ void vt_drawwin::reset_CurrentBounds()
     delete bounds_stack.top();
     bounds_stack.pop();
   }
-  // Reset the draw window to the Default with a boarder.
-  double xb = 0.025*(Default_Bounds.Ub_x - Default_Bounds.Lb_x);
-  if(xb == 0)
-    if(Default_Bounds.Ub_x != 0) xb = 0.025*Default_Bounds.Ub_x;
-    else xb = 1.e-2;
-  double yb = 0.025*(Default_Bounds.Ub_y - Default_Bounds.Lb_y);
-  if(yb == 0)
-    if(Default_Bounds.Ub_y != 0) yb = 0.025*Default_Bounds.Ub_y;
-    else yb = 1.e-2;
-  Cur_Bounds->Lb_x = Default_Bounds.Lb_x-xb;
-  Cur_Bounds->Lb_y = Default_Bounds.Lb_y-yb;
-  Cur_Bounds->Ub_x = Default_Bounds.Ub_x+xb;
-  Cur_Bounds->Ub_y = Default_Bounds.Ub_y+yb;
+  if(fullframe) {
+    delete Cur_Bounds;
+    Cur_Bounds = Minimum_CurrentBounds();
+  } else *Cur_Bounds = AddBoarder(Default_Bounds);
+  Coords_Text(true);
   resize(cur_width, cur_height);
 }
 
@@ -633,7 +642,21 @@ void vt_drawwin::push_CurrentBounds(bounds_2D * new_bounds)
 {
   bounds_stack.push(Cur_Bounds);
   Cur_Bounds = new_bounds;
+  Coords_Text(true);
   resize(cur_width, cur_height);
+}
+
+bounds_2D * vt_drawwin::Minimum_CurrentBounds()
+{
+  bounds_2D * b = new bounds_2D(0.0,0.0,0.0,0.0);
+  list<vt_data_series *>::iterator p;
+  for(p = data_list.begin(); p != data_list.end(); p++) {
+    list<vt_data *>::iterator ci = (*p)->current;
+    if(ci == (*p)->data.end()) --ci;
+    b->Union((*ci)->Bounds());
+  }
+  *b = AddBoarder(*b);
+  return b;
 }
 
 void vt_drawwin::pop_CurrentBounds()
@@ -642,6 +665,7 @@ void vt_drawwin::pop_CurrentBounds()
     delete Cur_Bounds;
     Cur_Bounds = bounds_stack.top();
     bounds_stack.pop();
+    Coords_Text(true);
     resize(cur_width, cur_height);
   }
 }
@@ -667,9 +691,8 @@ void vt_drawwin::Add(vt_data_series * ds)
   if(!(data_list.size())) Default_Bounds = ds->Bounds();
   else Default_Bounds.Union(ds->Bounds());
   data_list.push_back(ds);
-  reset_CurrentBounds();
   reset_list();
-  Coords_Text(true);
+  reset_CurrentBounds(); // Needs to be called after reset_list!
 }
 
 void vt_drawwin::Label_Text(bool add)
@@ -701,7 +724,6 @@ void vt_drawwin::Apply(TransformationFunction T)
   }
 
   reset_CurrentBounds();
-  Coords_Text(true);
 }
 
 vt_data::~vt_data()

@@ -386,6 +386,8 @@ void Button2DownAction(Widget, XEvent *, String *, Cardinal *);
 void Button2MotionAction(Widget, XEvent *, String *, Cardinal *);
 void Button2UpAction(Widget, XEvent *, String *, Cardinal *);
 void mapStateChanged(Widget, XtPointer, XEvent *, Boolean *);
+void dw_LockFullFrame(Widget, XtPointer, XtPointer);
+void dw_ZoomCurrent(Widget, XtPointer, XtPointer);
 void dw_ZoomReset(Widget, XtPointer, XtPointer);
 void dw_UnZoom(Widget, XtPointer, XtPointer);
 void dw_animate(Widget, XtPointer, XtPointer);
@@ -523,6 +525,11 @@ void xvt_drawwin::CreateWindow()
   //--------------------------------------------------------------------------
   // Create Popup menu for frame area of drawing window
   MenuItem Zoom_menu[] = {
+    { "Lock Full Frame", &xmToggleButtonGadgetClass, '\0',
+      "Ctrl<Key>L", "Ctrl+L", fullframe, dw_LockFullFrame, this, NULL},
+    { "_sep3", &xmSeparatorGadgetClass, '\0', NULL, NULL, 0, NULL, NULL, NULL},
+    { "Full Frame", &xmPushButtonGadgetClass, '\0', "Ctrl<Key>F", "Ctrl+F", 0,
+      dw_ZoomCurrent, this, NULL},
     { "UnZoom", &xmPushButtonGadgetClass, '\0', "Ctrl<Key>Z", "Ctrl+Z", 0,
       dw_UnZoom, this, NULL},
     { "Reset", &xmPushButtonGadgetClass, '\0', NULL, NULL,0,
@@ -745,3 +752,25 @@ void xvt_drawwin::DrawRubberBand()
 		 xorg_RB, yorg_RB, xwid_RB, ywid_RB);
 }
 
+void xvt_drawwin::SetAnimateToggle(bool on)
+{
+  WidgetList popup_elem, anim_elem;
+  Widget anim_menu;
+  XtVaGetValues(popup, XmNchildren, &popup_elem, NULL);
+  XtVaGetValues(popup_elem[4], XmNsubMenuId, &anim_menu, NULL);
+  XtVaGetValues(anim_menu, XmNchildren, &anim_elem, NULL);
+  XmToggleButtonSetState(anim_elem[0], on, False);
+
+}
+
+void xvt_drawwin::SetFullZoomToggle(bool on)
+{
+  WidgetList popup_elem, zoom_elem;
+  Widget zoom_menu;
+  XtVaGetValues(popup, XmNchildren, &popup_elem, NULL);
+  XtVaGetValues(popup_elem[0], XmNsubMenuId, &zoom_menu, NULL);
+  XtVaGetValues(zoom_menu, XmNchildren, &zoom_elem, NULL);
+  XmToggleButtonSetState(zoom_elem[0], on, False);
+  fullframe = on;
+
+}
