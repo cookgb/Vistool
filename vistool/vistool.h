@@ -48,8 +48,8 @@ public:  // data for 1DDump Abscissa
   vt_data_1d * Abscissa_Data;
 public:
   FileType importtype;
-  list<vt_drawwin *> draw_list;
-  list<vt_drawwin *> sync_list;
+  std::list<vt_drawwin *> draw_list;
+  std::list<vt_drawwin *> sync_list;
   bool sync_dup;
   vt_mainwin();
   ~vt_mainwin();
@@ -81,14 +81,14 @@ class vt_data_series;
 
 class vt_drawwin {
 public:
-  list<vt_data_series *> data_list;
+  std::list<vt_data_series *> data_list;
 protected:
   friend vt_mainwin;
   int cur_width;
   int cur_height;
   bounds_2D Default_Bounds;
   bounds_2D * Cur_Bounds;
-  stack <bounds_2D *> bounds_stack;
+  std::stack <bounds_2D *> bounds_stack;
 protected:
   vt_mainwin & mvt;
   bool animate;
@@ -181,8 +181,8 @@ protected:
   bounds_2D bounds;
   bool done;
   double current_l;
-  list<vt_data *> data;
-  list<vt_data *>::iterator current;
+  std::list<vt_data *> data;
+  std::list<vt_data *>::iterator current;
 public:
   bool selected;
 public:

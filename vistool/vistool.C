@@ -28,7 +28,7 @@ vt_mainwin::vt_mainwin()
 
 vt_mainwin::~vt_mainwin()
 {
-  typedef list<vt_drawwin *>::iterator I_dw;
+  typedef std::list<vt_drawwin *>::iterator I_dw;
   I_dw p;
   while((p = draw_list.begin()) != draw_list.end()) {
     draw_list.erase(p);
@@ -42,7 +42,7 @@ vt_mainwin::~vt_mainwin()
 
 void vt_mainwin::incrementAnimation()
 {
-  typedef list<vt_drawwin *>::iterator I_dw;
+  typedef std::list<vt_drawwin *>::iterator I_dw;
   I_dw p;
   sync_dup = true; // don't let sync recall increment
   for(p = draw_list.begin(); p != draw_list.end(); p++) {
@@ -154,7 +154,7 @@ vt_drawwin::vt_drawwin(const vt_drawwin & dw)
 vt_drawwin::~vt_drawwin()
 {
   // Delete data list
-  list<vt_data_series *>::iterator p;
+  std::list<vt_data_series *>::iterator p;
   while((p = data_list.begin()) != data_list.end()) {
     data_list.erase(p);
     delete *p;
@@ -173,7 +173,7 @@ vt_drawwin::~vt_drawwin()
 void vt_drawwin::close()
 {
   // remove me from the draw_list;
-  typedef list<vt_drawwin *>::iterator I_dw;
+  typedef std::list<vt_drawwin *>::iterator I_dw;
   const vt_drawwin * me = this;
   I_dw d = std::find(mvt.draw_list.begin(),mvt.draw_list.end(),me);
   if(!(*d)) cerr << "Couldn't remove drawwin from list" << endl;
@@ -471,7 +471,7 @@ void vt_drawwin::draw()
 {
   glClear(GL_COLOR_BUFFER_BIT);
 
-  typedef list<vt_data_series *>::iterator I_vd;
+  typedef std::list<vt_data_series *>::iterator I_vd;
   I_vd p;
   bool all_done = true;
   if(fullframe) reset_CurrentBounds();
@@ -500,7 +500,7 @@ void vt_drawwin::draw()
 
 double vt_drawwin::next_label()
 { 
-  typedef list<vt_data_series *>::iterator I_vd;
+  typedef std::list<vt_data_series *>::iterator I_vd;
   double next_l = LAST_LABEL;
   I_vd ds;
   for(ds = data_list.begin(); ds != data_list.end(); ds++) {
@@ -512,7 +512,7 @@ double vt_drawwin::next_label()
 
 double vt_drawwin::previous_label()
 { 
-  typedef list<vt_data_series *>::iterator I_vd;
+  typedef std::list<vt_data_series *>::iterator I_vd;
   double prev_l = -LAST_LABEL;
   I_vd ds;
   for(ds = data_list.begin(); ds != data_list.end(); ds++) {
@@ -524,7 +524,7 @@ double vt_drawwin::previous_label()
 
 void vt_drawwin::increment()
 {
-  typedef list<vt_data_series *>::iterator I_vd;
+  typedef std::list<vt_data_series *>::iterator I_vd;
   I_vd p;
   if(!forward_animation)
     for(p = data_list.begin(); p != data_list.end(); p++)
@@ -542,7 +542,7 @@ void vt_drawwin::increment()
   }
   if(!mvt.sync_dup && sync_window) { // repeat on any synced windows
     mvt.sync_dup = true;
-    list<vt_drawwin *>::iterator p;
+    std::list<vt_drawwin *>::iterator p;
     for(p = mvt.sync_list.begin(); p != mvt.sync_list.end(); p++)
       if((*p)->sync_window && (this != *p)) (*p)->increment();
     mvt.sync_dup = false;
@@ -551,7 +551,7 @@ void vt_drawwin::increment()
 
 void vt_drawwin::decrement()
 {  
-  typedef list<vt_data_series *>::iterator I_vd;
+  typedef std::list<vt_data_series *>::iterator I_vd;
   I_vd p;
   if(forward_animation)
     for(p = data_list.begin(); p != data_list.end(); p++)
@@ -569,7 +569,7 @@ void vt_drawwin::decrement()
   }
   if(!mvt.sync_dup && sync_window) { // repeat on any synced windows
     mvt.sync_dup = true;
-    list<vt_drawwin *>::iterator p;
+    std::list<vt_drawwin *>::iterator p;
     for(p = mvt.sync_list.begin(); p != mvt.sync_list.end(); p++)
       if((*p)->sync_window && (this != *p)) (*p)->decrement();
     mvt.sync_dup = false;
@@ -578,7 +578,7 @@ void vt_drawwin::decrement()
 
 void vt_drawwin::reset_list()
 {  
-  typedef list<vt_data_series *>::iterator I_vd;
+  typedef std::list<vt_data_series *>::iterator I_vd;
   I_vd p;
   if(forward_animation) {
     current_l = LAST_LABEL;
@@ -601,7 +601,7 @@ void vt_drawwin::reset_list()
   draw();
   if(!mvt.sync_dup && sync_window) { // repeat on any synced windows
     mvt.sync_dup = true;
-    list<vt_drawwin *>::iterator p;
+    std::list<vt_drawwin *>::iterator p;
     for(p = mvt.sync_list.begin(); p != mvt.sync_list.end(); p++)
       if((*p)->sync_window && (this != *p)) (*p)->reset_list();
     mvt.sync_dup = false;
@@ -649,12 +649,12 @@ void vt_drawwin::push_CurrentBounds(bounds_2D *const new_bounds)
 bounds_2D * vt_drawwin::Minimum_CurrentBounds()
 {
   bounds_2D * b = new bounds_2D();
-  list<vt_data_series *>::iterator p = data_list.begin();
+  std::list<vt_data_series *>::iterator p = data_list.begin();
   if(forward_animation) {
     while((p != data_list.end())
 	  && ((*p)->done || ((*p)->current_l > current_l))) p++;
     if(p == data_list.end()) p = data_list.begin();
-    list<vt_data *>::iterator ci = (*p)->current;
+    std::list<vt_data *>::iterator ci = (*p)->current;
     if((*p)->done || ((*p)->current_l > current_l)) --ci;
     *b = (*ci)->Bounds();
     for(p++; p != data_list.end(); p++) {
@@ -666,7 +666,7 @@ bounds_2D * vt_drawwin::Minimum_CurrentBounds()
     while((p != data_list.end())
 	  && ((*p)->done || ((*p)->current_l < current_l))) p++;
     if(p == data_list.end()) p = data_list.begin();
-    list<vt_data *>::iterator ci = (*p)->current;
+    std::list<vt_data *>::iterator ci = (*p)->current;
     *b = (*ci)->Bounds();
     for(p++; p != data_list.end(); p++) {
       ci = (*p)->current;
@@ -735,7 +735,7 @@ void vt_drawwin::Coords_Text(const bool add)
 
 void vt_drawwin::Apply(const TransformationFunction T)
 {
-  list<vt_data_series *>::iterator p = data_list.begin();
+  std::list<vt_data_series *>::iterator p = data_list.begin();
   Default_Bounds = (*p)->Bounds();
   for(p = data_list.begin(); p != data_list.end(); p++) {
     (*p)->Apply(T);
@@ -906,14 +906,14 @@ vt_data_series::vt_data_series(const vt_data_series & vs)
   origin = new char[strlen(vs.origin)+1];
   strcpy(origin,vs.origin);
   
-  list<vt_data *>::const_iterator p;
+  std::list<vt_data *>::const_iterator p;
   for(p = vs.data.begin(); p != vs.data.end(); p++)
     Append((*p)->Copy());
 }
 
 vt_data_series::~vt_data_series()
 {
-  typedef list<vt_data *>::iterator I_vd;
+  typedef std::list<vt_data *>::iterator I_vd;
   I_vd p;
   while((p = data.begin()) != data.end()) {
     data.erase(p);
@@ -955,7 +955,7 @@ void vt_data_series::Reverse(const bool was_forward,
 
 double vt_data_series::Next()
 {
-  list<vt_data *>::iterator next = current;
+  std::list<vt_data *>::iterator next = current;
   ++next;
   if(next != data.end())
     return (**next).Label();
@@ -965,7 +965,7 @@ double vt_data_series::Next()
 
 double vt_data_series::Previous()
 {
-  list<vt_data *>::iterator next = current;
+  std::list<vt_data *>::iterator next = current;
   if(next != data.begin()) {
     --next;
     return (**next).Label();
@@ -1008,7 +1008,7 @@ void vt_data_series::Reset(const bool forward_animation)
 
 void vt_data_series::Apply(const TransformationFunction T)
 {
-  list<vt_data *>::iterator p = data.begin();
+  std::list<vt_data *>::iterator p = data.begin();
   bounds = (*p)->Bounds();
   for(p = data.begin(); p != data.end(); p++) {
     (*p)->Apply(T);
@@ -1046,7 +1046,7 @@ vt_data_series * vt_data_series::Norm(const NormType T) const
   int ext = {data.size()};
   double * x = new double[ext];
   double * norm = new double[ext];
-  list<vt_data *>::const_iterator p;
+  std::list<vt_data *>::const_iterator p;
   for(p = data.begin(), i=0; p != data.end(); p++, i++) {
     x[i] = (*p)->Label();
     norm[i] = (*p)->Norm(T);

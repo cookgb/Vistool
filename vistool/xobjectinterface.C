@@ -167,7 +167,7 @@ void mw_windowlist(Widget w, XtPointer client_data, XtPointer call_data)
   xvt_mainwin * mw = (xvt_mainwin *) client_data;
   XmListCallbackStruct * cbs = (XmListCallbackStruct *) call_data;
 
-  typedef list<vt_drawwin *>::iterator I_dw;
+  typedef std::list<vt_drawwin *>::iterator I_dw;
   I_dw p;
   for(p = mw->draw_list.begin(); p != mw->draw_list.end(); p++)
     (*p)->selected = false;
@@ -208,7 +208,7 @@ void mw_windowlist(Widget w, XtPointer client_data, XtPointer call_data)
     if(sic == 1) {
       vt_drawwin & dw = **p;
       mw->dw_listed = *p;
-      typedef list<vt_data_series *>::iterator I_vd;
+      typedef std::list<vt_data_series *>::iterator I_vd;
       I_vd d;
       for(d = dw.data_list.begin(); d != dw.data_list.end(); d++) {
 	XmString DataName = XmStringCreateLocalized((String)(*d)->Name());
@@ -243,7 +243,7 @@ void mw_datasetlist(Widget w, XtPointer client_data, XtPointer call_data)
   vt_drawwin * dw = mw->dw_listed;
   if(!dw) return;
 
-  typedef list<vt_data_series *>::iterator I_ds;
+  typedef std::list<vt_data_series *>::iterator I_ds;
   I_ds p;
   for(p = dw->data_list.begin(); p != dw->data_list.end(); p++)
     (*p)->selected = false;
@@ -313,7 +313,7 @@ void mw_anim_sync(Widget w, XtPointer client_data, XtPointer call_data)
 {
   xvt_mainwin * mw = (xvt_mainwin *) client_data;
   
-  list<vt_drawwin *>::iterator p;
+  std::list<vt_drawwin *>::iterator p;
   int count = 0;
   for(p = mw->draw_list.begin(); p != mw->draw_list.end(); p++) {
     if((*p)->selected) ++count;
@@ -347,7 +347,7 @@ void mw_anim_unsync(Widget w, XtPointer client_data, XtPointer call_data)
 {
   xvt_mainwin * mw = (xvt_mainwin *) client_data;
   
-  list<vt_drawwin *>::iterator p;
+  std::list<vt_drawwin *>::iterator p;
   for(p = mw->sync_list.begin(); p != mw->sync_list.end(); p++) {
     (*p)->sync_window = false;
   }
@@ -471,7 +471,7 @@ void dw_animate(Widget w, XtPointer client_data, XtPointer call_data)
   }
   if(!dw->xmvt.sync_dup && dw->sync_window) { // repeat on any synced windows
     dw->xmvt.sync_dup = true;
-    list<vt_drawwin *>::iterator p;
+    std::list<vt_drawwin *>::iterator p;
     for(p = dw->xmvt.sync_list.begin(); p != dw->xmvt.sync_list.end(); p++) {
       xvt_drawwin * dwp = (xvt_drawwin *) *p;
       if(dw != dwp) {
@@ -499,7 +499,7 @@ void dw_stepforward(Widget w, XtPointer client_data, XtPointer call_data)
     //
     dw->xmvt.sync_dup = true;
     if(dw->sync_window) {
-      list<vt_drawwin *>::iterator p;
+      std::list<vt_drawwin *>::iterator p;
       for(p = dw->xmvt.sync_list.begin(); p != dw->xmvt.sync_list.end(); p++) {
 	xvt_drawwin * dwp = (xvt_drawwin *) *p;
 	if(dw != dwp)
@@ -530,7 +530,7 @@ void dw_stepbackward(Widget w, XtPointer client_data, XtPointer call_data)
     //
     dw->xmvt.sync_dup = true;
     if(dw->sync_window) {
-      list<vt_drawwin *>::iterator p;
+      std::list<vt_drawwin *>::iterator p;
       for(p = dw->xmvt.sync_list.begin(); p != dw->xmvt.sync_list.end(); p++) {
 	xvt_drawwin * dwp = (xvt_drawwin *) *p;
 	if(dw != dwp)

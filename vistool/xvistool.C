@@ -23,8 +23,6 @@
 #include <strstream.h>
 #include <unistd.h>
 
-//#include <map.h>
-
 #include "xvistool.h"
 #include "xMenu.h"
 
@@ -333,7 +331,7 @@ xvt_mainwin::~xvt_mainwin()
 
 void xvt_mainwin::redisplay()
 {
-  typedef list<vt_drawwin *>::iterator I_dw;
+  typedef std::list<vt_drawwin *>::iterator I_dw;
   I_dw p;
   for(p = draw_list.begin(); p != draw_list.end(); p++) {
     xvt_drawwin & dw = *((xvt_drawwin *) *p);
@@ -384,7 +382,7 @@ xvt_drawwin::xvt_drawwin(const xvt_drawwin & xdw)
 
   CreateWindow();
   
-  list<vt_data_series *>::const_iterator p;
+  std::list<vt_data_series *>::const_iterator p;
   for(p = xdw.data_list.begin(); p != xdw.data_list.end(); p++)
     Add(new vt_data_series(**p));
 }
@@ -751,7 +749,7 @@ void xvt_drawwin::postRedisplay()
 {
   redisplay = true;
   if(sync_window) {
-    list<vt_drawwin *>::iterator p;
+    std::list<vt_drawwin *>::iterator p;
     for(p = xmvt.sync_list.begin(); p != xmvt.sync_list.end(); p++)
       if((*p)->sync_window) (*p)->redisplay = true;
   }
@@ -807,7 +805,7 @@ void xvt_drawwin::Norm(const NormType T) const
   XmStringFree(dir);
   XmStringFree(pattern);
   
-  list<vt_data_series *>::const_iterator p;
+  std::list<vt_data_series *>::const_iterator p;
   for(p = data_list.begin(); p != data_list.end(); p++)
     dw->Add((*p)->Norm(T));
 }
