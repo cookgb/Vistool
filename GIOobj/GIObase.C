@@ -67,6 +67,7 @@ GIOquery::~GIOquery()
 {
   if(FileName) delete [] FileName;
   fs->close();
+  if(fs) delete fs;
 }
 
 int GIOquery::Read(const char *const filename)
