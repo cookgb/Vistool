@@ -8,8 +8,10 @@
 
 #ifdef __GNUC__
 #pragma implementation
+#include <string.h>
+#else
+#include <strings.h>
 #endif
-//#include <string.h>
 #include <fstream.h>
 
 #include "GIO1d.h"
