@@ -6,13 +6,6 @@
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
 
-#ifdef __GNUC__
-#include <string.h>
-#elif WIN32
-#include <string.h>
-#else
-#include <strings.h>
-#endif
 #include <stdlib.h>
 #include <fstream>
 #include <iostream>

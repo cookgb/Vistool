@@ -1,7 +1,7 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.24 2002-07-10 19:26:07 cookgb Exp $
+# $Id: Makefile,v 1.25 2002-07-10 20:47:51 cookgb Exp $
 #
 ###############################################################################
 # linux
@@ -15,10 +15,11 @@
 CC=cc -mips4
 CFLAGS = -O2
 CXX=CC -mips4
-CXXFLAGS= -O2 -LANG:bool=OFF
+CXXFLAGS= -O2 -LANG:std
 LIBRARYFLAG= -ar
 CXXINCLUDES = /usr/include/CC
 TEMPLATE_DIR = ii_files
+DEPFLAGS = -D_STANDARD_C_PLUS_PLUS
 
 # SP2
 #%%%CC=xlc
@@ -48,7 +49,7 @@ FILES= GIOtest.C
 OBJS = $(FILES:.C=.o)
 
 GIOtest: $(OBJS) libGIO.a
-	$(CXX) -o GIOtest $(OBJS) libGIO.a -lm
+	$(CXX) -o GIOtest $(CXXFLAGS) $(OBJS) libGIO.a -lm
 
 SWAPFILES= GIOswap.C
 SWAPOBJS = $(SWAPFILES:.C=.o)
@@ -78,6 +79,6 @@ depend:
 
 localdepend:
 	makedepend -f makefile \
-		-- -I$(CXXINCLUDES) $(CXXFLAGS) -- \
+		-- -I$(CXXINCLUDES) $(CXXFLAGS) -- $(DEPFLAGS)\
 		$(FILES) $(LIBFILES)
 # DO NOT DELETE

@@ -8,11 +8,6 @@
 #ifndef GIOTEMPL_C
 #define GIOTEMPL_C
 
-#ifdef __GNUC__
-#include <string.h>
-#else
-#include <strings.h>
-#endif
 #include <stdlib.h>
 #include <fstream>
 
