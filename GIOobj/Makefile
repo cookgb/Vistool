@@ -1,15 +1,15 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.10 2000-03-03 21:20:21 cookgb Exp $
+# $Id: Makefile,v 1.11 2000-07-26 20:02:43 cookgb Exp $
 #
 ###############################################################################
 # linux
-CC=gcc
-CFLAGS= -O2
-CXX=g++
-CXXFLAGS= -O2
-CXXINCLUDES = /usr/include/g++-2
+#CC=gcc
+#CFLAGS= -O2
+#CXX=g++
+#CXXFLAGS= -O2
+#CXXINCLUDES = /usr/include/g++-2
 
 # SGI
 #CC=cc -mips4
@@ -19,11 +19,11 @@ CXXINCLUDES = /usr/include/g++-2
 #CXXINCLUDES = /usr/include/CC
 
 # SP2
-#CC=xlc
-#CFLAGS = -O2
-#CXX=xlC
-#CXXFLAGS= -O2
-#CXXINCLUDES = /usr/ibmcxx/include
+CC=xlc
+CFLAGS = -O2
+CXX=xlC
+CXXFLAGS= -O2 -DSPX
+CXXINCLUDES = /usr/ibmcxx/include
 
 all: GIOtest
 
@@ -35,7 +35,7 @@ GIOtest: $(OBJS) libGIO.a
 
 LIBFILES= GIOlib.C GIObase.C
 LIBOBJS= $(LIBFILES:.C=.o)
-# --- FOR GNU g++ 
+# --- FOR GNU make
 libGIO.a:libGIO.a($(LIBOBJS))
 # --- FOR SGI
 #libGIO.a: $(LIBOBJS)
