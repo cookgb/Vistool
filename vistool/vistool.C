@@ -62,7 +62,7 @@ char * vt_mainwin::NewDrawWindow()
 {
   std::ostringstream dw;
   dw << "Draw Window (" << ++drawwin_count << ")" << std::ends;
-  char * buf = new char[dw.str().length()];
+  char * buf = new char[dw.str().length()+1];
   dw.str().copy(buf,std::string::npos,0);
   return buf;
 }
@@ -71,7 +71,7 @@ char * vt_mainwin::Info_Name(const char *const n)
 {
   std::ostringstream info;
   info << "file:" << n << std::ends;
-  char * buf = new char[info.str().length()];
+  char * buf = new char[info.str().length()+1];
   info.str().copy(buf,std::string::npos,0);
   return buf;
 }
@@ -80,7 +80,7 @@ char * vt_mainwin::Info_Time(const int t)
 {
   std::ostringstream info;
   info << "# steps: " << t << std::ends;
-  char * buf = new char[info.str().length()];
+  char * buf = new char[info.str().length()+1];
   info.str().copy(buf,std::string::npos,0);
   return buf;
 }
@@ -91,7 +91,7 @@ char * vt_mainwin::Info_Range(const bounds_2D & b)
   info << "data bounds: ("
        << b.Lb_x << ", " << b.Lb_y << " -> " << b.Ub_x << ", " << b.Ub_y
        << ")" << std::ends;
-  char * buf = new char[info.str().length()];
+  char * buf = new char[info.str().length()+1];
   info.str().copy(buf,std::string::npos,0);
   return buf;
 }
@@ -166,13 +166,15 @@ vt_drawwin::~vt_drawwin()
   delete [] name;
   // Delete label text
   if(label) delete label;
-  if(labelbuf) delete labelbuf;
+  if(labelbuf) delete[] labelbuf;
+  if(Cur_Bounds) delete Cur_Bounds;
   // Delete Abscissa data
   if(Abscissa_Set) {
     delete [] Abscissa_Filename;
     delete Abscissa_Data;
   }
 }
+
 void vt_drawwin::close()
 {
   // remove me from the draw_list;
@@ -1016,6 +1018,7 @@ vt_data_series::~vt_data_series()
     delete *p;
   }
   if(name) delete[] name;
+  if(origin) delete[] origin;
 }
 
 void vt_data_series::Append(vt_data *const d)
