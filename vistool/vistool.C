@@ -62,7 +62,7 @@ char * vt_mainwin::NewDrawWindow()
 {
   std::ostringstream dw;
   dw << "Draw Window (" << ++drawwin_count << ")" << std::ends;
-  char * buf = new char[dw.str().length()+1];
+  char * buf = new char[dw.str().length()];
   dw.str().copy(buf,std::string::npos,0);
   return buf;
 }
@@ -71,7 +71,7 @@ char * vt_mainwin::Info_Name(const char *const n)
 {
   std::ostringstream info;
   info << "file:" << n << std::ends;
-  char * buf = new char[info.str().length()+1];
+  char * buf = new char[info.str().length()];
   info.str().copy(buf,std::string::npos,0);
   return buf;
 }
@@ -80,7 +80,7 @@ char * vt_mainwin::Info_Time(const int t)
 {
   std::ostringstream info;
   info << "# steps: " << t << std::ends;
-  char * buf = new char[info.str().length()+1];
+  char * buf = new char[info.str().length()];
   info.str().copy(buf,std::string::npos,0);
   return buf;
 }
@@ -91,7 +91,7 @@ char * vt_mainwin::Info_Range(const bounds_2D & b)
   info << "data bounds: ("
        << b.Lb_x << ", " << b.Lb_y << " -> " << b.Ub_x << ", " << b.Ub_y
        << ")" << std::ends;
-  char * buf = new char[info.str().length()+1];
+  char * buf = new char[info.str().length()];
   info.str().copy(buf,std::string::npos,0);
   return buf;
 }
@@ -110,9 +110,6 @@ vt_drawwin::vt_drawwin(const char *const n,  vt_mainwin & mw)
   Cur_Bounds = new bounds_2D(0.0, 0.0, 1.0, 1.0);
   
   labelbuf = new char[70];
-  label = new std::ostringstream("0"); // must have initial string!!!
-  label->precision(8);
-  label->setf(std::ios::left,std::ios::adjustfield);
 
   if(Abscissa_Set) {
     Abscissa_Filename = new char[strlen(mw.Abscissa_Filename)+1];
@@ -138,9 +135,6 @@ vt_drawwin::vt_drawwin(const vt_drawwin & dw)
   *Cur_Bounds = *(dw.Cur_Bounds);
   
   labelbuf = new char[70];
-  label = new std::ostringstream("0"); // must have initial string!!!
-  label->precision(8);
-  label->setf(std::ios::left,std::ios::adjustfield);
 
   if(Abscissa_Set) {
     Abscissa_Filename = new char[strlen(dw.Abscissa_Filename)+1];
@@ -164,9 +158,7 @@ vt_drawwin::~vt_drawwin()
   }
   // Delete name of window
   delete [] name;
-  // Delete label text
-  if(label) delete label;
-  if(labelbuf) delete[] labelbuf;
+  if(labelbuf) delete [] labelbuf;
   if(Cur_Bounds) delete Cur_Bounds;
   // Delete Abscissa data
   if(Abscissa_Set) {
@@ -280,7 +272,7 @@ bool vt_drawwin::ImportFile_1DDump(const char *const filename)
 {
   // Open file
   std::ifstream file;
-  file.open(filename,std::ios::in);
+  file.open(filename,std::ios_base::in);
   if(!file.good()) return false;
 
   // Create new vt_data_series
@@ -400,7 +392,7 @@ bool vt_drawwin::ImportFile_1DAbs(const char *const filename)
 {
   // Open file
   std::ifstream file;
-  file.open(filename,std::ios::in);
+  file.open(filename,std::ios_base::in);
   if(!file.good()) return false;
 
   // Read ONE timestep from file
@@ -772,23 +764,25 @@ void vt_drawwin::Add(vt_data_series *const ds)
 
 void vt_drawwin::Label_Text(const bool add)
 {
-  label->seekp(0);
-  label->width(15);
-  (*label) << current_l;
-  if(!add) (*label) << std::ends;
+  std::ostringstream text;
+  text.precision(8);
+  text.setf(std::ios_base::left,std::ios_base::adjustfield);
+  text.width(15);
+  text << current_l;
+  label = text.str();
 }
 
 void vt_drawwin::Coords_Text(const bool add)
 {
-  if(add) label->seekp(15);
-  int p = label->precision();
-  label->precision(4);
-  (*label) <<   " (" << Cur_Bounds->Lb_x << ", " << Cur_Bounds->Lb_y
-	   << " -> " << Cur_Bounds->Ub_x << ", " << Cur_Bounds->Ub_y
-	   <<    ")" << std::ends;
-  label->precision(p);
+  std::ostringstream text;
+  text.precision(4);
+  text.setf(std::ios_base::left,std::ios_base::adjustfield);
+  text << " (" << Cur_Bounds->Lb_x << ", " << Cur_Bounds->Lb_y
+       << " -> " << Cur_Bounds->Ub_x << ", " << Cur_Bounds->Ub_y
+       <<    ")" << std::ends;
+  coords = text.str();
 }
-
+  
 void vt_drawwin::Apply(const TransformationFunction T)
 {
   std::list<vt_data_series *>::iterator p = data_list.begin();
@@ -1161,8 +1155,8 @@ void vt_data_series::FunctionName(const char *const func)
   n << func << "(" << name << ")" << std::ends;
   delete [] name;
   char * buf = new char[len];
-  name = buf;
   n.str().copy(buf,len,0);
+  name = buf;
 }
 
 vt_data_series * vt_data_series::Norm(const NormType T) const

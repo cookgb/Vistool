@@ -12,6 +12,7 @@
 #include <stack>
 #include <string>
 #include <sstream>
+#include <string>
 
 enum FileType {
   TYPE_GIO,
@@ -98,8 +99,9 @@ protected:
   bool animate;
   bool forward_animation;
   double current_l;
-  std::ostringstream * label;
   char * labelbuf;
+  std::string label;
+  std::string coords;
 public:  // data for 1DDump Abscissa
   bool Abscissa_Set;
   char * Abscissa_Filename;
@@ -138,7 +140,10 @@ public:
   int Height() const {return cur_height;}
   void Label_Text(const bool add);
   void Coords_Text(const bool add);
-  void Update_Label_Buffer() {label->str().copy(labelbuf,std::string::npos,0);}
+  void Update_Label_Buffer() {
+    std::ostringstream text; text << label << coords;
+    text.str().copy(labelbuf,70,0);
+  }
   void Apply(const TransformationFunction T);
   void Apply_Seq(const TransformSequence T);
 };
