@@ -179,14 +179,14 @@ void mw_windowlist(Widget w, XtPointer client_data, XtPointer call_data)
 
   const int sic = cbs->selected_item_count;
 
-  if(cbs->reason == XmCR_EXTENDED_SELECT) {
-    if(cbs->selection_type == XmINITIAL)
-      cout << "Extended selection -- initial selection: ";
-    else if(cbs->selection_type == XmMODIFICATION)
-      cout << "Extended selection -- modification of selection: ";
-    else if(cbs->selection_type == XmADDITION)
-      cout << "Extended selection -- additional selection: ";
-    cout << cbs->selected_item_count << " items selected" << endl;
+//    if(cbs->reason == XmCR_EXTENDED_SELECT) {
+//      if(cbs->selection_type == XmINITIAL)
+//        cout << "Extended selection -- initial selection: ";
+//      else if(cbs->selection_type == XmMODIFICATION)
+//        cout << "Extended selection -- modification of selection: ";
+//      else if(cbs->selection_type == XmADDITION)
+//        cout << "Extended selection -- additional selection: ";
+//      cout << cbs->selected_item_count << " items selected" << endl;
     for(int i=0; i < sic; ++i) {
       const int sip = cbs->selected_item_positions[i];
       int k;
@@ -196,12 +196,12 @@ void mw_windowlist(Widget w, XtPointer client_data, XtPointer call_data)
 	  break;
 	}
 
-      char * choice;
-      XmStringGetLtoR(cbs->selected_items[i], XmFONTLIST_DEFAULT_TAG,
-		      &choice);
-      cout << (*p)->name << " | "
-	   << choice << "(" << cbs->selected_item_positions[i] << ")" << endl;
-      XtFree(choice);
+//        char * choice;
+//        XmStringGetLtoR(cbs->selected_items[i], XmFONTLIST_DEFAULT_TAG,
+//  		      &choice);
+//        cout << (*p)->name << " | "
+//  	   << choice << "(" << cbs->selected_item_positions[i] << ")" << endl;
+//        XtFree(choice);
     }
     // Delete all items in dataset list and replace the list if only one
     // window is selected
@@ -220,13 +220,13 @@ void mw_windowlist(Widget w, XtPointer client_data, XtPointer call_data)
       }
       XtVaSetValues(sb,XmNvalue,0,NULL);
     }
-  } else {
-    char * choice;
-    XmStringGetLtoR(cbs->item, XmFONTLIST_DEFAULT_TAG, &choice);
-    cout << "Default action -- selcted item " << choice
-	 << "(" << cbs->item_position << ")" << endl;
-      XtFree(choice);
-  }
+//    } else {
+//      char * choice;
+//      XmStringGetLtoR(cbs->item, XmFONTLIST_DEFAULT_TAG, &choice);
+//      cout << "Default action -- selcted item " << choice
+//  	 << "(" << cbs->item_position << ")" << endl;
+//        XtFree(choice);
+//    }
 }
 
 //----------------------------------------------------------------------------

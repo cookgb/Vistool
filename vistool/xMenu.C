@@ -6,6 +6,7 @@
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
 #include "xMenu.h"
+#include "iostream.h"
 
 Widget BuildMenu(Widget parent, int menu_type,
 		 char * menu_title, char menu_mnemonic,
@@ -13,21 +14,23 @@ Widget BuildMenu(Widget parent, int menu_type,
 		 Boolean tear_off, MenuItem * items)
 {
   Widget menu, cascade, widget;
-
-  if(menu_type == XmMENU_PULLDOWN)
-    menu = XmCreatePulldownMenu(parent, "_pulldown", NULL, 0);
-  else
-    menu = XmCreatePopupMenu(parent, "_popup", NULL, 0);
+  Arg args[3];
+  int n = 0;
 
   if(overlay) {
-    XtVaSetValues(menu,
-		  XmNvisual, overlay->overlayVisual,
-		  XmNdepth, overlay->overlayDepth,
-		  XmNcolormap, overlay->overlayColormap, 
-		  NULL);
+    XtSetArg(args[n], XmNvisual,   overlay->overlayVisual);   n++;
+    XtSetArg(args[n], XmNdepth,    overlay->overlayDepth);    n++;
+    XtSetArg(args[n], XmNcolormap, overlay->overlayColormap); n++;
+  }
+
+  if(menu_type == XmMENU_PULLDOWN)
+    menu = XmCreatePulldownMenu(parent, "_pulldown", args, n);
+  else
+    menu = XmCreatePopupMenu(parent, "_popup", args, n);
+
+  if(overlay)
     XtAddCallback(XtParent(menu), XmNpopupCallback, overlay->popupCallback,
 		  overlay->callback_data);
-  }
 
   if(tear_off)
     XtVaSetValues(menu, XmNtearOffModel, XmTEAR_OFF_ENABLED, NULL);

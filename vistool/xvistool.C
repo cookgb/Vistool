@@ -376,7 +376,7 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw,
     overlay_Visual->overlayColormap = xmvt.overlayColormap;
     overlay_Visual->popupCallback   =
       (XtCallbackProc) ensurePulldownColormapInstalled;
-    overlay_Visual->callback_data   = this;
+    overlay_Visual->callback_data   = &xmvt;
   }
 
   //--------------------------------------------------------------------------
