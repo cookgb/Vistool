@@ -650,13 +650,29 @@ bounds_2D * vt_drawwin::Minimum_CurrentBounds()
 {
   bounds_2D * b = new bounds_2D();
   list<vt_data_series *>::iterator p = data_list.begin();
-  list<vt_data *>::iterator ci = (*p)->current;
-  if(ci == (*p)->data.end()) --ci;
-  *b = (*ci)->Bounds();
-  for(p = (data_list.begin())++; p != data_list.end(); p++) {
-    ci = (*p)->current;
-    if(ci == (*p)->data.end()) --ci;
-    b->Union((*ci)->Bounds());
+  if(forward_animation) {
+    while((p != data_list.end())
+	  && ((*p)->done || ((*p)->current_l > current_l))) p++;
+    if(p == data_list.end()) p = data_list.begin();
+    list<vt_data *>::iterator ci = (*p)->current;
+    if((*p)->done || ((*p)->current_l > current_l)) --ci;
+    *b = (*ci)->Bounds();
+    for(p++; p != data_list.end(); p++) {
+      ci = (*p)->current;
+      if((*p)->done || ((*p)->current_l > current_l)) continue;
+      b->Union((*ci)->Bounds());
+    }
+  } else {
+    while((p != data_list.end())
+	  && ((*p)->done || ((*p)->current_l < current_l))) p++;
+    if(p == data_list.end()) p = data_list.begin();
+    list<vt_data *>::iterator ci = (*p)->current;
+    *b = (*ci)->Bounds();
+    for(p++; p != data_list.end(); p++) {
+      ci = (*p)->current;
+      if((*p)->done || ((*p)->current_l < current_l)) continue;
+      b->Union((*ci)->Bounds());
+    }
   }
   *b = AddBoarder(*b);
   return b;
