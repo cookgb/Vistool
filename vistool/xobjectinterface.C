@@ -218,7 +218,7 @@ void mw_windowlist(Widget w, XtPointer client_data, XtPointer call_data)
     }
     if(mw->ds_listed) { // erase the data set information
       mw->ds_listed = 0;
-      XmListDeleteAllItems(mw->info_list);
+      XtVaSetValues(mw->info_label, XmNlabelString, mw->NULL_String, NULL);
     }
       
 //    } else {
@@ -276,28 +276,24 @@ void mw_datasetlist(Widget w, XtPointer client_data, XtPointer call_data)
     }
     // Delete all items in dataset list and replace the list if only one
     // window is selected
-    Widget sb;
-    XtVaGetValues(mw->info_list,XmNhorizontalScrollBar,&sb,NULL);
-    XtVaSetValues(sb,XmNvalue,0,NULL);
-    XmListDeleteAllItems(mw->info_list);
     if(sic == 1) {
       vt_data_series & ds = **p;
       mw->ds_listed = *p;
-      char * s = mw->Info_Name(ds.Origin());
-      XmString DataName = XmStringCreateLocalized((String)s);
-      XmListAddItemUnselected(mw->info_list,DataName,0);
-      delete [] s;
-      s = mw->Info_Time(ds.NSteps());
-      XmString DataSteps = XmStringCreateLocalized((String)s);
-      XmListAddItemUnselected(mw->info_list,DataSteps,0);
-      delete [] s;
-      XmStringFree(DataSteps);
-      s = mw->Info_Range(ds.Bounds());
-      XmString DataBounds = XmStringCreateLocalized((String)s);
-      XmListAddItemUnselected(mw->info_list,DataBounds,0);
-      delete [] s;
-      XmStringFree(DataBounds);
-      XtVaSetValues(sb,XmNvalue,0,NULL);
+      char * so = mw->Info_Name(ds.Origin());
+      char * st = mw->Info_Time(ds.NSteps());
+      char * sr = mw->Info_Range(ds.Bounds());
+      const int len = 512;
+      char * buf = new char[len];
+      ostrstream info(buf,len);
+      info << so << "\n" << st << "\n" << sr << ends;
+      XmString InfoString = XmStringCreateLtoR(buf,"TAG1");
+      XtVaSetValues(mw->info_label, XmNlabelString, InfoString, NULL);
+      delete [] so; delete [] st; delete [] sr;
+      delete [] buf;
+      XmStringFree(InfoString);
+    } else {
+      mw->ds_listed = 0;
+      XtVaSetValues(mw->info_label, XmNlabelString, mw->NULL_String, NULL);
     }
 //    } else {
 //      char * choice;

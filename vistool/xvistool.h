@@ -38,7 +38,7 @@ private:
   Widget menu_bar;
   Widget window_list;
   Widget dataset_list;
-  Widget info_list;
+  Widget info_label;
   Widget Open_Dialog;
   XVisualInfo *vi;
   Visual * overlayVisual;
@@ -52,6 +52,7 @@ private:
   XtWorkProcId redisplayID;
 public:
   Widget CheckButton_1DAbs;
+  XmString NULL_String;
 public:
   xvt_mainwin(int & argc, char ** argv);
   ~xvt_mainwin();

@@ -76,11 +76,15 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
     "*datasetlist.width: 170",
     "*datasetlist.visibleItemCount: 4",
     "*datasetlist.selectionPolicy: extended_select",
-    "*infolist.visibleItemCount: 4",
+    "*infoframe.width: 450",
+    "*infoframe.height: 80",
 //      "*main.width: 350",
 //      "*main.height: 150",
     "*glxarea.width: 300",
     "*glxarea.height: 300",
+    "*infolabel.fontList: -*-courier-medium-r-*--*-120-*=TAG1,\
+                          -*-courier-medium-r-*--*-140-*=TAG2,\
+                          -*-courier-medium-r-*--*-180-*=TAG3",
     NULL
   };
   
@@ -212,19 +216,27 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
 
   Arg args[10];
   int nl = 0;
-  XtSetArg(args[nl],XmNscrollingPolicy,XmAUTOMATIC); nl++;
-  XtSetArg(args[nl],XmNleftAttachment,XmATTACH_FORM); nl++;
-  XtSetArg(args[nl],XmNbottomAttachment,XmATTACH_FORM); nl++;
-  XtSetArg(args[nl],XmNrightAttachment,XmATTACH_FORM); nl++;
-  XtSetArg(args[nl],XmNleftOffset,4); nl++;
-  XtSetArg(args[nl],XmNbottomOffset,4); nl++;
-  XtSetArg(args[nl],XmNrightOffset,4); nl++;
-  info_list = XmCreateScrolledList(mw_form,"infolist",args,nl);
-  Widget infopar = XtParent(info_list);
+
+  Widget infoframe = XtVaCreateManagedWidget("infoframe",xmFrameWidgetClass,
+					     mw_form,
+					     XmNleftAttachment, XmATTACH_FORM,
+					     XmNbottomAttachment,XmATTACH_FORM,
+					     XmNrightAttachment, XmATTACH_FORM,
+					     XmNleftOffset, 4,
+					     XmNbottomOffset, 4,
+					     XmNrightOffset, 4,
+					     NULL);
+  info_label= XtVaCreateManagedWidget("infolabel",xmLabelGadgetClass,
+				      infoframe,
+				      XmNalignment,XmALIGNMENT_BEGINNING,
+				      NULL);
+  NULL_String = XmStringCreateLocalized("");
+  XtVaSetValues(info_label, XmNlabelString, NULL_String, NULL);
+					     
   Widget inflab = XtVaCreateManagedWidget("Info:",xmLabelGadgetClass,
 					  mw_form,
 					  XmNbottomAttachment, XmATTACH_WIDGET,
-					  XmNbottomWidget, infopar,
+					  XmNbottomWidget, infoframe,
 					  XmNleftAttachment, XmATTACH_FORM,
 					  XmNbottomOffset, 4,
 					  XmNleftOffset, 4,
@@ -274,7 +286,6 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
 
   XtManageChild(window_list);
   XtManageChild(dataset_list);
-  XtManageChild(info_list);
 
   XtAddCallback(window_list, XmNextendedSelectionCallback,
 		mw_windowlist, this);
@@ -299,6 +310,7 @@ xvt_mainwin::~xvt_mainwin()
   // kill all of the X stuff
   if(Open_Dialog) XtDestroyWidget(Open_Dialog);
   XtDestroyWidget(top_shell);
+  XmStringFree(NULL_String);
 }
 
 void xvt_mainwin::RegisterDW(const char * window)
@@ -454,7 +466,7 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw,
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
   // Frame area to contain OpenGL drawing area
-  frame = XtVaCreateManagedWidget("frame",xmFrameWidgetClass,
+  frame = XtVaCreateManagedWidget("GLframe",xmFrameWidgetClass,
 				  main_w,
 				  NULL);
 
@@ -597,7 +609,7 @@ xvt_drawwin::~xvt_drawwin()
     XmListDeleteAllItems(xmvt.dataset_list);
     if(xmvt.ds_listed) {
       xmvt.ds_listed = 0;
-      XmListDeleteAllItems(xmvt.info_list);
+      XtVaSetValues(xmvt.info_label, XmNlabelString, xmvt.NULL_String, NULL);
     }
   }
 
