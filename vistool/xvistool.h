@@ -70,6 +70,8 @@ private:
   Widget popup;
   WidgetList popuplist;
   Widget Open_Dialog;
+  XmString search_dir;
+  XmString search_pattern;
   bool redisplay;
   bool visible;
   // OpenGL data
@@ -79,7 +81,8 @@ private:
 public:
   Widget CheckButton_1DAbs;
 public:
-  xvt_drawwin(const char * file, xvt_mainwin & mw);
+  xvt_drawwin(const char * file, xvt_mainwin & mw,
+	      XmString & dir, XmString & pattern);
   ~xvt_drawwin();
   virtual void deleteme() { delete this;}
   virtual void init(int, int);

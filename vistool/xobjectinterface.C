@@ -114,7 +114,7 @@ void mw_openfs_cb(Widget w, XtPointer client_data, XtPointer call_data)
     if(!XmStringGetLtoR(fs->value,XmFONTLIST_DEFAULT_TAG,&file))
       return; // internal error
     // Create and register the new drawwin
-    xvt_drawwin * dw = new xvt_drawwin(file,*mw);
+    xvt_drawwin * dw = new xvt_drawwin(file,*mw,fs->dir,fs->pattern);
     switch(mw->importtype) {
     case TYPE_GIO:
       if(dw->ImportFile_GIO(file))
@@ -272,10 +272,15 @@ void dw_file_open(Widget w, XtPointer client_data, XtPointer call_data)
   xvt_drawwin * dw = (xvt_drawwin *) client_data;
 
   if(!dw->OpenDialog()) {
+    Arg dirpat[2];
+    XtSetArg(dirpat[0],XmNdirectory,dw->search_dir);
+    XtSetArg(dirpat[1],XmNpattern,dw->search_pattern);
     dw->Open_Dialog = XmCreateFileSelectionDialog(dw->draw_shell, "opendialog",
-						  NULL, 0);
+						  dirpat, 2);
     XtAddCallback(dw->OpenDialog(), XmNokCallback, dw_openfs_cb, dw);
     XtAddCallback(dw->OpenDialog(), XmNcancelCallback, dw_file_cancel_cb, dw);
+    XmStringEmpty(dw->search_dir);
+    XmStringEmpty(dw->search_pattern);
   }
   XtManageChild(dw->OpenDialog());
   XtPopup(XtParent(dw->OpenDialog()),XtGrabNone);

@@ -293,9 +293,14 @@ void apply_log(Widget, XtPointer, XtPointer);
 void apply_ln(Widget, XtPointer, XtPointer);
 //----------------------------------------------------------------------------
 // Creator for X11 version of drawing window.
-xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
+xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw,
+			 XmString & dir, XmString & pattern)
   : vt_drawwin(filename,mw), xmvt(mw), Open_Dialog(0)
 {
+  // Save the directory so that the new Open will start searching here.
+  search_dir = XmStringCopy(dir);
+  search_pattern = XmStringCopy(pattern);
+
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
   // Create an application shell for the draw window
