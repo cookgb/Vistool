@@ -1,16 +1,16 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.25 2002-07-26 17:58:09 cookgb Exp $
+# $Id: Makefile,v 1.26 2002-07-26 18:11:04 cookgb Exp $
 #
 ###############################################################################
 # linux/gcc3
-CC=gcc3
-CFLAGS= -O2
-CXX=g++3
-CXXFLAGS= -O2 -I/usr/X11R6/LessTif/Motif1.2/include -I/usr/X11R6/include
-LIBDIRS = -L/usr/X11R6/LessTif/Motif1.2/lib -L/usr/X11R6/lib GIO/libGIO.a
-X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11
+#CC=gcc3
+#CFLAGS= -O2
+#CXX=g++3
+#CXXFLAGS= -O2 -I/usr/X11R6/LessTif/Motif1.2/include -I/usr/X11R6/include
+#LIBDIRS = -L/usr/X11R6/LessTif/Motif1.2/lib -L/usr/X11R6/lib GIO/libGIO.a
+#X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11
 
 # linux/Intel
 #CC=icc
@@ -21,12 +21,12 @@ X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11
 #X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11
 
 # SGI
-#CC=cc -mips4
-#CFLAGS = -O2
-#CXX=CC -mips4
-#CXXFLAGS= -O2 -LANG:std -DSGI
-#LIBDIRS = GIO/libGIO.a
-#X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11
+CC=cc -mips4
+CFLAGS = -O2
+CXX=CC -mips4
+CXXFLAGS= -O2 -LANG:std -DSGI
+LIBDIRS = GIO/libGIO.a
+X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11
 
 # SP2
 #CC=xlc
@@ -60,7 +60,6 @@ sovlayerutil.o: sovLayerUtil.h
 
 FILES= xvistool.o vistool.o xobjectinterface.o xfuncinterface.o xMenu.o \
        sovlayerutil.o
-## VendorS.o
 
 xvistool: $(FILES)
 	$(CXX) -o xvistool $(CXXFLAGS) $(FILES) $(X11LIBS) -lm
