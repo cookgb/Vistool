@@ -749,7 +749,7 @@ void xvt_drawwin::draw()
 {
   ++swapcount;
   if(!visible) {--swapcount; return;}
-  if(draw_RB) glXWaitX(); glXWaitGL();
+  if(draw_RB) glXWaitX();
   glXMakeCurrent(xmvt.Xdisplay(),glx_win,cx);
   vt_drawwin::draw();
   //avoid double swaps
