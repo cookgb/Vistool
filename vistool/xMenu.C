@@ -6,7 +6,7 @@
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
 #include "xMenu.h"
-#include "iostream.h"
+#include <iostream>
 
 Widget BuildMenu(const Widget parent, const int menu_type,
 		 const char *const menu_title, const char menu_mnemonic,

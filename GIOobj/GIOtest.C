@@ -6,7 +6,7 @@
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
 
-#include <iostream.h>
+#include <iostream>
 #include <stdlib.h>
 #include <math.h>
 
@@ -57,7 +57,7 @@ int main()
     GIO_double1DC output(filename,names,2,status);
 //      GIO_double1DC output(filename,names,1,status);
     if(!status) {
-      cerr << "Opening output file failed" << endl;
+      std::cerr << "Opening output file failed" << std::endl;
       abort();
     }
     
@@ -81,35 +81,35 @@ int main()
 
   GIOquery query;
   if(!query.Read(filename)) {
-    cerr << "Opening input file for query failed" << endl;
+    std::cerr << "Opening input file for query failed" << std::endl;
     abort();
   }
   query.Close();
-  cout << "Query Key : " << query.Key() << endl;
-  cout << "      Dim : " << query.Dim() << endl;
+  std::cout << "Query Key : " << query.Key() << std::endl;
+  std::cout << "      Dim : " << query.Dim() << std::endl;
 
   {
     GIO_double1DC input(filename,status);
     if(!status) {
-      cerr << "Opening input file failed" << endl;
+      std::cerr << "Opening input file failed" << std::endl;
       abort();
     }
-    cout << "GIO Key = " << input.Key() << endl;
-    cout << "Dimension = " << input.Dim() << endl;
-    cout << "Ndatasets = " << input.NDataSets() << endl;
-    cout << "Labels : ";
-    for(int i=0; i<input.NDataSets(); i++) cout << input.Name(i) << " : ";
-    cout << endl;
-    cout << "Nseries = " << input.NSeries() << endl;
+    std::cout << "GIO Key = " << input.Key() << std::endl;
+    std::cout << "Dimension = " << input.Dim() << std::endl;
+    std::cout << "Ndatasets = " << input.NDataSets() << std::endl;
+    std::cout << "Labels : ";
+    for(int i=0; i<input.NDataSets(); i++) std::cout << input.Name(i) << " : ";
+    std::cout << std::endl;
+    std::cout << "Nseries = " << input.NSeries() << std::endl;
     for(int n=0; n < input.NSeries(); n++) {
       input.Read();
-      cout << "I = " << n << " | Label = " << input.Label() << endl;
+      std::cout << "I = " << n << " | Label = " << input.Label() << std::endl;
       for(int i=0; i<input.Dim(); i++) {
-	cout << "[" << i << "] :: ";
+	std::cout << "[" << i << "] :: ";
 	if(input.CoordsDefined())
-	  cout << "LB(" << input.Lbound(0) << ") "
+	  std::cout << "LB(" << input.Lbound(0) << ") "
 	       << "UB(" << input.Ubound(0) << ") ";
-	cout << "ex(" << input.Ext(0)    << ")" << endl;
+	std::cout << "ex(" << input.Ext(0)    << ")" << std::endl;
       }
     }
   }

@@ -14,7 +14,7 @@
 #include <strings.h>
 #endif
 #include <stdlib.h>
-#include <fstream.h>
+#include <fstream>
 
 #include "GIOtempl.h"
 
@@ -22,7 +22,7 @@ template< class D, class L, int d> GIOdata<D,L,d>::~GIOdata()
 {
   if(dataw && Ndatasets) {
     for(int i=0; i< Ndatasets; i++)
-      if(dataw[i]) delete [] (void *)dataw[i];
+      if(dataw[i]) delete [] dataw[i];
     delete [] dataw;
   }
   if(datar && Ndatasets) {
@@ -58,7 +58,7 @@ GIOdata<D,L,d>::GIOdata(const char *const*const names,
 }
 
 template< class D, class L, int d>
-int GIOdata<D,L,d>::Write(fstream *const fs) const
+int GIOdata<D,L,d>::Write(std::fstream *const fs) const
 {
   fs->write((char *)&label,sizeof(L));
   fs->write((char *)&use_bounds,sizeof(int));
@@ -75,7 +75,7 @@ int GIOdata<D,L,d>::Write(fstream *const fs) const
 }
 
 template< class D, class L, int d>
- int GIOdata<D,L,d>::Read(fstream *const fs)
+ int GIOdata<D,L,d>::Read(std::fstream *const fs)
 {
   fs->read((char *)&label,sizeof(L));
   fs->read((char *)&use_bounds,sizeof(int));
@@ -103,7 +103,7 @@ GIOseries<D,L,d,KEY>::GIOseries(const char *const filename, int & status)
   if(!(FileName = new char[sl+1])) GIOAbort("memory");
   strcpy(FileName, filename);
 
-  fs = new fstream(FileName, ios::in);
+  fs = new std::fstream(FileName, std::ios::in);
   if(!*fs) GIOAbort("cannot open file for reading");
   
   char buffer[TESTTAGLEN];
@@ -134,7 +134,7 @@ GIOseries<D,L,d,KEY>::GIOseries(const char *const filename,
   if(!(FileName = new char[sl+1])) GIOAbort("memory");
   strcpy(FileName, filename);
 
-  fs = new fstream(FileName, ios::out|ios::trunc);
+  fs = new std::fstream(FileName, std::ios::out|std::ios::trunc);
   if(!*fs) GIOAbort("cannot open file for writing");
   
   fs->write(GIOTESTTAG,TESTTAGLEN);
@@ -176,7 +176,7 @@ int GIOseries<D,L,d,KEY>::Write(const L l, const int *const ex,
   Nseries++;
   fs->seekp(Nsseek);
   fs->write((char *)&Nseries,sizeof(int));
-  fs->seekp(0,ios::end);
+  fs->seekp(0,std::ios::end);
   return fs->good();
 }
 
@@ -195,7 +195,7 @@ GIOcseries<D,L,d,KEY>::GIOcseries(const char *const filename, int & status)
   if(!(FileName = new char[sl+1])) GIOAbort("memory");
   strcpy(FileName, filename);
 
-  fs = new fstream(FileName, ios::in);
+  fs = new std::fstream(FileName, std::ios::in);
   if(!*fs) GIOAbort("cannot open file for reading");
   
   char buffer[TESTTAGLEN];
@@ -226,7 +226,7 @@ GIOcseries<D,L,d,KEY>::GIOcseries(const char *const filename,
   if(!(FileName = new char[sl+1])) GIOAbort("memory");
   strcpy(FileName, filename);
 
-  fs = new fstream(FileName, ios::out|ios::trunc);
+  fs = new std::fstream(FileName, std::ios::out|std::ios::trunc);
   if(!*fs) GIOAbort("cannot open file for writing");
   
   fs->write(GIOTESTTAG,TESTTAGLEN);
@@ -274,7 +274,7 @@ int GIOcseries<D,L,d,KEY>::Write(const L l,
   Nseries++;
   fs->seekp(Nsseek);
   fs->write((char *)&Nseries,sizeof(int));
-  fs->seekp(0,ios::end);
+  fs->seekp(0,std::ios::end);
   return fs->good();
 }
 

@@ -19,7 +19,7 @@ class xvt_drawwin;
 
 class xvt_mainwin : public vt_mainwin {
 private:
-  friend xvt_drawwin;
+  friend class xvt_drawwin;
   friend void dw_ensurePulldownColormapInstalled(Widget, XtPointer, XtPointer);
   friend void mw_file_open(Widget, XtPointer, XtPointer);
   friend void dw_openfs_cb(Widget, XtPointer, XtPointer);
@@ -69,7 +69,7 @@ public: // utility routines
 
 class xvt_drawwin : public vt_drawwin {
 private:
-  friend xvt_mainwin;
+  friend class xvt_mainwin;
   friend void mapStateChanged(Widget, XtPointer, XEvent *, Boolean *);
   friend void dw_file_open(Widget, XtPointer, XtPointer);
   friend void dw_openfs_cb(Widget, XtPointer, XtPointer);

@@ -1,15 +1,15 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.23 2001-06-13 21:13:45 cookgb Exp $
+# $Id: Makefile,v 1.24 2002-07-10 19:26:07 cookgb Exp $
 #
 ###############################################################################
 # linux
-#%%%CC=gcc
-#%%%CFLAGS= -O2
-#%%%CXX=g++
-#%%%CXXFLAGS= -O2
-#%%%CXXINCLUDES = /usr/include/g++-2
+#CC=gcc3
+#CFLAGS= -O2
+#CXX=g++3
+#CXXFLAGS= -O2
+#CXXINCLUDES = /usr/include/g++-3
 
 # SGI
 CC=cc -mips4

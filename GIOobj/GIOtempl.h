@@ -8,7 +8,7 @@
 #ifndef GIOTEMPL_H
 #define GIOTEMPL_H
 
-#include <fstream.h>
+#include <fstream>
 
 #include "GIOincl.h"
 

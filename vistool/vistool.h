@@ -10,8 +10,8 @@
 
 #include <list>
 #include <stack>
-#include <string.h>
-#include <strstream.h>
+#include <string>
+#include <sstream>
 
 enum FileType {
   TYPE_GIO,
@@ -87,7 +87,7 @@ class vt_drawwin {
 public:
   std::list<vt_data_series *> data_list;
 protected:
-  friend vt_mainwin;
+  friend class vt_mainwin;
   int cur_width;
   int cur_height;
   bounds_2D Default_Bounds;
@@ -98,7 +98,7 @@ protected:
   bool animate;
   bool forward_animation;
   double current_l;
-  ostrstream * label;
+  std::ostringstream * label;
   char * labelbuf;
 public:  // data for 1DDump Abscissa
   bool Abscissa_Set;
@@ -138,6 +138,7 @@ public:
   int Height() const {return cur_height;}
   void Label_Text(const bool add);
   void Coords_Text(const bool add);
+  void Update_Label_Buffer() {label->str().copy(labelbuf,std::string::npos,0);}
   void Apply(const TransformationFunction T);
   void Apply_Seq(const TransformSequence T);
 };
@@ -181,7 +182,7 @@ public:
 
 class vt_data_series {
 private:
-  friend vt_drawwin;
+  friend class vt_drawwin;
 protected:
   char * name;
   char * origin;

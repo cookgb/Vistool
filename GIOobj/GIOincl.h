@@ -8,7 +8,7 @@
 #ifndef GIOINCL_H
 #define GIOINCL_H
 
-#include <fstream.h>
+#include <fstream>
 
 #define GIOTESTTAG "#GIO UNIQUE TAG\0"
 #define TESTTAGLEN 16
@@ -23,8 +23,8 @@ public:
   GIObase(const char *const*const names, const int n, const int d);
   ~GIObase();
   //
-  int writeheader(fstream *const fs) const;
-  int readheader(fstream *const fs);
+  int writeheader(std::fstream *const fs) const;
+  int readheader(std::fstream *const fs);
   int NDataSets() const {return Ndatasets;}
   int Dim() const {return dim;}
   const char * Name(int i) const {return name[i];}
@@ -36,7 +36,7 @@ class GIOquery : public GIObase {
 protected:
   int GIOkey;
   char * FileName;
-  fstream * fs;
+  std::fstream * fs;
 public:
   GIOquery() : GIObase(), GIOkey(0), FileName(0), fs(0) {}
   ~GIOquery();
@@ -60,8 +60,8 @@ public:
   GIOdata(const char *const*const names, const int n, const int useb = 0);
   // GIOdata(const char ** names, int n, const L * lb, const L * ub);
   ~GIOdata();
-  int Write(fstream *const fs) const;
-  int Read(fstream *const fs);
+  int Write(std::fstream *const fs) const;
+  int Read(std::fstream *const fs);
   L Label() const {return label;}
   int CoordsDefined() const {return use_bounds;}
   L Lbound(int i) const {return LBcoord[i];}
@@ -75,9 +75,9 @@ class GIOseries : public GIOdata<D,L,d> {
 protected:
   int GIOkey;
   char * FileName;
-  fstream * fs;
+  std::fstream * fs;
   int Nseries;
-  streampos Nsseek;
+  std::streampos Nsseek;
 public:
   GIOseries()
     : GIOdata<D,L,d>(), GIOkey(0), FileName(0), fs(0), Nseries(0), Nsseek(0) {}
@@ -97,9 +97,9 @@ class GIOcseries : public GIOdata<D,L,d> {
 protected:
   int GIOkey;
   char * FileName;
-  fstream * fs;
+  std::fstream * fs;
   int Nseries;
-  streampos Nsseek;
+  std::streampos Nsseek;
 public:
   GIOcseries()
     : GIOdata<D,L,d>(), GIOkey(0), FileName(0), fs(0), Nseries(0), Nsseek(0) {}

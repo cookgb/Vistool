@@ -19,8 +19,8 @@
 #include <GL/GLwMDrawA.h>
 #include <GL/glx.h>
 
-#include <iostream.h>
-#include <strstream.h>
+#include <iostream>
+#include <sstream>
 #include <unistd.h>
 
 #include "xvistool.h"
@@ -31,10 +31,11 @@
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
 // Create main window and start event loop;
-void main(int argc, char * argv[])
+int main(int argc, char * argv[])
 {
   xvt_mainwin * xvt = new xvt_mainwin(argc,argv);
   xvt->Loop();
+  return 1;
 }
 
 //----------------------------------------------------------------------------

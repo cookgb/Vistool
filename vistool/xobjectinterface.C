@@ -19,6 +19,7 @@
 #include <GL/GLwMDrawA.h>
 
 #include "xvistool.h"
+#include <iostream>
 
 #define ANIMATETIME 20
 
@@ -177,12 +178,12 @@ void mw_windowlist(Widget w, XtPointer client_data, XtPointer call_data)
 
 //    if(cbs->reason == XmCR_EXTENDED_SELECT) {
 //      if(cbs->selection_type == XmINITIAL)
-//        cout << "Extended selection -- initial selection: ";
+//        std::cout << "Extended selection -- initial selection: ";
 //      else if(cbs->selection_type == XmMODIFICATION)
-//        cout << "Extended selection -- modification of selection: ";
+//        std::cout << "Extended selection -- modification of selection: ";
 //      else if(cbs->selection_type == XmADDITION)
-//        cout << "Extended selection -- additional selection: ";
-//      cout << cbs->selected_item_count << " items selected" << endl;
+//        std::cout << "Extended selection -- additional selection: ";
+//      std::cout << cbs->selected_item_count <<" items selected" << std::endl;
     for(int i=0; i < sic; ++i) {
       const int sip = cbs->selected_item_positions[i];
       int k;
@@ -195,8 +196,8 @@ void mw_windowlist(Widget w, XtPointer client_data, XtPointer call_data)
 //        char * choice;
 //        XmStringGetLtoR(cbs->selected_items[i], XmFONTLIST_DEFAULT_TAG,
 //  		      &choice);
-//        cout << (*p)->name << " | "
-//  	   << choice << "(" << cbs->selected_item_positions[i] << ")" << endl;
+//        std::cout << (*p)->name << " | "
+//  	   << choice <<"("<< cbs->selected_item_positions[i] <<")"<< std::endl;
 //        XtFree(choice);
     }
     // Delete all items in dataset list and replace the list if only one
@@ -225,8 +226,8 @@ void mw_windowlist(Widget w, XtPointer client_data, XtPointer call_data)
 //    } else {
 //      char * choice;
 //      XmStringGetLtoR(cbs->item, XmFONTLIST_DEFAULT_TAG, &choice);
-//      cout << "Default action -- selcted item " << choice
-//  	 << "(" << cbs->item_position << ")" << endl;
+//      std::cout << "Default action -- selcted item " << choice
+//  	 << "(" << cbs->item_position << ")" << std::endl;
 //        XtFree(choice);
 //    }
 }
@@ -253,12 +254,12 @@ void mw_datasetlist(Widget w, XtPointer client_data, XtPointer call_data)
 
 //    if(cbs->reason == XmCR_EXTENDED_SELECT) {
 //      if(cbs->selection_type == XmINITIAL)
-//        cout << "Extended selection -- initial selection: ";
+//        std::cout << "Extended selection -- initial selection: ";
 //      else if(cbs->selection_type == XmMODIFICATION)
-//        cout << "Extended selection -- modification of selection: ";
+//        std::cout << "Extended selection -- modification of selection: ";
 //      else if(cbs->selection_type == XmADDITION)
-//        cout << "Extended selection -- additional selection: ";
-//      cout << cbs->selected_item_count << " items selected" << endl;
+//        std::cout << "Extended selection -- additional selection: ";
+//      std::cout << cbs->selected_item_count <<" items selected" << std::endl;
     for(int i=0; i < sic; ++i) {
       const int sip = cbs->selected_item_positions[i];
       int k;
@@ -271,8 +272,8 @@ void mw_datasetlist(Widget w, XtPointer client_data, XtPointer call_data)
 //        char * choice;
 //        XmStringGetLtoR(cbs->selected_items[i], XmFONTLIST_DEFAULT_TAG,
 //  		      &choice);
-//        cout << (*p)->Name() << " | "
-//  	   << choice << "(" << cbs->selected_item_positions[i] << ")" << endl;
+//        std::cout << (*p)->Name() << " | "
+//  	   << choice <<"("<< cbs->selected_item_positions[i] <<")"<< std::endl;
 //        XtFree(choice);
     }
     // Delete all items in dataset list and replace the list if only one
@@ -283,15 +284,15 @@ void mw_datasetlist(Widget w, XtPointer client_data, XtPointer call_data)
       char * so = mw->Info_Name(ds.Origin());
       char * st = mw->Info_Time(ds.NSteps());
       char * sr = mw->Info_Range(ds.Bounds());
-      const int len = 512;
-      char * buf = new char[len];
-      ostrstream info(buf,len);
-      info << so << "\n" << st << "\n" << sr << ends;
+      std::ostringstream info;
+      info << so << "\n" << st << "\n" << sr << std::ends;
+      char * buf = new char[info.str().length()];
+      info.str().copy(buf,std::string::npos);
       XmString InfoString = XmStringCreateLtoR(buf,"TAG1");
       XtVaSetValues(mw->info_label, XmNlabelString, InfoString, NULL);
       delete [] so; delete [] st; delete [] sr;
-      delete [] buf;
       XmStringFree(InfoString);
+      delete [] buf;
     } else {
       mw->ds_listed = 0;
       XtVaSetValues(mw->info_label, XmNlabelString, mw->NULL_String, NULL);
@@ -299,8 +300,8 @@ void mw_datasetlist(Widget w, XtPointer client_data, XtPointer call_data)
 //    } else {
 //      char * choice;
 //      XmStringGetLtoR(cbs->item, XmFONTLIST_DEFAULT_TAG, &choice);
-//      cout << "Default action -- selcted item " << choice
-//  	 << "(" << cbs->item_position << ")" << endl;
+//      std::cout << "Default action -- selcted item " << choice
+//  	 << "(" << cbs->item_position << ")" << std::endl;
 //        XtFree(choice);
 //    }
 }
@@ -363,7 +364,7 @@ void mw_anim_unsync(Widget w, XtPointer client_data, XtPointer call_data)
 void mw_help(Widget w, XtPointer client_data, XtPointer call_data)
 {
 //    xvt_mainwin * mw = (xvt_mainwin *) client_data;
-  cout << "Selected Help" << endl;
+  std::cout << "Selected Help" << std::endl;
 }
 
 //----------------------------------------------------------------------------
@@ -566,11 +567,10 @@ void dw_reset_animate(Widget w, XtPointer client_data, XtPointer call_data)
 void dw_file_close(Widget w, XtPointer client_data, XtPointer call_data)
 {
   xvt_drawwin * dw = (xvt_drawwin *) client_data;
-
   if(dw) {
     dw->close();
   } else {
-    cerr << "client data not set in drawwin close." << endl;
+    std::cerr << "client data not set in drawwin close." << std::endl;
   }
 }
 
@@ -698,7 +698,7 @@ void dw_openfs_cb(Widget w, XtPointer client_data, XtPointer call_data)
 void dw_help(Widget w, XtPointer client_data, XtPointer call_data)
 {
 //    xvt_drawwin * dw = (xvt_drawwin *) client_data;
-  cout << "Selected Help in a draw window" << endl;
+  std::cout << "Selected Help in a draw window" << std::endl;
 }
 
 //----------------------------------------------------------------------------
@@ -722,7 +722,7 @@ void activatePopup(Widget w, XtPointer client_data, XEvent *event,
 void dw_popup_reset(Widget w, XtPointer client_data, XtPointer call_data)
 {
 //    xvt_drawwin * dw = (xvt_drawwin *) client_data;
-  cout << "Reset popup button selected." << endl;
+  std::cout << "Reset popup button selected." << std::endl;
 }
 
 //----------------------------------------------------------------------------
@@ -815,15 +815,15 @@ void Button2DownAction(Widget w, XEvent * event, String * params,
   // Get the xvt_drawwin.
   xvt_drawwin * dw = NULL;
   XtVaGetValues(w,XmNuserData,&dw,NULL);
-  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
+  //if(!dw){std::cerr<<"Error getting xvt_drawwin pointer"<<std::endl;abort();}
 
 //    const int x = event->xbutton.x;
 //    const int y = event->xbutton.y;
 
-//    cout << "Button 2 Down: \n"
+//    std::cout << "Button 2 Down: \n"
 //         << "Mouse at (" << x << "," << y << ")\n"
 //         << "String : " << params << "\n"
-//         << "Number of params : " << *num_params << endl;
+//         << "Number of params : " << *num_params << std::endl;
 }
 
 //----------------------------------------------------------------------------
@@ -836,15 +836,15 @@ void Button2MotionAction(Widget w, XEvent * event, String * params,
   // Get the xvt_drawwin.
   xvt_drawwin * dw = NULL;
   XtVaGetValues(w,XmNuserData,&dw,NULL);
-  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
+  //if(!dw){std::cerr<<"Error getting xvt_drawwin pointer"<<std::endl;abort();}
 
 //    const int x = event->xbutton.x;
 //    const int y = event->xbutton.y;
 
-//    cout << "Button 2 Motion: \n"
+//    std::cout << "Button 2 Motion: \n"
 //         << "Mouse at (" << x << "," << y << ")\n"
 //         << "String : " << params << "\n"
-//         << "Number of params : " << *num_params << endl;
+//         << "Number of params : " << *num_params << std::endl;
 }
 
 //----------------------------------------------------------------------------
@@ -857,15 +857,15 @@ void Button2UpAction(Widget w, XEvent * event, String * params,
   // Get the xvt_drawwin.
   xvt_drawwin * dw = NULL;
   XtVaGetValues(w,XmNuserData,&dw,NULL);
-  //if(!dw) {cerr << "Error getting xvt_drawwin pointer" << endl; abort();}
+  //if(!dw){std::cerr<<"Error getting xvt_drawwin pointer"<<std::endl;abort();}
 
 //    const int x = event->xbutton.x;
 //    const int y = event->xbutton.y;
 
-//    cout << "Button 2 Up: \n"
+//    std::cout << "Button 2 Up: \n"
 //         << "Mouse at (" << x << "," << y << ")\n"
 //         << "String : " << params << "\n"
-//         << "Number of params : " << *num_params << endl;
+//         << "Number of params : " << *num_params << std::endl;
 }
 
 //----------------------------------------------------------------------------

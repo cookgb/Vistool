@@ -1,13 +1,13 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.20 2002-06-15 00:23:40 cookgb Exp $
+# $Id: Makefile,v 1.21 2002-07-10 19:26:05 cookgb Exp $
 #
 ###############################################################################
 # linux
-#CC=gcc
+#CC=gcc3
 #CFLAGS= -O2
-#CXX=g++
+#CXX=g++3
 #CXXFLAGS= -O2 -I/usr/X11R6/include
 #LIBDIRS = -L/usr/X11R6/lib GIO/libGIO.a
 #X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11

@@ -8,7 +8,9 @@
 
 #include <list>
 #include <algorithm>
-#include <strstream.h>
+#include <iostream>
+#include <sstream>
+#include <string>
 #include <math.h>
 
 #include <GL/gl.h>
@@ -58,39 +60,39 @@ void vt_mainwin::incrementAnimation()
 
 char * vt_mainwin::NewDrawWindow()
 {
-  const int len = 18;
-  char * buf = new char[len];
-  ostrstream dw(buf,len);
-  dw << "Draw Window (" << ++drawwin_count << ")" << ends;
+  std::ostringstream dw;
+  dw << "Draw Window (" << ++drawwin_count << ")" << std::ends;
+  char * buf = new char[dw.str().length()];
+  dw.str().copy(buf,std::string::npos,0);
   return buf;
 }
 
 char * vt_mainwin::Info_Name(const char *const n)
 {
-  const int len = 128;
-  char * buf = new char[len];
-  ostrstream info(buf,len);
-  info << "file:" << n << ends;
+  std::ostringstream info;
+  info << "file:" << n << std::ends;
+  char * buf = new char[info.str().length()];
+  info.str().copy(buf,std::string::npos,0);
   return buf;
 }
 
 char * vt_mainwin::Info_Time(const int t)
 {
-  const int len = 128;
-  char * buf = new char[len];
-  ostrstream info(buf,len);
-  info << "# steps: " << t << ends;
+  std::ostringstream info;
+  info << "# steps: " << t << std::ends;
+  char * buf = new char[info.str().length()];
+  info.str().copy(buf,std::string::npos,0);
   return buf;
 }
 
 char * vt_mainwin::Info_Range(const bounds_2D & b)
 {
-  const int len = 128;
-  char * buf = new char[len];
-  ostrstream info(buf,len);
+  std::ostringstream info;
   info << "data bounds: ("
        << b.Lb_x << ", " << b.Lb_y << " -> " << b.Ub_x << ", " << b.Ub_y
-       << ")" << ends;
+       << ")" << std::ends;
+  char * buf = new char[info.str().length()];
+  info.str().copy(buf,std::string::npos,0);
   return buf;
 }
 
@@ -108,9 +110,9 @@ vt_drawwin::vt_drawwin(const char *const n,  vt_mainwin & mw)
   Cur_Bounds = new bounds_2D(0.0, 0.0, 1.0, 1.0);
   
   labelbuf = new char[70];
-  label = new ostrstream(labelbuf,69);
+  label = new std::ostringstream("0"); // must have initial string!!!
   label->precision(8);
-  label->setf(ios::left,ios::adjustfield);
+  label->setf(std::ios::left,std::ios::adjustfield);
 
   if(Abscissa_Set) {
     Abscissa_Filename = new char[strlen(mw.Abscissa_Filename)+1];
@@ -136,9 +138,9 @@ vt_drawwin::vt_drawwin(const vt_drawwin & dw)
   *Cur_Bounds = *(dw.Cur_Bounds);
   
   labelbuf = new char[70];
-  label = new ostrstream(labelbuf,69);
+  label = new std::ostringstream("0"); // must have initial string!!!
   label->precision(8);
-  label->setf(ios::left,ios::adjustfield);
+  label->setf(std::ios::left,std::ios::adjustfield);
 
   if(Abscissa_Set) {
     Abscissa_Filename = new char[strlen(dw.Abscissa_Filename)+1];
@@ -164,7 +166,7 @@ vt_drawwin::~vt_drawwin()
   delete [] name;
   // Delete label text
   if(label) delete label;
-  if(labelbuf) delete [] labelbuf;
+  if(labelbuf) delete labelbuf;
   // Delete Abscissa data
   if(Abscissa_Set) {
     delete [] Abscissa_Filename;
@@ -177,7 +179,7 @@ void vt_drawwin::close()
   typedef std::list<vt_drawwin *>::iterator I_dw;
   const vt_drawwin * me = this;
   I_dw d = std::find(mvt.draw_list.begin(),mvt.draw_list.end(),me);
-  if(!(*d)) cerr << "Couldn't remove drawwin from list" << endl;
+  if(!(*d)) std::cerr << "Couldn't remove drawwin from list" << std::endl;
   mvt.draw_list.erase(d);
 
   // delete memory
@@ -188,12 +190,12 @@ bool vt_drawwin::ImportFile_GIO(const char *const file)
 {
   GIOquery GIOq;
   if(!GIOq.Read(file)) {
-    cerr << "Unsupported file type" << endl;
+    std::cerr << "Unsupported file type" << std::endl;
     return false;
   }
   GIOq.Close();
   if(GIOq.Dim() != 1) {
-    cerr << "Unsupported data type" << endl;
+    std::cerr << "Unsupported data type" << std::endl;
     return false;
   }
   switch(GIOq.Key()) {
@@ -275,8 +277,8 @@ bool vt_drawwin::ImportFile_GIO(const char *const file)
 bool vt_drawwin::ImportFile_1DDump(const char *const filename)
 {
   // Open file
-  ifstream file;
-  file.open(filename,ios::in);
+  std::ifstream file;
+  file.open(filename,std::ios::in);
   if(!file.good()) return false;
 
   // Create new vt_data_series
@@ -395,8 +397,8 @@ bool vt_drawwin::ImportFile_1DDump(const char *const filename)
 bool vt_drawwin::ImportFile_1DAbs(const char *const filename)
 {
   // Open file
-  ifstream file;
-  file.open(filename,ios::in);
+  std::ifstream file;
+  file.open(filename,std::ios::in);
   if(!file.good()) return false;
 
   // Read ONE timestep from file
@@ -578,6 +580,7 @@ void vt_drawwin::increment()
   forward_animation = true;
   current_l = next_label();
   Label_Text(true);
+  Update_Label_Buffer();
   for(p = data_list.begin(); p != data_list.end(); p++) {
     vt_data_series & ds = **p;
     const double n = ds.Next();
@@ -605,6 +608,7 @@ void vt_drawwin::decrement()
   forward_animation = false;
   current_l = previous_label();
   Label_Text(true);
+  Update_Label_Buffer();
   for(p = data_list.begin(); p != data_list.end(); p++) {
     vt_data_series & ds = **p;
     const double p = ds.Previous();
@@ -644,6 +648,7 @@ void vt_drawwin::reset_list()
     }
   }
   Label_Text(true);
+  Update_Label_Buffer();
   draw();
   if(!mvt.sync_dup && sync_window) { // repeat on any synced windows
     mvt.sync_dup = true;
@@ -681,6 +686,7 @@ void vt_drawwin::reset_CurrentBounds()
     Cur_Bounds = Minimum_CurrentBounds();
   } else *Cur_Bounds = AddBoarder(Default_Bounds);
   Coords_Text(true);
+  Update_Label_Buffer();
   resize(cur_width, cur_height);
 }
 
@@ -689,6 +695,7 @@ void vt_drawwin::push_CurrentBounds(bounds_2D *const new_bounds)
   bounds_stack.push(Cur_Bounds);
   Cur_Bounds = new_bounds;
   Coords_Text(true);
+  Update_Label_Buffer();
   resize(cur_width, cur_height);
 }
 
@@ -731,6 +738,7 @@ void vt_drawwin::pop_CurrentBounds()
     Cur_Bounds = bounds_stack.top();
     bounds_stack.pop();
     Coords_Text(true);
+    Update_Label_Buffer();
     resize(cur_width, cur_height);
   }
 }
@@ -765,7 +773,7 @@ void vt_drawwin::Label_Text(const bool add)
   label->seekp(0);
   label->width(15);
   (*label) << current_l;
-  if(!add) (*label) << ends;
+  if(!add) (*label) << std::ends;
 }
 
 void vt_drawwin::Coords_Text(const bool add)
@@ -775,7 +783,7 @@ void vt_drawwin::Coords_Text(const bool add)
   label->precision(4);
   (*label) <<   " (" << Cur_Bounds->Lb_x << ", " << Cur_Bounds->Lb_y
 	   << " -> " << Cur_Bounds->Ub_x << ", " << Cur_Bounds->Ub_y
-	   <<    ")" << ends;
+	   <<    ")" << std::ends;
   label->precision(p);
 }
 
@@ -907,7 +915,8 @@ void vt_data_1d::Apply(const TransformationFunction T)
     bounds.Ub_y = Ub_y;
     break;
   default :
-    cerr << "Unknown TransformationFunction in vt_data_1d::Apply" << endl;
+    std::cerr << "Unknown TransformationFunction in vt_data_1d::Apply" 
+	      << std::endl;
   }
 }
 
@@ -932,7 +941,8 @@ void vt_data_1d::Apply_Seq(const TransformSequence T, vt_data & n)
     bounds.Ub_y = Ub_y;
     break;
   default :
-    cerr << "Unknown TransformSequence in vt_data_1d::Apply_Seq" << endl;
+    std::cerr << "Unknown TransformSequence in vt_data_1d::Apply_Seq" 
+	      << std::endl;
   }
 }
 
@@ -969,7 +979,8 @@ double vt_data_1d::Norm(const NormType T) const
     norm = sqrt(norm);
     break;
   default :
-    cerr << "Unknown TransformationFunction in vt_data_1d::Apply" << endl;
+    std::cerr << "Unknown TransformationFunction in vt_data_1d::Apply" 
+	      << std::endl;
   }
   return norm;
 }
@@ -1111,7 +1122,8 @@ void vt_data_series::Apply(const TransformationFunction T)
     FunctionName("Ln");
     break;
   default :
-    cerr << "Unknown TransformationFunction in vt_data_series::Apply" << endl;
+    std::cerr << "Unknown TransformationFunction in vt_data_series::Apply" 
+	      << std::endl;
   }
 }
 
@@ -1134,18 +1146,20 @@ void vt_data_series::Apply_Seq(const TransformSequence T)
     FunctionName("d/dt");
     break;
   default :
-    cerr << "Unknown TransformSequence in vt_data_series::Apply_Seq" << endl;
+    std::cerr << "Unknown TransformSequence in vt_data_series::Apply_Seq" 
+	      << std::endl;
   }
 }
 
 void vt_data_series::FunctionName(const char *const func)
 {
   const int len = strlen(func) + strlen(name) + 3;
-  char * buf = new char[len];
-  ostrstream n(buf,len);
-  n << func << "(" << name << ")" << ends;
+  std::ostringstream n;
+  n << func << "(" << name << ")" << std::ends;
   delete [] name;
+  char * buf = new char[len];
   name = buf;
+  n.str().copy(buf,len,0);
 }
 
 vt_data_series * vt_data_series::Norm(const NormType T) const
@@ -1173,7 +1187,7 @@ vt_data_series * vt_data_series::Norm(const NormType T) const
     ds->FunctionName("L2-norm");
     break;
   default :
-    cerr << "Unknown Norm in vt_data_series::Norm" << endl;
+    std::cerr << "Unknown Norm in vt_data_series::Norm" << std::endl;
   }
   return ds;
 }
