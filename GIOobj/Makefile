@@ -1,7 +1,7 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.16 2000-08-10 14:28:52 cookgb Exp $
+# $Id: Makefile,v 1.17 2000-08-10 15:49:37 cookgb Exp $
 #
 ###############################################################################
 # linux
@@ -47,7 +47,7 @@ LIBOBJS= $(LIBFILES:.C=.o)
 libGIO.a:libGIO.a($(LIBOBJS))
 # --- FOR SGI
 #libGIO.a: $(LIBOBJS)
-#	$(CXX) $(CXXFLAGS) -ar -o libGIO.a $(LIBOBJS)
+#	$(CXX) $(CXXFLAGS) -ar -o $@ $(LIBOBJS)
 
 clean:
 	$(RM) $(OBJS) $(LIBOBJS) $(SWAPOBJS) libGIO.a GIOtest GIOswap
