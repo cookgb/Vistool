@@ -136,55 +136,96 @@ xvt_mainwin::xvt_mainwin(int & argc, char ** argv)
 
   //--------------------------------------------------------------------------
   // Create the MenuBar
-  Arg args[2];
-  XtSetArg(args[0], XmNuserData, this);
-  menu_bar = XmCreateMenuBar(main_w, "menubar", args, 1);
-  XtManageChild(menu_bar);
+  XmString file = XmStringCreateLocalized("File");
+  XmString help = XmStringCreateLocalized("Help");
+  menu_bar = XmVaCreateSimpleMenuBar(main_w,"menubar",
+				     XmVaCASCADEBUTTON, file, 'F',
+				     XmVaCASCADEBUTTON, help, 'H',
+				     XmNuserData, this,
+				     NULL);
+  XmStringFree(file);
 
-  //--------------------------------------------------------------------------
-  // Set up arguments for menu overlay support if available
-  int OLn=0;
-  Arg OLargs[10];
-  XtSetArg(OLargs[0], XmNuserData, this); OLn++;
-  if(overlayVisual) {
-    XtSetArg(OLargs[OLn], XmNvisual, overlayVisual); OLn++;
-    XtSetArg(OLargs[OLn], XmNdepth, overlayDepth); OLn++;
-    XtSetArg(OLargs[OLn], XmNcolormap, overlayColormap); OLn++;
-  }
+  // Tell the MenuBar which button is th help menu
+  if(Widget w = XtNameToWidget(menu_bar,"button_1"))
+    XtVaSetValues(menu_bar,XmNmenuHelpWidget,w,NULL);
 
   //--------------------------------------------------------------------------
   // First menu is the File menu
-  Widget menu_pane = XmCreatePulldownMenu(menu_bar, "menupane", OLargs, OLn);
-  if(overlayVisual)
+
+  XmString open = XmStringCreateLocalized("Open...");
+  XmString test = XmStringCreateLocalized("Test...");
+  XmString quit = XmStringCreateLocalized("Quit");
+
+#define FILEMENU XmVaPUSHBUTTON,open,'N',NULL,NULL,\
+                 XmVaCASCADEBUTTON,test,'T',\
+                 XmVaSEPARATOR,\
+	         XmVaPUSHBUTTON,quit,'Q',NULL,NULL
+
+  Widget menu_pane;
+  if(overlayVisual) {
+    menu_pane =
+      XmVaCreateSimplePulldownMenu(menu_bar,"filemenu",0,NULL,
+				   FILEMENU,
+				   XmNvisual, overlayVisual,
+				   XmNdepth, overlayDepth,
+				   XmNcolormap, overlayColormap,
+				   NULL);
     XtAddCallback(XtParent(menu_pane), XmNpopupCallback,
 		  (XtCallbackProc) mw_ensurePulldownColormapInstalled, this);
-  Widget btn;
-  btn = XmCreatePushButtonGadget(menu_pane, "Open...", args, 1);
-  XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc) mw_file_open, this);
-  XtManageChild(btn);
-  btn = XmCreateSeparatorGadget(menu_pane, NULL, args, 1);
-  XtManageChild(btn);
-  btn = XmCreatePushButtonGadget(menu_pane, "Quit", args, 1);
-  XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc) mw_file_quit, this);
-  XtManageChild(btn);
-  XtSetArg(args[1], XmNsubMenuId, menu_pane);
-  Widget cascade = XmCreateCascadeButton(menu_bar, "File", args, 2);
-  XtManageChild(cascade);
+  } else {
+    menu_pane =
+      XmVaCreateSimplePulldownMenu(menu_bar,"filemenu",0,NULL,
+				   FILEMENU,
+				   NULL);
+  }
+#undef FILEMENU
+  if(Widget w = XtNameToWidget(menu_pane,"button_0"))
+    XtAddCallback(w, XmNactivateCallback, mw_file_open, this);
+  if(Widget w = XtNameToWidget(menu_pane,"button_2"))
+    XtAddCallback(w, XmNactivateCallback, mw_file_quit, this);
+  XmStringFree(open);
+  XmStringFree(test);
+  XmStringFree(quit);
+
+  XmString test1 = XmStringCreateLocalized("test1");
+  XmString test2 = XmStringCreateLocalized("test2");
+  XmString test3 = XmStringCreateLocalized("test3");
+  XmVaCreateSimplePulldownMenu(menu_pane, "pullright", 1, NULL,
+			       XmVaPUSHBUTTON, test1, '1', NULL, NULL,
+			       XmVaPUSHBUTTON, test2, '2', NULL, NULL,
+			       XmVaPUSHBUTTON, test3, '3', NULL, NULL,
+			       NULL);
+  XmStringFree(test1);
+  XmStringFree(test2);
+  XmStringFree(test3);
 
   //--------------------------------------------------------------------------
   // Last menu is the Help menu
-  menu_pane = XmCreatePulldownMenu(menu_bar, "menupane", OLargs, OLn);
-  if(overlayVisual)
+
+#define HELPMENU XmVaPUSHBUTTON,help,'H',NULL,NULL
+
+  if(overlayVisual) {
+    menu_pane =
+      XmVaCreateSimplePulldownMenu(menu_bar,"helpmenu",1,NULL,
+				   HELPMENU,
+				   XmNvisual, overlayVisual,
+				   XmNdepth, overlayDepth,
+				   XmNcolormap, overlayColormap,
+				   NULL);
     XtAddCallback(XtParent(menu_pane), XmNpopupCallback,
 		  (XtCallbackProc) mw_ensurePulldownColormapInstalled, this);
-  btn = XmCreatePushButtonGadget(menu_pane, "Help", NULL, 0);
-  XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc) mw_help, this);
-  XtManageChild(btn);
-  XtSetArg(args[1], XmNsubMenuId, menu_pane);
-  cascade = XmCreateCascadeButton(menu_bar, "Help", args, 2);
-  // Tell the MenuBar which button is the help menu
-  XtVaSetValues(menu_bar, XmNmenuHelpWidget, cascade, NULL);
-  XtManageChild(cascade);
+  } else {
+    menu_pane =
+      XmVaCreateSimplePulldownMenu(menu_bar,"helpmenu",1,NULL,
+				   HELPMENU,
+				   NULL);
+  }
+#undef HELPMENU
+  if(Widget w = XtNameToWidget(menu_pane,"button_0"))
+    XtAddCallback(w, XmNactivateCallback, mw_help, this);
+  XmStringFree(help);
+
+  XtManageChild(menu_bar);
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
@@ -267,52 +308,81 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
 
   //--------------------------------------------------------------------------
   // Create the MenuBar
-  Arg args[3];
-  XtSetArg(args[0], XmNuserData, this);
-  menu_bar = XmCreateMenuBar(main_w, "menubar", args, 1);
-  XtManageChild(menu_bar);
-  int OLn=0;
-  Arg OLargs[10];
-  XtSetArg(OLargs[0], XmNuserData, this); OLn++;
-  if(xmvt.overlayVisual) {
-    XtSetArg(OLargs[OLn], XmNvisual, xmvt.overlayVisual); OLn++;
-    XtSetArg(OLargs[OLn], XmNdepth, xmvt.overlayDepth); OLn++;
-    XtSetArg(OLargs[OLn], XmNcolormap, xmvt.overlayColormap); OLn++;
-  }
+  XmString file = XmStringCreateLocalized("File");
+  XmString help = XmStringCreateLocalized("Help");
+  menu_bar = XmVaCreateSimpleMenuBar(main_w,"menubar",
+				     XmVaCASCADEBUTTON, file, 'F',
+				     XmVaCASCADEBUTTON, help, 'H',
+				     XmNuserData, this,
+				     NULL);
+  XmStringFree(file);
+
+  // Tell the MenuBar which button is th help menu
+  if(Widget w = XtNameToWidget(menu_bar,"button_1"))
+    XtVaSetValues(menu_bar,XmNmenuHelpWidget,w,NULL);
 
   //--------------------------------------------------------------------------
   // First menu is the File menu
-  Widget menu_pane = XmCreatePulldownMenu(menu_bar, "menupane", OLargs, OLn);
-  if(xmvt.overlayVisual)
+
+  XmString open  = XmStringCreateLocalized("Open...");
+  XmString close = XmStringCreateLocalized("close");
+
+#define FILEMENU XmVaPUSHBUTTON,open,'N',NULL,NULL,\
+                 XmVaSEPARATOR,\
+	         XmVaPUSHBUTTON,close,'C',NULL,NULL
+
+  Widget menu_pane;
+  if(xmvt.overlayVisual) {
+    menu_pane =
+      XmVaCreateSimplePulldownMenu(menu_bar,"filemenu",0,NULL,
+				   FILEMENU,
+				   XmNvisual, xmvt.overlayVisual,
+				   XmNdepth, xmvt.overlayDepth,
+				   XmNcolormap, xmvt.overlayColormap,
+				   NULL);
     XtAddCallback(XtParent(menu_pane), XmNpopupCallback,
 		  (XtCallbackProc) dw_ensurePulldownColormapInstalled, this);
-  Widget btn;
-  btn = XmCreatePushButtonGadget(menu_pane, "Open...", args, 1);
-  XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc) dw_file_open, this);
-  XtManageChild(btn);
-  btn = XmCreateSeparatorGadget(menu_pane, NULL, args, 1);
-  XtManageChild(btn);
-  btn = XmCreatePushButtonGadget(menu_pane, "Close", args, 1);
-  XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc) dw_file_close,this);
-  XtManageChild(btn);
-  XtSetArg(args[1], XmNsubMenuId, menu_pane);
-  Widget cascade = XmCreateCascadeButton(menu_bar, "File", args, 2);
-  XtManageChild(cascade);
+  } else {
+    menu_pane =
+      XmVaCreateSimplePulldownMenu(menu_bar,"filemenu",0,NULL,
+				   FILEMENU,
+				   NULL);
+  }
+#undef FILEMENU
+  if(Widget w = XtNameToWidget(menu_pane,"button_0"))
+    XtAddCallback(w, XmNactivateCallback, dw_file_open, this);
+  if(Widget w = XtNameToWidget(menu_pane,"button_1"))
+    XtAddCallback(w, XmNactivateCallback, dw_file_close, this);
+  XmStringFree(open);
+  XmStringFree(close);
 
   //--------------------------------------------------------------------------
   // Last menu is the Help menu
-  menu_pane = XmCreatePulldownMenu(menu_bar, "menupane", OLargs, OLn);
-  if(xmvt.overlayVisual)
+
+#define HELPMENU XmVaPUSHBUTTON,help,'H',NULL,NULL
+
+  if(xmvt.overlayVisual) {
+    menu_pane =
+      XmVaCreateSimplePulldownMenu(menu_bar,"helpmenu",1,NULL,
+				   HELPMENU,
+				   XmNvisual,  xmvt.overlayVisual,
+				   XmNdepth,  xmvt.overlayDepth,
+				   XmNcolormap,  xmvt.overlayColormap,
+				   NULL);
     XtAddCallback(XtParent(menu_pane), XmNpopupCallback,
 		  (XtCallbackProc) dw_ensurePulldownColormapInstalled, this);
-  btn = XmCreatePushButtonGadget(menu_pane, "Help", args, 1);
-  XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc) dw_help, this);
-  XtManageChild(btn);
-  XtSetArg(args[1], XmNsubMenuId, menu_pane);
-  cascade = XmCreateCascadeButton(menu_bar, "Help", args, 2);
-  // Tell the MenuBar which button is th help menu
-  XtVaSetValues(menu_bar,XmNmenuHelpWidget,cascade,NULL);
-  XtManageChild(cascade);
+  } else {
+    menu_pane =
+      XmVaCreateSimplePulldownMenu(menu_bar,"helpmenu",1,NULL,
+				   HELPMENU,
+				   NULL);
+  }
+#undef HELPMENU
+  if(Widget w = XtNameToWidget(menu_pane,"button_0"))
+    XtAddCallback(w, XmNactivateCallback, dw_help, this);
+  XmStringFree(help);
+
+  XtManageChild(menu_bar);
 
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
@@ -325,23 +395,39 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw)
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
   // Create Popup menu for frame area of drawing window
-  popup = XmCreatePopupMenu(frame, "menupane", OLargs, OLn);
-  if(xmvt.overlayVisual)
+
+  XmString reset = XmStringCreateLocalized("Reset");
+  XmString anim = XmStringCreateLocalized("Animate");
+
+#define POPUPMENU XmVaPUSHBUTTON,reset,NULL,NULL,NULL,\
+                  XmVaSEPARATOR,\
+		  XmVaCHECKBUTTON,anim,NULL,NULL,NULL
+
+  if(xmvt.overlayVisual) {
+    popup =
+      XmVaCreateSimplePopupMenu(frame,"popupmenu",NULL,
+				POPUPMENU,
+				XmNvisual,  xmvt.overlayVisual,
+				XmNdepth,  xmvt.overlayDepth,
+				XmNcolormap,  xmvt.overlayColormap,
+				NULL);
     XtAddCallback(XtParent(popup), XmNpopupCallback,
 		  (XtCallbackProc) dw_ensurePulldownColormapInstalled, this);
-  btn = XmCreatePushButtonGadget(popup, "Reset", args, 1);
-  XtAddCallback(btn, XmNactivateCallback, (XtCallbackProc) dw_popup_reset,
-		this);
-  XtManageChild(btn);
-  btn = XmCreateSeparatorGadget(popup, NULL, args, 1);
-  XtManageChild(btn);
-  XtSetArg(args[1], XmNindicatorType, XmN_OF_MANY);
-  XtSetArg(args[2], XmNvisibleWhenOff, True); // needed for lesstif
-  btn = XmCreateToggleButtonGadget(popup, "Animate", args, 3);
-  XtAddCallback(btn, XmNvalueChangedCallback,
-		(XtCallbackProc) dw_popup_animate, this);
-  XmToggleButtonSetState(btn, animate, False);
-  XtManageChild(btn);
+  } else {
+    popup =
+      XmVaCreateSimplePopupMenu(frame,"popupmenu",NULL,
+				POPUPMENU,
+				NULL);
+  }
+#undef POPUPMENU
+  WidgetList popupWidgets;
+  XtVaGetValues(popup, XmNchildren, &popupWidgets, NULL);
+  XtAddCallback(popupWidgets[0], XmNactivateCallback,
+		dw_popup_reset, this);
+  XtAddCallback(popupWidgets[2], XmNvalueChangedCallback,
+		dw_popup_animate, this);
+  XmToggleButtonSetState(popupWidgets[2], animate, False);
+
   XtAddEventHandler(frame, ButtonPressMask, False, activatePopup, popup);
 
   //--------------------------------------------------------------------------
