@@ -426,9 +426,12 @@ double vt_drawwin::previous_label()
 
 void vt_drawwin::increment()
 {
-  forward_animation = true;
   typedef list<vt_data_series *>::iterator I_vd;
   I_vd p;
+  if(!forward_animation)
+    for(p = data_list.begin(); p != data_list.end(); p++)
+      (*p)->Reverse(false, current_l);
+  forward_animation = true;
   current_l = next_label();
   Label_Text(true);
   for(p = data_list.begin(); p != data_list.end(); p++) {
@@ -443,15 +446,18 @@ void vt_drawwin::increment()
 
 void vt_drawwin::decrement()
 {  
-  forward_animation = false;
   typedef list<vt_data_series *>::iterator I_vd;
   I_vd p;
+  if(forward_animation)
+    for(p = data_list.begin(); p != data_list.end(); p++)
+      (*p)->Reverse(true, current_l);
+  forward_animation = false;
   current_l = previous_label();
   Label_Text(true);
   for(p = data_list.begin(); p != data_list.end(); p++) {
     vt_data_series & ds = **p;
     const double p = ds.Previous();
-    if(p <= current_l)
+    if(p >= current_l)
       ds.Decrement();
     else if(p == -LAST_LABEL)
       ds.done = true;
@@ -672,6 +678,25 @@ void vt_data_series::Append(vt_data * d)
   }
   data.push_back(d);
   if(first) current = data.begin();
+}
+
+void vt_data_series::Reverse(bool was_forward, double win_current_l)
+{
+  if(was_forward) {
+    if(!done)
+      while(Next() != LAST_LABEL ) {
+	if(current_l >= win_current_l) break;
+	Increment();
+      }
+    done = false;
+  } else {
+    if(!done)
+      while(Previous() != -LAST_LABEL ) {
+	if(current_l <= win_current_l) break;
+	Decrement();
+      }
+    done = false;
+  }
 }
 
 double vt_data_series::Next()

@@ -159,6 +159,7 @@ public:
   void Append(vt_data * d);
   vt_data * Current() const {return *current;}
   bool Done() const {return done;}
+  void Reverse(bool was_forward, double win_current_l);
   double Next();
   double Previous();
   void Increment();
