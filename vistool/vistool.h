@@ -108,12 +108,12 @@ public:
   bool sync_window;
   bool redisplay;
   vt_drawwin(const char * n, vt_mainwin & mw);
-  vt_drawwin(vt_drawwin & dw);
+  vt_drawwin(const vt_drawwin & dw);
   ~vt_drawwin();
   void close();
-  bool ImportFile_GIO(char * file);
-  bool ImportFile_1DDump(char * file);
-  bool ImportFile_1DAbs(char * file);
+  bool ImportFile_GIO(const char * file);
+  bool ImportFile_1DDump(const char * file);
+  bool ImportFile_1DAbs(const char * file);
   virtual void deleteme() { delete this;}
   virtual void init(int, int);
   virtual void draw();
@@ -122,7 +122,7 @@ public:
   void increment();
   void decrement();
   void reset_list();
-  bounds_2D AddBoarder(const bounds_2D b);
+  bounds_2D AddBoarder(const bounds_2D & b);
   void reset_CurrentBounds();
   void push_CurrentBounds(bounds_2D * new_bounds);
   void pop_CurrentBounds();
@@ -144,20 +144,20 @@ protected:
   double *data;
   bounds_2D bounds;
 public:
-  vt_data(double l, int s) : label(l), size(s) {}
+  vt_data(const double l, const int s) : label(l), size(s) {}
   ~vt_data();
   double LBx() const {return bounds.Lb_x;}
   double UBx() const {return bounds.Ub_x;}
   double LBy() const {return bounds.Lb_y;}
   double UBy() const {return bounds.Ub_y;}
   bounds_2D Bounds() const {return bounds;}
-  virtual void draw() = 0;
-  virtual vt_data * Copy() = 0;
+  virtual void draw() const = 0;
+  virtual vt_data * Copy() const = 0;
   double Label() const {return label;}
   const double *Data() const {return data;};
   int Size() const {return size;};
   virtual void Apply(TransformationFunction T) = 0;
-  virtual double Norm(NormType T) = 0;
+  virtual double Norm(NormType T) const = 0;
 };
 
 class vt_data_1d : public vt_data {
@@ -165,10 +165,10 @@ protected:
 public:
   vt_data_1d(double l, int n, const double * x, const double * y);
   vt_data_1d(const vt_data_1d & src);
-  void draw();
-  vt_data * Copy();
+  void draw() const;
+  vt_data * Copy() const;
   void Apply(TransformationFunction T);
-  double Norm(NormType T);
+  double Norm(NormType T) const;
 };
 
 class vt_data_series {
@@ -186,15 +186,15 @@ public:
   bool selected;
 public:
   vt_data_series(const char * n, const char * o);
-  vt_data_series(vt_data_series & vs);
+  vt_data_series(const vt_data_series & vs);
   ~vt_data_series();
-  char * Name() {return name;}
-  char * Origin() {return origin;}
-  int NSteps() {return data.size();}
-  double LBx() {return bounds.Lb_x;}
-  double UBx() {return bounds.Ub_x;}
-  double LBy() {return bounds.Lb_y;}
-  double UBy() {return bounds.Ub_y;}
+  const char * Name() const {return name;}
+  const char * Origin() const {return origin;}
+  int NSteps() const {return data.size();}
+  double LBx() const {return bounds.Lb_x;}
+  double UBx() const {return bounds.Ub_x;}
+  double LBy() const {return bounds.Lb_y;}
+  double UBy() const {return bounds.Ub_y;}
   bounds_2D Bounds() const {return bounds;}
   void Append(vt_data * d);
   vt_data * Current() const {return *current;}
@@ -207,7 +207,7 @@ public:
   void Reset(bool forward_iteration);
   void Apply(TransformationFunction T);
   void FunctionName(const char * func);
-  vt_data_series * Norm(NormType T);
+  vt_data_series * Norm(NormType T) const;
 };
 
 #endif // VISTOOL_H

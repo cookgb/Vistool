@@ -8,10 +8,10 @@
 #include "xMenu.h"
 #include "iostream.h"
 
-Widget BuildMenu(Widget parent, int menu_type,
-		 char * menu_title, char menu_mnemonic,
-		 MenuOverlayVisual * overlay,
-		 Boolean tear_off, MenuItem * items)
+Widget BuildMenu(const Widget parent, const int menu_type,
+		 const char *const menu_title, const char menu_mnemonic,
+		 const MenuOverlayVisual *const overlay,
+		 const Boolean tear_off, const MenuItem *const items)
 {
   Widget menu, cascade, widget;
   Arg args[3];
@@ -36,7 +36,8 @@ Widget BuildMenu(Widget parent, int menu_type,
     XtVaSetValues(menu, XmNtearOffModel, XmTEAR_OFF_ENABLED, NULL);
 
   if(menu_type == XmMENU_PULLDOWN) {
-    XmString str = XmStringCreateLocalized(menu_title);
+    XmString str = XmStringCreateLocalized((char *)menu_title);
+                                           // no const in def
     cascade = XtVaCreateManagedWidget(menu_title,
 				      xmCascadeButtonGadgetClass, parent,
 				      XmNsubMenuId, menu,
@@ -66,7 +67,8 @@ Widget BuildMenu(Widget parent, int menu_type,
     // Any item can have an accelerator, except cascade menus.  But,
     // we don't worry about that; we know better in our declarations.
     if(items[i].accelerator) {
-      XmString str = XmStringCreateLocalized(items[i].accel_text);
+      XmString str = XmStringCreateLocalized((char *)items[i].accel_text);
+                                             // no const in def
       XtVaSetValues(widget,
 		    XmNaccelerator, items[i].accelerator,
 		    XmNacceleratorText, str,

@@ -35,7 +35,7 @@ typedef struct _menu_item {
   struct _menu_item * subitems;      // pullright menu items, if not NULL
 } MenuItem;
 
-Widget BuildMenu(Widget, int, char *, char, MenuOverlayVisual *, Boolean,
-		 MenuItem *);
+Widget BuildMenu(Widget, int, const char *, char, const MenuOverlayVisual *,
+		 Boolean,const MenuItem *);
 
 #endif // XMENU_H

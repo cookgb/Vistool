@@ -65,7 +65,7 @@ char * vt_mainwin::NewDrawWindow()
   return buf;
 }
 
-char * vt_mainwin::Info_Name(const char * n)
+char * vt_mainwin::Info_Name(const char *const n)
 {
   const int len = 128;
   char * buf = new char[len];
@@ -74,7 +74,7 @@ char * vt_mainwin::Info_Name(const char * n)
   return buf;
 }
 
-char * vt_mainwin::Info_Time(int t)
+char * vt_mainwin::Info_Time(const int t)
 {
   const int len = 128;
   char * buf = new char[len];
@@ -95,7 +95,7 @@ char * vt_mainwin::Info_Range(const bounds_2D & b)
 }
 
 
-vt_drawwin::vt_drawwin(const char * n, vt_mainwin & mw)
+vt_drawwin::vt_drawwin(const char *const n,  vt_mainwin & mw)
   : mvt(mw), redisplay(false), animate(false), forward_animation(true),
     Abscissa_Set(mw.Abscissa_Set),
     fullframe(false), selected(false), sync_window(false)
@@ -124,7 +124,7 @@ vt_drawwin::vt_drawwin(const char * n, vt_mainwin & mw)
 }
 
 
-vt_drawwin::vt_drawwin(vt_drawwin & dw)
+vt_drawwin::vt_drawwin(const vt_drawwin & dw)
   : mvt(dw.mvt), redisplay(false), animate(false), forward_animation(true),
     Abscissa_Set(dw.Abscissa_Set),
     fullframe(false), selected(false), sync_window(false)
@@ -183,7 +183,7 @@ void vt_drawwin::close()
   (*d)->deleteme();
 }
 
-bool vt_drawwin::ImportFile_GIO(char * file)
+bool vt_drawwin::ImportFile_GIO(const char *const file)
 {
   GIOquery GIOq;
   if(!GIOq.Read(file)) {
@@ -271,7 +271,7 @@ bool vt_drawwin::ImportFile_GIO(char * file)
   return true;
 }
 
-bool vt_drawwin::ImportFile_1DDump(char * filename)
+bool vt_drawwin::ImportFile_1DDump(const char *const filename)
 {
   // Open file
   ifstream file;
@@ -373,7 +373,7 @@ bool vt_drawwin::ImportFile_1DDump(char * filename)
   return true;
 }
 
-bool vt_drawwin::ImportFile_1DAbs(char * filename)
+bool vt_drawwin::ImportFile_1DAbs(const char *const filename)
 {
   // Open file
   ifstream file;
@@ -461,7 +461,7 @@ bool vt_drawwin::ImportFile_1DAbs(char * filename)
   return true;
 }
 
-void vt_drawwin::init(int width, int height)
+void vt_drawwin::init(const int width, const int height)
 {
   glClearColor(0.4, 0.4, 0.4, 0.0);
   resize(width,height);
@@ -608,7 +608,7 @@ void vt_drawwin::reset_list()
   }
 }
 
-bounds_2D vt_drawwin::AddBoarder(const bounds_2D b)
+bounds_2D vt_drawwin::AddBoarder(const bounds_2D & b)
 {
   const double boarder_fraction = 0.025;
   const double size_for_zero = 1.e-2;
@@ -638,7 +638,7 @@ void vt_drawwin::reset_CurrentBounds()
   resize(cur_width, cur_height);
 }
 
-void vt_drawwin::push_CurrentBounds(bounds_2D * new_bounds)
+void vt_drawwin::push_CurrentBounds(bounds_2D *const new_bounds)
 {
   bounds_stack.push(Cur_Bounds);
   Cur_Bounds = new_bounds;
@@ -670,14 +670,14 @@ void vt_drawwin::pop_CurrentBounds()
   }
 }
 
-void vt_drawwin::resize(int new_width, int new_height)
+void vt_drawwin::resize(const int new_width, const int new_height)
 {
   cur_width = new_width;
   cur_height = new_height;
   windowReshape(new_width,new_height);
 }
 
-void vt_drawwin::windowReshape(int width, int height)
+void vt_drawwin::windowReshape(const int width, const int height)
 {
   glViewport(0, 0, width, height);
   glMatrixMode(GL_PROJECTION);
@@ -686,7 +686,7 @@ void vt_drawwin::windowReshape(int width, int height)
 	     Cur_Bounds->Lb_y, Cur_Bounds->Ub_y);
 }
 
-void vt_drawwin::Add(vt_data_series * ds)
+void vt_drawwin::Add(vt_data_series *const ds)
 {
   if(!(data_list.size())) Default_Bounds = ds->Bounds();
   else Default_Bounds.Union(ds->Bounds());
@@ -695,7 +695,7 @@ void vt_drawwin::Add(vt_data_series * ds)
   reset_CurrentBounds(); // Needs to be called after reset_list!
 }
 
-void vt_drawwin::Label_Text(bool add)
+void vt_drawwin::Label_Text(const bool add)
 {
   label->seekp(0);
   label->width(15);
@@ -703,7 +703,7 @@ void vt_drawwin::Label_Text(bool add)
   if(!add) (*label) << ends;
 }
 
-void vt_drawwin::Coords_Text(bool add)
+void vt_drawwin::Coords_Text(const bool add)
 {
   if(add) label->seekp(15);
   int p = label->precision();
@@ -714,7 +714,7 @@ void vt_drawwin::Coords_Text(bool add)
   label->precision(p);
 }
 
-void vt_drawwin::Apply(TransformationFunction T)
+void vt_drawwin::Apply(const TransformationFunction T)
 {
   Default_Bounds = bounds_2D(0.0,0.0,0.0,0.0);
   list<vt_data_series *>::iterator p;
@@ -731,7 +731,8 @@ vt_data::~vt_data()
   delete [] data;
 }
 
-vt_data_1d::vt_data_1d(double l, int s, const double * x, const double * y)
+vt_data_1d::vt_data_1d(const double l, const int s,
+		       const double *const x, const double *const y)
   : vt_data(l,s)
 {
   data = new double[2*s];
@@ -761,7 +762,7 @@ vt_data_1d::vt_data_1d(const vt_data_1d & src)
   for(int d=0; d<2*size; d++) data[d] = src.data[d];
 }
 
-void vt_data_1d::draw()
+void vt_data_1d::draw() const
 {
   glColor3d(1.0,1.0,1.0);
   glVertexPointer(2,GL_DOUBLE,0,data);
@@ -776,12 +777,12 @@ void vt_data_1d::draw()
 //    glEnd();
 }
 
-vt_data * vt_data_1d::Copy()
+vt_data * vt_data_1d::Copy() const
 {
   return new vt_data_1d(*this);
 }
 
-void vt_data_1d::Apply(TransformationFunction T)
+void vt_data_1d::Apply(const TransformationFunction T)
 {
   int i;
   double Lb_y = data[1];
@@ -831,7 +832,7 @@ void vt_data_1d::Apply(TransformationFunction T)
   }
 }
 
-double vt_data_1d::Norm(NormType T)
+double vt_data_1d::Norm(const NormType T) const
 {
   if(size == 1) return data[1];
   
@@ -869,7 +870,7 @@ double vt_data_1d::Norm(NormType T)
   return norm;
 }
 
-vt_data_series::vt_data_series(const char * n, const char * o)
+vt_data_series::vt_data_series(const char *const n, const char *const o)
   : name(0), origin(0), done(false), current_l(0), current(0), selected(false)
 {
   name = new char[strlen(n)+1];
@@ -878,7 +879,7 @@ vt_data_series::vt_data_series(const char * n, const char * o)
   strcpy(origin,o);
 }
 
-vt_data_series::vt_data_series(vt_data_series & vs)
+vt_data_series::vt_data_series(const vt_data_series & vs)
   : done(false), current_l(0), current(0), selected(false)
 {
   name = new char[strlen(vs.name)+1];
@@ -886,7 +887,7 @@ vt_data_series::vt_data_series(vt_data_series & vs)
   origin = new char[strlen(vs.origin)+1];
   strcpy(origin,vs.origin);
   
-  list<vt_data *>::iterator p;
+  list<vt_data *>::const_iterator p;
   for(p = vs.data.begin(); p != vs.data.end(); p++)
     Append((*p)->Copy());
 }
@@ -902,7 +903,7 @@ vt_data_series::~vt_data_series()
   if(name) delete[] name;
 }
 
-void vt_data_series::Append(vt_data * d)
+void vt_data_series::Append(vt_data *const d)
 {
   bool first = false;
   if(!(data.size())) {
@@ -913,7 +914,8 @@ void vt_data_series::Append(vt_data * d)
   if(first) current = data.begin();
 }
 
-void vt_data_series::Reverse(bool was_forward, double win_current_l)
+void vt_data_series::Reverse(const bool was_forward,
+			     const double win_current_l)
 {
   if(was_forward) {
     if(!done)
@@ -973,7 +975,7 @@ void vt_data_series::Decrement()
   }
 }
 
-void vt_data_series::Reset(bool forward_animation)
+void vt_data_series::Reset(const bool forward_animation)
 {
   if(forward_animation) {
     current = data.begin();
@@ -985,7 +987,7 @@ void vt_data_series::Reset(bool forward_animation)
   current_l = (**current).Label();
 }
 
-void vt_data_series::Apply(TransformationFunction T)
+void vt_data_series::Apply(const TransformationFunction T)
 {
   bounds = bounds_2D(0.0,0.0,0.0,0.0);
   list<vt_data *>::iterator p;
@@ -1008,7 +1010,7 @@ void vt_data_series::Apply(TransformationFunction T)
   }
 }
 
-void vt_data_series::FunctionName(const char * func)
+void vt_data_series::FunctionName(const char *const func)
 {
   const int len = strlen(func) + strlen(name) + 3;
   char * buf = new char[len];
@@ -1018,14 +1020,14 @@ void vt_data_series::FunctionName(const char * func)
   name = buf;
 }
 
-vt_data_series * vt_data_series::Norm(NormType T)
+vt_data_series * vt_data_series::Norm(const NormType T) const
 {
   vt_data_series * ds = new vt_data_series(Name(),Origin());
   int i;
   int ext = {data.size()};
   double * x = new double[ext];
   double * norm = new double[ext];
-  list<vt_data *>::iterator p;
+  list<vt_data *>::const_iterator p;
   for(p = data.begin(), i=0; p != data.end(); p++, i++) {
     x[i] = (*p)->Label();
     norm[i] = (*p)->Norm(T);
