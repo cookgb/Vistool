@@ -80,7 +80,6 @@ template< class D, class L, int d>
  int GIOdata<D,L,d>::Read(fstream *const fs)
 {
   fs->read((char *)&label,sizeof(L));
-	cout << "GIOdata Label " << label << endl;
   fs->read((char *)&use_bounds,sizeof(int));
   int size = 1;
   for(int i=0; i<dim; i++) {
@@ -89,11 +88,9 @@ template< class D, class L, int d>
     fs->read((char *)(ext+i),sizeof(int));
     size *= ext[i];
   }
-	cout << "GIOdata Ndatasets " << Ndatasets << endl;
   for(int j=0; j<Ndatasets; j++) {
     if(datar[j]) delete [] datar[j];
     if(!(datar[j] = new D[size])) GIOAbort("memory");
-	cout << "GIOdata Dataset " << j << " Size " << size << endl;
     fs->read((char *)datar[j],size*sizeof(D));
   }
   return 1;
@@ -160,7 +157,11 @@ template< class D, class L, int d, int KEY>
 GIOseries<D,L,d,KEY>::~GIOseries()
 {
   if(FileName) delete [] FileName;
-  if(!!*fs) fs->close(); // !! for some compilers.. go figure.
+  if(!!*fs) { // !! for some compilers.. go figure.
+    fs->close();
+    delete fs;
+    fs = 0;
+  }
 }
 
 template< class D, class L, int d, int KEY> 
@@ -251,7 +252,11 @@ template< class D, class L, int d, int KEY>
 GIOcseries<D,L,d,KEY>::~GIOcseries()
 {
   if(FileName) delete [] FileName;
-  if(!!*fs) fs->close(); // !! for some compilers.. go figure.
+  if(!!*fs) { // !! for some compilers.. go figure.
+    fs->close();
+    delete fs;
+    fs = 0;
+  }
 }
 
 template< class D, class L, int d, int KEY> 
