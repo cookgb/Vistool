@@ -120,6 +120,32 @@ vt_drawwin::vt_drawwin(const char * n, vt_mainwin & mw)
   mw.draw_list.push_back(this);
 }
 
+
+vt_drawwin::vt_drawwin(vt_drawwin & dw)
+  : mvt(dw.mvt), redraw(false), animate(false), forward_animation(true),
+    Abscissa_Set(dw.Abscissa_Set), selected(false)
+{
+  name = mvt.NewDrawWindow();
+
+  Cur_Bounds = dw.Cur_Bounds;
+  
+  labelbuf = new char[70];
+  label = new ostrstream(labelbuf,69);
+  label->precision(8);
+  label->setf(ios::left,ios::adjustfield);
+
+  if(Abscissa_Set) {
+    Abscissa_Filename = new char[strlen(dw.Abscissa_Filename)+1];
+    strcpy(Abscissa_Filename,dw.Abscissa_Filename);
+    Abscissa_Data = new vt_data_1d(*dw.Abscissa_Data);
+  } else {
+    Abscissa_Filename = 0;
+    Abscissa_Data = 0;
+  }
+
+  mvt.draw_list.push_back(this);
+}
+
 vt_drawwin::~vt_drawwin()
 {
   // Delete data list
@@ -439,7 +465,7 @@ void vt_drawwin::init(int width, int height)
 void vt_drawwin::draw()
 {
   glClear(GL_COLOR_BUFFER_BIT);
-  
+
   typedef list<vt_data_series *>::iterator I_vd;
   I_vd p;
   bool all_done = true;
@@ -673,10 +699,10 @@ vt_data_1d::vt_data_1d(const vt_data_1d & src)
   bounds = src.bounds;
   data = new double[2*size];
   for(int d=0; d<2*size; d++) data[d] = src.data[d];
-
 }
 
-void vt_data_1d::draw() {
+void vt_data_1d::draw()
+{
   glColor3d(1.0,1.0,1.0);
   glVertexPointer(2,GL_DOUBLE,0,data);
   glDrawArrays(GL_LINE_STRIP,0,size);
@@ -690,6 +716,11 @@ void vt_data_1d::draw() {
 //    glEnd();
 }
 
+vt_data * vt_data_1d::Copy()
+{
+  return new vt_data_1d(*this);
+}
+
 vt_data_series::vt_data_series(const char * n, const char * o)
   : name(0), origin(0), done(false), current_l(0), current(0), selected(false)
 {
@@ -697,6 +728,19 @@ vt_data_series::vt_data_series(const char * n, const char * o)
   strcpy(name,n);
   origin = new char[strlen(o)+1];
   strcpy(origin,o);
+}
+
+vt_data_series::vt_data_series(vt_data_series & vs)
+  : done(false), current_l(0), current(0), selected(false)
+{
+  name = new char[strlen(vs.name)+1];
+  strcpy(name,vs.name);
+  origin = new char[strlen(vs.origin)+1];
+  strcpy(origin,vs.origin);
+  
+  list<vt_data *>::iterator p;
+  for(p = vs.data.begin(); p != vs.data.end(); p++)
+    Append((*p)->Copy());
 }
 
 vt_data_series::~vt_data_series()

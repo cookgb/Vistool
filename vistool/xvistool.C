@@ -310,6 +310,8 @@ xvt_mainwin::~xvt_mainwin()
   // kill all of the X stuff
   if(Open_Dialog) XtDestroyWidget(Open_Dialog);
   XtDestroyWidget(top_shell);
+  dw_listed = 0;
+  ds_listed = 0;
   XmStringFree(NULL_String);
 }
 
@@ -320,6 +322,37 @@ void xvt_mainwin::RegisterDW(const char * window)
   XmStringFree(WinName);
 }
 
+
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+// Creator for X11 version of drawing window.
+xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw,
+			 XmString dir, XmString pattern)
+  : vt_drawwin(filename,mw), xmvt(mw), Open_Dialog(0), swapcount(0),
+    draw_RB(false)
+{
+  // Save the directory so that the new Open will start searching here.
+  search_dir = XmStringCopy(dir);
+  search_pattern = XmStringCopy(pattern);
+
+  CreateWindow();
+}
+
+xvt_drawwin::xvt_drawwin(xvt_drawwin & xdw)
+  : vt_drawwin(xdw), xmvt(xdw.xmvt), Open_Dialog(0), swapcount(0),
+    draw_RB(false)
+{
+  // Save the directory so that the new Open will start searching here.
+  search_dir = XmStringCopy(xdw.search_dir);
+  search_pattern = XmStringCopy(xdw.search_pattern);
+
+  CreateWindow();
+  
+  list<vt_data_series *>::iterator p;
+  for(p = xdw.data_list.begin(); p != xdw.data_list.end(); p++)
+    Add(new vt_data_series(**p));
+}
 
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
@@ -351,19 +384,14 @@ void dw_draw(Widget, XtPointer, XtPointer);
 void dw_resize(Widget, XtPointer, XtPointer);
 void dw_init(Widget, XtPointer, XtPointer);
 //----------------------------------------------------------------------------
+void apply_copy(Widget, XtPointer, XtPointer);
+void apply_abs(Widget, XtPointer, XtPointer);
 void apply_log(Widget, XtPointer, XtPointer);
 void apply_ln(Widget, XtPointer, XtPointer);
 //----------------------------------------------------------------------------
-// Creator for X11 version of drawing window.
-xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw,
-			 XmString & dir, XmString & pattern)
-  : vt_drawwin(filename,mw), xmvt(mw), Open_Dialog(0), swapcount(0),
-    draw_RB(false)
+// Code to create X window
+void xvt_drawwin::CreateWindow()
 {
-  // Save the directory so that the new Open will start searching here.
-  search_dir = XmStringCopy(dir);
-  search_pattern = XmStringCopy(pattern);
-
   //--------------------------------------------------------------------------
   //--------------------------------------------------------------------------
   // Create an application shell for the draw window
@@ -481,6 +509,10 @@ xvt_drawwin::xvt_drawwin(const char * filename, xvt_mainwin & mw,
     NULL,
   };
   MenuItem Apply_menu[] = {
+    { "Copy", &xmPushButtonGadgetClass, '\0', NULL, NULL,0,
+      apply_copy, this, NULL},
+    { "Abx", &xmPushButtonGadgetClass, '\0', NULL, NULL,0,
+      apply_abs, this, NULL},
     { "Log", &xmPushButtonGadgetClass, '\0', NULL, NULL,0,
       apply_log, this, NULL},
     { "Ln", &xmPushButtonGadgetClass, '\0', NULL, NULL, 0,

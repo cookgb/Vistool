@@ -103,11 +103,14 @@ private:
   int xpin_RB, ypin_RB;
   int xorg_RB, yorg_RB;
   int xwid_RB, ywid_RB;
+private:
+  void CreateWindow();
 public:
   Widget CheckButton_1DAbs;
 public:
   xvt_drawwin(const char * file, xvt_mainwin & mw,
-	      XmString & dir, XmString & pattern);
+	      XmString dir, XmString pattern);
+  xvt_drawwin(xvt_drawwin & xdw);
   ~xvt_drawwin();
   virtual void deleteme() { delete this;}
   virtual void init(int, int);

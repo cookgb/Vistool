@@ -92,6 +92,7 @@ public:
   char * name;
   bool selected;
   vt_drawwin(const char * n, vt_mainwin & mw);
+  vt_drawwin(vt_drawwin & dw);
   ~vt_drawwin();
   void close();
   bool ImportFile_GIO(char * file);
@@ -131,7 +132,8 @@ public:
   double LBy() const {return bounds.Lb_y;}
   double UBy() const {return bounds.Ub_y;}
   bounds_2D Bounds() const {return bounds;}
-  virtual void draw() {}
+  virtual void draw() = 0;
+  virtual vt_data * Copy() = 0;
   double Label() const {return label;}
   const double *Data() const {return data;};
   int Size() const {return size;};
@@ -143,6 +145,7 @@ public:
   vt_data_1d(double l, int n, const double * x, const double * y);
   vt_data_1d(const vt_data_1d & src);
   void draw();
+  vt_data * Copy();
 };
 
 class vt_data_series {
@@ -160,6 +163,7 @@ public:
   bool selected;
 public:
   vt_data_series(const char * n, const char * o);
+  vt_data_series(vt_data_series & vs);
   ~vt_data_series();
   char * Name() {return name;}
   char * Origin() {return origin;}
