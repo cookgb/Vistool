@@ -142,7 +142,7 @@ template< class D, class L, int d, int KEY>
 GIOseries<D,L,d,KEY>::~GIOseries()
 {
   if(FileName) delete [] FileName;
-  if(*fs) fs->close();
+  if(!!*fs) fs->close(); // !! for some compilers.. go figure.
 }
 
 template< class D, class L, int d, int KEY> 
@@ -228,7 +228,7 @@ template< class D, class L, int d, int KEY>
 GIOcseries<D,L,d,KEY>::~GIOcseries()
 {
   if(FileName) delete [] FileName;
-  if(*fs) fs->close();
+  if(!!*fs) fs->close(); // !! for some compilers.. go figure.
 }
 
 template< class D, class L, int d, int KEY> 
