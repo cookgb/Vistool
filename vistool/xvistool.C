@@ -16,7 +16,7 @@
 #include <Xm/FileSB.h>
 #include <Xm/Text.h>
 
-#if defined(SGI)
+#if defined(SGI_O2)
 #include <GL/GLwMDrawA.h>  // the Motif widget looks better on SGIs
 #else
 #include <GL/GLwDrawA.h>  // but the non-Motif widget will not crash
@@ -623,7 +623,7 @@ void xvt_drawwin::CreateWindow()
   //--------------------------------------------------------------------------
   // OpenGL drawing area
   glx_area = XtVaCreateManagedWidget("glxarea",
-#if defined(SGI)
+#if defined(SGI_O2)
 				     glwMDrawingAreaWidgetClass,
 #else
 				     glwDrawingAreaWidgetClass,
