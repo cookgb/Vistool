@@ -1,10 +1,15 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.3 1999-10-28 19:07:19 gcook Exp $
+# $Id: Makefile,v 1.4 1999-12-23 18:20:17 cookgb Exp $
 #
 ###############################################################################
+# linux
+#CXX=g++
+#CXXFLAGS= -O2
+#LIBDIRS = -L/usr/X11R6/lib
 
+# SGI
 CXX=CC
 CXXFLAGS= -O2
 
@@ -17,7 +22,7 @@ sovlayerutil.o: sovLayerUtil.h
 
 FILES= xvistool.o vistool.o sovlayerutil.o
 
-X11LIBS= -lGLw -lXm -lXt -lGL -lGLU -lX11
+X11LIBS= $(LIBDIRS) -lGLw -lXm -lXt -lGL -lGLU -lX11
 
 xvistool: $(FILES)
 	$(CXX) -o xvistool $(FILES) $(X11LIBS)
