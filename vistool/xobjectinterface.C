@@ -286,7 +286,7 @@ void mw_datasetlist(Widget w, XtPointer client_data, XtPointer call_data)
       char * sr = mw->Info_Range(ds.Bounds());
       std::ostringstream info;
       info << so << "\n" << st << "\n" << sr << std::ends;
-      char * buf = new char[info.str().length()];
+      char * buf = new char[info.str().length()+1];
       info.str().copy(buf,std::string::npos);
       XmString InfoString = XmStringCreateLtoR(buf,"TAG1");
       XtVaSetValues(mw->info_label, XmNlabelString, InfoString, NULL);
