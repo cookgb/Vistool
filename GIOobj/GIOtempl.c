@@ -20,15 +20,20 @@
 
 template< class D, class L, int d> GIOdata<D,L,d>::~GIOdata()
 {
-  if(data && Ndatasets) {
+  if(dataw && Ndatasets) {
     for(int i=0; i< Ndatasets; i++)
-      if(data[i]) delete [] data[i];
-    delete [] data;
+      if(dataw[i]) delete [] dataw[i];
+    delete [] dataw;
+  }
+  if(datar && Ndatasets) {
+    for(int i=0; i< Ndatasets; i++)
+      if(datar[i]) delete [] datar[i];
+    delete [] datar;
   }
 }
 
 template< class D, class L, int d> GIOdata<D,L,d>::GIOdata()
-  : GIObase(d), label(0), use_bounds(0), data(0)
+  : GIObase(d), label(0), use_bounds(0), dataw(0), datar(0)
 {
   for(int i=0; i<d; i++) {
     LBcoord[i] = 0;
@@ -40,15 +45,16 @@ template< class D, class L, int d> GIOdata<D,L,d>::GIOdata()
 template< class D, class L, int d>
 GIOdata<D,L,d>::GIOdata(const char *const*const names,
 			const int n, const int useb)
-  : GIObase(names, n, d), label(0), use_bounds(useb), data(0)
+  : GIObase(names, n, d), label(0), use_bounds(useb), dataw(0), datar(0)
 {
   for(int i=0; i<d; i++) {
     LBcoord[i] = 0;
     UBcoord[i] = 0;
     ext[i]=0;
   }
-  data = new D * [Ndatasets];
-  for(int j=0; j<Ndatasets; j++) data[j] = 0;
+//    dataw = new const D * [Ndatasets];
+//    datar = new D * [Ndatasets];
+//    for(int j=0; j<Ndatasets; j++) {dataw[j] = 0; datar[j]=0;}
 }
 
 template< class D, class L, int d>
@@ -64,7 +70,7 @@ int GIOdata<D,L,d>::Write(fstream *const fs) const
     size *= ext[i];
   }
   for(int j=0; j<Ndatasets; j++)
-    fs->write((char *)data[j],size*sizeof(D));
+    fs->write((char *)dataw[j],size*sizeof(D));
   return fs->good();
 }
 
@@ -81,9 +87,9 @@ template< class D, class L, int d>
     size *= ext[i];
   }
   for(int j=0; j<Ndatasets; j++) {
-    if(data[j]) delete [] data[j];
-    if(!(data[j] = new D[size])) GIOAbort("memory");
-    fs->read((char *)data[j],size*sizeof(D));
+    if(datar[j]) delete [] datar[j];
+    if(!(datar[j] = new D[size])) GIOAbort("memory");
+    fs->read((char *)datar[j],size*sizeof(D));
   }
   return 1;
 }
@@ -113,8 +119,8 @@ GIOseries<D,L,d,KEY>::GIOseries(const char *const filename, int & status)
 
   status = fs->good();
 
-  data = new D * [Ndatasets];
-  for(int i=0; i<Ndatasets; i++) data[i] = 0;
+  datar = new D * [Ndatasets];
+  for(int i=0; i<Ndatasets; i++) datar[i] = 0;
 }
 
 template< class D, class L, int d, int KEY> 
@@ -140,6 +146,9 @@ GIOseries<D,L,d,KEY>::GIOseries(const char *const filename,
   Nsseek = fs->tellp();
   fs->write((char *)&Nseries,sizeof(int));
   status = fs->good();
+
+  dataw = new const D * [Ndatasets];
+  for(int i=0; i<Ndatasets; i++) dataw[i] = 0;
 }
 
 template< class D, class L, int d, int KEY> 
@@ -151,17 +160,17 @@ GIOseries<D,L,d,KEY>::~GIOseries()
 
 template< class D, class L, int d, int KEY> 
 int GIOseries<D,L,d,KEY>::Write(const L l, const int *const ex,
-				D *const*const dat, const int n)
+				const D *const*const dat, const int n)
 {
   if(n != Ndatasets) GIOAbort("incompatible number of objects being written");
   label = l;
   for(int i=0; i<d; i++) ext[i] = ex[i];
-  for(int j=0; j<Ndatasets; j++) data[j] = dat[j];
+  for(int j=0; j<Ndatasets; j++) dataw[j] = dat[j];
 
   if(!GIOdata<D,L,d>::Write(fs)) return 0;
 
   // Don't keep the data since it will be deleated if the variable dies!
-  for(int k=0; k<Ndatasets; k++) data[k] = NULL;
+  for(int k=0; k<Ndatasets; k++) dataw[k] = NULL;
 
   Nseries++;
   fs->seekp(Nsseek);
@@ -201,8 +210,8 @@ GIOcseries<D,L,d,KEY>::GIOcseries(const char *const filename, int & status)
 
   status = fs->good();
 
-  data = new D * [Ndatasets];
-  for(int i=0; i<Ndatasets; i++) data[i] = 0;
+  datar = new D * [Ndatasets];
+  for(int i=0; i<Ndatasets; i++) datar[i] = 0;
 }
 
 template< class D, class L, int d, int KEY> 
@@ -228,6 +237,9 @@ GIOcseries<D,L,d,KEY>::GIOcseries(const char *const filename,
   Nsseek = fs->tellp();
   fs->write((char *)&Nseries,sizeof(int));
   status = fs->good();
+
+  dataw = new const D * [Ndatasets];
+  for(int i=0; i<Ndatasets; i++) dataw[i] = 0;
 }
 
 template< class D, class L, int d, int KEY> 
@@ -240,7 +252,7 @@ GIOcseries<D,L,d,KEY>::~GIOcseries()
 template< class D, class L, int d, int KEY> 
 int GIOcseries<D,L,d,KEY>::Write(const L l,
 				 const L *const lb, const L *const ub,
-				 const int *const ex, D *const*const dat,
+				 const int *const ex, const D *const*const dat,
 				 const int n)
 {
   if(n != Ndatasets) GIOAbort("incompatible number of objects being written");
@@ -250,12 +262,12 @@ int GIOcseries<D,L,d,KEY>::Write(const L l,
     UBcoord[i] = ub[i];
     ext[i] = ex[i];
   }
-  for(int j=0; j<Ndatasets; j++) data[j] = dat[j];
+  for(int j=0; j<Ndatasets; j++) dataw[j] = dat[j];
 
   if(!GIOdata<D,L,d>::Write(fs)) return 0;
 
   // Don't keep the data since it will be deleated if the variable dies!
-  for(int k=0; k<Ndatasets; k++) data[k] = NULL;
+  for(int k=0; k<Ndatasets; k++) dataw[k] = NULL;
 
   Nseries++;
   fs->seekp(Nsseek);

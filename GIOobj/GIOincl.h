@@ -53,7 +53,8 @@ protected:
   L LBcoord[d];   // Lower bound of coordinates
   L UBcoord[d];   // Upper bound of coordinates
   int ext[d];     // Extent of the data in each dimension
-  D ** data;       // Data for each object
+  const D ** dataw;      // Data for each object (writing)
+  D ** datar;      // Data for each object (reading)
 public:
   GIOdata();
   GIOdata(const char *const* names, int n, int useb = 0);
@@ -84,7 +85,7 @@ public:
   GIOseries(const char * filename, const char *const* names, int n,
 	    int & status);
   ~GIOseries();
-  int Write(L label, const int * ext, D *const* dat, int n);
+  int Write(L label, const int * ext, const D *const* dat, int n);
   int Read();
   int Key() const {return GIOkey;}
   int NSeries() const {return Nseries;}
@@ -106,7 +107,7 @@ public:
 	    int & status);
   ~GIOcseries();
   int Write(L label, const L * lb, const L * ub, const int * ext,
-	    D *const* dat, int n);
+	    const D *const* dat, int n);
   int Read();
   int Key() const {return GIOkey;}
   int NSeries() const {return Nseries;}
