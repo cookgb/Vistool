@@ -1,22 +1,22 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.7 2000-01-03 13:41:01 cookgb Exp $
+# $Id: Makefile,v 1.8 2000-01-03 14:39:29 cookgb Exp $
 #
 ###############################################################################
 # linux
-CC=gcc
-CFLAGS= -O2
-CXX=g++
-CXXFLAGS= -O2
-CXXINCLUDES = /usr/include/g++-2
+#CC=gcc
+#CFLAGS= -O2
+#CXX=g++
+#CXXFLAGS= -O2
+#CXXINCLUDES = /usr/include/g++-2
 
 # SGI
-#CC=cc -mips4
-#CFLAGS = -O2
-#CXX=CC -mips4
-#CXXFLAGS= -O2 -LANG:bool=OFF
-#CXXINCLUDES = /usr/include/CC
+CC=cc -mips4
+CFLAGS = -O2
+CXX=CC -mips4
+CXXFLAGS= -O2 -LANG:bool=OFF
+CXXINCLUDES = /usr/include/CC
 
 # SP2
 #CC=xlc
@@ -35,7 +35,11 @@ GIOtest: $(OBJS) libGIO.a
 
 LIBFILES= GIOlib.C GIObase.C
 LIBOBJS= $(LIBFILES:.C=.o)
-libGIO.a:libGIO.a($(LIBOBJS))
+# --- FOR GNU g++ 
+#libGIO.a:libGIO.a($(LIBOBJS))
+# --- FOR SGI
+libGIO.a: $(LIBOBJS)
+	$(CXX) $(CXXFLAGS) -ar -o libGIO.a $(LIBOBJS)
 
 clean:
 	$(RM) $(OBJS) $(LIBOBJS) libGIO.a GIOtest

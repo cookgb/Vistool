@@ -18,9 +18,6 @@
 
 #include "GIOtempl.h"
 
-#define GIOTESTTAG "#GIO UNIQUE TAG\0"
-#define TESTTAGLEN 16
-
 template< class D, class L, int d> GIOdata<D,L,d>::~GIOdata()
 {
   if(data && Ndatasets) {
@@ -41,7 +38,7 @@ template< class D, class L, int d> GIOdata<D,L,d>::GIOdata()
 }
 
 template< class D, class L, int d>
-GIOdata<D,L,d>::GIOdata(const char ** names, int n, int useb = 0)
+GIOdata<D,L,d>::GIOdata(const char ** names, int n, int useb)
   : GIObase(names, n, d), label(0), use_bounds(useb), data(0)
 {
   for(int i=0; i<d; i++) {
@@ -50,7 +47,7 @@ GIOdata<D,L,d>::GIOdata(const char ** names, int n, int useb = 0)
     ext[i]=0;
   }
   data = new D * [Ndatasets];
-  for(int i=0; i<Ndatasets; i++) data[i] = 0;
+  for(int j=0; j<Ndatasets; j++) data[j] = 0;
 }
 
 template< class D, class L, int d> int GIOdata<D,L,d>::Write(fstream * fs)

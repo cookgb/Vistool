@@ -10,6 +10,9 @@
 
 #include <fstream.h>
 
+#define GIOTESTTAG "#GIO UNIQUE TAG\0"
+#define TESTTAGLEN 16
+
 class GIObase {
 protected:
   int Ndatasets;  // Number of objects in the record
@@ -81,7 +84,7 @@ public:
   GIOseries(const char * filename, const char ** names, int n,
 	    int & status);
   ~GIOseries();
-  int Write(L label, int * ext, D ** d, int n);
+  int Write(L label, int * ext, D ** dat, int n);
   int Read();
   int Key() {return GIOkey;}
   int NSeries() {return Nseries;}
@@ -102,7 +105,7 @@ public:
   GIOcseries(const char * filename, const char ** names, int n,
 	    int & status);
   ~GIOcseries();
-  int Write(L label, L * lb, L * ub, int * ext, D ** d, int n);
+  int Write(L label, L * lb, L * ub, int * ext, D ** dat, int n);
   int Read();
   int Key() {return GIOkey;}
   int NSeries() {return Nseries;}
