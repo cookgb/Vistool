@@ -540,14 +540,29 @@ void Button1UpAction(Widget w, XEvent * event, String * params,
   XtVaGetValues(w,XmNuserData,&dw,NULL); // Get the xvt_drawwin.
   glXWaitGL();
   dw->DrawRubberBand();
+  double xl;
+  double xu;
+  double yl;
+  double yu;
   const double x_int   = dw->Cur_Bounds->Lb_x;
   const double x_slope = (dw->Cur_Bounds->Ub_x - x_int)/dw->cur_width;
   const double y_int   = dw->Cur_Bounds->Ub_y;
   const double y_slope = (dw->Cur_Bounds->Lb_y - y_int)/dw->cur_height;
-  const double xl = dw->xorg_RB*x_slope + x_int;
-  const double xu = (dw->xorg_RB + dw->xwid_RB + 1)*x_slope + x_int;
-  const double yu = dw->yorg_RB*y_slope + y_int;
-  const double yl = (dw->yorg_RB + dw->ywid_RB + 1)*y_slope + y_int;
+  if(dw->xwid_RB != 0 || dw->ywid_RB != 0) {
+    xl = dw->xorg_RB*x_slope + x_int;
+    xu = (dw->xorg_RB + dw->xwid_RB + 1)*x_slope + x_int;
+    yu = dw->yorg_RB*y_slope + y_int;
+    yl = (dw->yorg_RB + dw->ywid_RB + 1)*y_slope + y_int;
+  } else {
+    const double dx = 0.125*(dw->Cur_Bounds->Ub_x - x_int);
+    const double dy = 0.125*(y_int - dw->Cur_Bounds->Lb_y);
+    xl = (dw->xorg_RB + 0.5)*x_slope + x_int;
+    xu = xl + dx;
+    xl -= dx;
+    yu = (dw->yorg_RB + 0.5)*y_slope + y_int;
+    yl = yu - dy;
+    yu += dy;
+  }
   dw->draw_RB = false;
   dw->xpin_RB = dw->ypin_RB = 0;
   dw->xorg_RB = dw->yorg_RB = 0;
