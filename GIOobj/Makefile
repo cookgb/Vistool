@@ -1,7 +1,7 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.13 2000-08-01 17:33:50 cookgb Exp $
+# $Id: Makefile,v 1.14 2000-08-01 17:35:53 cookgb Exp $
 #
 ###############################################################################
 # linux
@@ -48,7 +48,7 @@ libGIO.a:libGIO.a($(LIBOBJS))
 #	$(CXX) $(CXXFLAGS) -ar -o libGIO.a $(LIBOBJS)
 
 clean:
-	$(RM) $(OBJS) $(LIBOBJS) libGIO.a GIOtest
+	$(RM) $(OBJS) $(LIBOBJS) $(SWAPOBJS) libGIO.a GIOtest GIOswap
 
 depend:
 	cp -f Makefile makefile
