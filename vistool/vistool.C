@@ -304,19 +304,11 @@ bool vt_drawwin::ImportFile_1DDump(const char *const filename)
     }
 
     int i;
-    for(i=0;i<dim;i++)
+    for(i=0;i<dim;i++) {
       if(shape[i] <= 0) {
 	delete [] shape;
 	break;
       }
-    
-    // Wbox
-    double *wbox = new double[2*dim];
-    file.read(((char *) wbox),2*dim*sizeof(double));
-    if(!file.good() || (file.gcount() != 2*dim*sizeof(double))) {
-      delete[] shape;
-      delete[] wbox;
-      break;
     }
     
     // Data
@@ -325,13 +317,11 @@ bool vt_drawwin::ImportFile_1DDump(const char *const filename)
     double *data = new double[datasize];
     if(!data) {
       delete[] shape;
-      delete[] wbox;
       break;
     }
     file.read((char *) data,datasize*sizeof(double));
     if(file.gcount() != datasize*sizeof(double)) {
       delete[] shape;
-      delete[] wbox;
       delete[] data;
       break;
     }
@@ -341,7 +331,6 @@ bool vt_drawwin::ImportFile_1DDump(const char *const filename)
       for(int i=0;i<shape[0];i++) 
 	if(!finite(data[i])) {
 	  delete[] shape;
-	  delete[] wbox;
 	  delete[] data;
 	  break;
 	}
@@ -360,10 +349,10 @@ bool vt_drawwin::ImportFile_1DDump(const char *const filename)
 	delete[] x;
       }
     } else {
-      // Compute coordinates
+      // Compute coordinates: Assume we go from -1 to +1
       double *x        = new double[shape[0]];
-      const double dx  = (wbox[1]-wbox[0])/(shape[0]-1);
-      for(int i=0;i<shape[0];i++) x[i] = wbox[0] + dx*i;
+      const double dx  = 2.0/(shape[0]-1);
+      for(int i=0;i<shape[0];i++) x[i] = -1.0 + dx*i;
       // Now append
       series->Append(new vt_data_1d(time,shape[0],x,data));
       Retrieved_Valid_Timestep++;
@@ -372,7 +361,6 @@ bool vt_drawwin::ImportFile_1DDump(const char *const filename)
     
     // Clean up
     delete[] data;
-    delete[] wbox;
     delete[] shape;
   }
 
@@ -423,21 +411,12 @@ bool vt_drawwin::ImportFile_1DAbs(const char *const filename)
   }
 
   int i;
-  for(i=0;i<dim;i++)
+  for(i=0;i<dim;i++) {
     if(shape[i] <= 0) {
       delete [] shape;
       file.close();
       return false;
     }
-
-  // Wbox
-  double *wbox = new double[2*dim];
-  file.read(((char *) wbox),2*dim*sizeof(double));
-  if(!file.good() || (file.gcount() != 2*dim*sizeof(double))) {
-    delete[] shape;
-    delete[] wbox;
-    file.close();
-    return false;
   }
 
   // Coordinate Data
@@ -446,23 +425,21 @@ bool vt_drawwin::ImportFile_1DAbs(const char *const filename)
   double *data = new double[datasize];
   if(!data) {
     delete[] shape;
-    delete[] wbox;
     file.close();
     return false;
   }
   file.read((char *) data,datasize*sizeof(double));
   if(file.gcount() != datasize*sizeof(double)) {
     delete[] shape;
-    delete[] wbox;
     delete[] data;
     file.close();
     return false;
   }
   
-  // Compute coordinates
+  // Compute coordinates: assume range -1 to +1
   double *x        = new double[shape[0]];
-  const double dx  = (wbox[1]-wbox[0])/(shape[0]-1);
-  for(i=0;i<shape[0];i++) x[i] = wbox[0] + dx*i;
+  const double dx  = 2.0/(shape[0]-1);
+  for(i=0;i<shape[0];i++) x[i] = -1.0 + dx*i;
 
   // Set data
   if(Abscissa_Data) delete Abscissa_Data;
@@ -475,7 +452,6 @@ bool vt_drawwin::ImportFile_1DAbs(const char *const filename)
   
   // Clean up
   delete[] x;
-  delete[] wbox;
   delete[] shape;
   delete[] data;
   file.close();
