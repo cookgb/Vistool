@@ -21,7 +21,7 @@ void GIOHeader(istream & in, ostream &out,
   in.read(intbuf,sizeof(int));
   for(i=sizeof(int)-1,c=0; i>=0; i--,c++) cintbuf[c] = intbuf[i];
   out.write(cintbuf,sizeof(int));
-  GIOkey = *((int *) cintbuf);
+  GIOkey = *((GIOtype *) cintbuf);
 
   in.read(intbuf,sizeof(int));
   for(i=sizeof(int)-1,c=0; i>=0; i--,c++) cintbuf[c] = intbuf[i];

@@ -1,15 +1,15 @@
 # -*- Makefile -*-
 ###############################################################################
 #
-# $Id: Makefile,v 1.12 2000-07-31 15:01:42 cookgb Exp $
+# $Id: Makefile,v 1.13 2000-08-01 17:33:50 cookgb Exp $
 #
 ###############################################################################
 # linux
-CC=gcc
-CFLAGS= -O2
-CXX=g++
-CXXFLAGS= -O2
-CXXINCLUDES = /usr/include/g++-2
+#CC=gcc
+#CFLAGS= -O2
+#CXX=g++
+#CXXFLAGS= -O2
+#CXXINCLUDES = /usr/include/g++-2
 
 # SGI
 #CC=cc -mips4
@@ -19,11 +19,11 @@ CXXINCLUDES = /usr/include/g++-2
 #CXXINCLUDES = /usr/include/CC
 
 # SP2
-#CC=xlc
-#CFLAGS = -O2
-#CXX=xlC
-#CXXFLAGS= -O2 -DSPX
-#CXXINCLUDES = /usr/ibmcxx/include
+CC=xlc
+CFLAGS = -O2
+CXX=xlC
+CXXFLAGS= -O2 -DSPX
+CXXINCLUDES = /usr/ibmcxx/include
 
 all: GIOtest
 
