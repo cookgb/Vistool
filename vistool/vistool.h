@@ -19,6 +19,12 @@ enum FileType {
   TYPE_1DAb
 };
 
+enum TransformationFunction {
+  Abs,
+  Log,
+  Ln
+};
+
 class vt_drawwin;
 class vt_data_series;
 class vt_data_1d;
@@ -116,6 +122,7 @@ public:
   int Height() const {return cur_height;}
   void Label_Text(bool add);
   void Coords_Text(bool add);
+  void Apply(TransformationFunction T);
 };
 
 class vt_data {
@@ -137,6 +144,7 @@ public:
   double Label() const {return label;}
   const double *Data() const {return data;};
   int Size() const {return size;};
+  virtual void Apply(TransformationFunction T) = 0;
 };
 
 class vt_data_1d : public vt_data {
@@ -146,6 +154,7 @@ public:
   vt_data_1d(const vt_data_1d & src);
   void draw();
   vt_data * Copy();
+  void Apply(TransformationFunction T);
 };
 
 class vt_data_series {
@@ -182,6 +191,8 @@ public:
   void Increment();
   void Decrement();
   void Reset(bool forward_iteration);
+  void Apply(TransformationFunction T);
+  void FunctionName(const char * func);
 };
 
 #endif // VISTOOL_H

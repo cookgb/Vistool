@@ -344,8 +344,13 @@ xvt_drawwin::xvt_drawwin(xvt_drawwin & xdw)
     draw_RB(false)
 {
   // Save the directory so that the new Open will start searching here.
-  search_dir = XmStringCopy(xdw.search_dir);
-  search_pattern = XmStringCopy(xdw.search_pattern);
+  if(!xdw.OpenDialog()) {
+    search_dir = XmStringCopy(xdw.search_dir);
+    search_pattern = XmStringCopy(xdw.search_pattern);
+  } else {
+    XtVaGetValues(xdw.OpenDialog(),XmNdirectory,&search_dir,
+		  XmNpattern,&search_pattern,NULL);
+  }
 
   CreateWindow();
   
@@ -511,7 +516,7 @@ void xvt_drawwin::CreateWindow()
   MenuItem Apply_menu[] = {
     { "Copy", &xmPushButtonGadgetClass, '\0', NULL, NULL,0,
       apply_copy, this, NULL},
-    { "Abx", &xmPushButtonGadgetClass, '\0', NULL, NULL,0,
+    { "Abs", &xmPushButtonGadgetClass, '\0', NULL, NULL,0,
       apply_abs, this, NULL},
     { "Log", &xmPushButtonGadgetClass, '\0', NULL, NULL,0,
       apply_log, this, NULL},

@@ -9,6 +9,7 @@
 #include <list.h>
 #include <algorithm>
 #include <strstream.h>
+#include <math.h>
 
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -666,6 +667,19 @@ void vt_drawwin::Coords_Text(bool add)
   label->precision(p);
 }
 
+void vt_drawwin::Apply(TransformationFunction T)
+{
+  Default_Bounds = bounds_2D(0.0,0.0,0.0,0.0);
+  list<vt_data_series *>::iterator p;
+  for(p = data_list.begin(); p != data_list.end(); p++) {
+    (*p)->Apply(T);
+    Default_Bounds.Union((*p)->Bounds());
+  }
+
+  reset_CurrentBounds();
+  Coords_Text(true);
+}
+
 vt_data::~vt_data()
 {
   delete [] data;
@@ -719,6 +733,51 @@ void vt_data_1d::draw()
 vt_data * vt_data_1d::Copy()
 {
   return new vt_data_1d(*this);
+}
+
+void vt_data_1d::Apply(TransformationFunction T)
+{
+  int i;
+  double Lb_y = data[1];
+  double Ub_y = Lb_y;
+  switch(T) {
+  case Abs :
+    Lb_y = abs(data[1]);
+    for(i=1; i<2*size; i+=2) {
+      const double ly = data[i] = fabs(data[i]);
+      if(ly < Lb_y) Lb_y = ly;
+      else if(ly > Ub_y) Ub_y = ly;
+    }
+    bounds.Lb_y = Lb_y;
+    bounds.Ub_y = Ub_y;
+    break;
+  case Log :
+    Lb_y = abs(data[1]);
+    for(i=1; i<2*size; i+=2) {
+      double ly;
+      if(data[i] == 0.0) ly = data[i] = -100.0;
+      else ly = data[i] = log10(data[i]);
+      if(ly < Lb_y) Lb_y = ly;
+      else if(ly > Ub_y) Ub_y = ly;
+    }
+    bounds.Lb_y = Lb_y;
+    bounds.Ub_y = Ub_y;
+    break;
+  case Ln :
+    Lb_y = abs(data[1]);
+    for(i=1; i<2*size; i+=2) {
+      double ly;
+      if(data[i] == 0.0) ly = data[i] = -100.0;
+      else ly = data[i] = log10(data[i]);
+      if(ly < Lb_y) Lb_y = ly;
+      else if(ly > Ub_y) Ub_y = ly;
+    }
+    bounds.Lb_y = Lb_y;
+    bounds.Ub_y = Ub_y;
+    break;
+  default :
+    cerr << "Unknown TransformationFunction in vt_data_1d::Apply" << endl;
+  }
 }
 
 vt_data_series::vt_data_series(const char * n, const char * o)
@@ -837,3 +896,35 @@ void vt_data_series::Reset(bool forward_animation)
   current_l = (**current).Label();
 }
 
+void vt_data_series::Apply(TransformationFunction T)
+{
+  bounds = bounds_2D(0.0,0.0,0.0,0.0);
+  list<vt_data *>::iterator p;
+  for(p = data.begin(); p != data.end(); p++) {
+    (*p)->Apply(T);
+    bounds.Union((*p)->Bounds());
+  }
+  switch(T) {
+  case Abs :
+    FunctionName("Abs");
+    break;
+  case Log :
+    FunctionName("Log");
+    break;
+  case Ln :
+    FunctionName("Ln");
+    break;
+  default :
+    cerr << "Unknown TransformationFunction in vt_data_series::Apply" << endl;
+  }
+}
+
+void vt_data_series::FunctionName(const char * func)
+{
+  const int len = strlen(func) + strlen(name) + 3;
+  char * buf = new char[len];
+  ostrstream n(buf,len);
+  n << func << "(" << name << ")" << ends;
+  delete [] name;
+  name = buf;
+}
